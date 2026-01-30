@@ -1,9 +1,7 @@
 {% extends "admin/base.html" %}
 {% block branding %}
 <style>
-    /* 1. メモ帳（pos_system.js内のCSS）を完全に上書きする設定 */
-
-    /* 画像：メモ帳の 80% 指定を 70% に抑えてボタンの隙間を作る */
+    /* 1. モーダル等の基本設定（維持） */
     .modal-content {
         position: fixed !important;
         top: 45% !important;
@@ -18,7 +16,6 @@
         display: block !important;
     }
 
-    /* カウンター：画像の上端に吸着 */
     #modal-counter, .modal-counter {
         position: fixed !important;
         top: calc(45% - (70vh / 2)) !important;
@@ -32,7 +29,6 @@
         z-index: 20010 !important;
     }
 
-    /* カート追加ボタン：画像の下端に強制吸着 */
     #modal-cart-btn, .modal-cart-action, [onclick*="cart"], button[style*="top: 0"] {
         position: fixed !important;
         top: calc(45% + (70vh / 2)) !important;
@@ -53,38 +49,41 @@
         display: block !important;
     }
 
-    /* 2. サイドメニュー配色復元 */
+    /* 2. サイドメニュー配色（維持） */
     #nav-sidebar .app-catalog_a4 caption { background: #ff4d94 !important; }
     #nav-sidebar .app-catalog_tcg caption { background: #2684ff !important; }
     #nav-sidebar .app-catalog_admin_custom caption { background: #f0ad4e !important; }
 
-    /* 3. ナビゲーション */
+    /* 3. ナビゲーション（維持） */
     .modal-nav { position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; }
     .close-btn { position: fixed !important; top: 20px !important; right: 40px !important; z-index: 20030 !important; }
 
-    /* ✨ 4. スマホ用：管理画面の一覧のみを横スクロールにする */
+    /* ✨ 4. スマホ用：特定のページ（原作・キャラ）のみ横スクロールにする設定 */
     @media (max-width: 768px) {
-        /* 一覧のテーブル全体を横スクロール可能にする */
-        .change-list .results {
+        /* 原作一覧 (.model-originalwork) と キャラクター一覧 (.model-character) だけを狙い撃ち */
+        .model-originalwork .results, 
+        .model-character .results {
             overflow-x: auto !important;
             display: block !important;
             -webkit-overflow-scrolling: touch;
         }
 
-        /* テーブルの中身を強制的に横並びにする */
-        .change-list #result_list {
+        .model-originalwork #result_list,
+        .model-character #result_list {
             display: block !important;
             white-space: nowrap !important;
         }
 
-        .change-list #result_list tbody {
+        .model-originalwork #result_list tbody,
+        .model-character #result_list tbody {
             display: flex !important;
             flex-direction: row !important;
         }
 
-        /* 各行をカード風に並べる */
-        .change-list #result_list tr {
-            flex: 0 0 220px !important; /* カード幅220px */
+        /* 横に並べるカードの設定 */
+        .model-originalwork #result_list tr,
+        .model-character #result_list tr {
+            flex: 0 0 220px !important;
             display: inline-block !important;
             margin-right: 12px !important;
             border: 1px solid #444 !important;
@@ -92,8 +91,9 @@
             background: #222 !important;
         }
 
-        /* セル内の折り返しを許可 */
-        .change-list #result_list td, .change-list #result_list th {
+        /* 商品一覧（.model-item 等）はこれらが適用されないため、標準の「縦」が維持されます */
+        .model-originalwork #result_list td,
+        .model-character #result_list td {
             display: block !important;
             white-space: normal !important;
             border: none !important;
