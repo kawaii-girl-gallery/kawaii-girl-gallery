@@ -1,0 +1,172 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | {{ site_title|default:_('Django site admin') }}{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
+
+<style>
+    /* 全体フォント設定 */
+    @import url('https://fonts.googleapis.com/css2?family=Rounded+Mplus+1c:wght@700;900&display=swap');
+    body, #header, #content, h1, h2, #nav-sidebar, .module th, .module td { 
+        font-family: 'Rounded Mplus 1c', sans-serif !important; 
+    }
+
+    /* ✨ ヘッダー統一装飾 */
+    #header { 
+        background: #1a1c23 !important; 
+        padding: 15px 25px !important;
+        border-bottom: 4px solid transparent !important;
+        border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important;
+    }
+
+    /* ✨ ロゴ装飾 */
+    #branding h1 { 
+        font-size: 28px !important; 
+        font-weight: 900 !important; 
+        display: flex !important; 
+        align-items: center !important; 
+        gap: 12px !important; 
+        background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important; 
+        -webkit-background-clip: text !important; 
+        -webkit-text-fill-color: transparent !important; 
+    }
+    #branding h1::before { content: '💕'; -webkit-text-fill-color: initial !important; font-size: 26px; }
+    #branding h1 a { color: inherit !important; text-decoration: none !important; }
+
+    /* 💡 強制カラー適用設定：図鑑管理ページ（オレンジ）を維持 */
+    .admin-custom-mode .period-title { 
+        background: #f0ad4e !important; 
+        color: #fff !important; 
+        padding: 10px 20px; 
+        border-radius: 8px; 
+        display: inline-block;
+    }
+
+    /* フォーム装飾 */
+    .dashboard-header { margin: 20px; padding: 20px; background: #1a1a1a; border-radius: 12px; border: 1px solid #333; }
+    .period-title { font-size: 24px; color: #00ffcc; margin: 0 0 15px 0; font-weight: 900; }
+    .date-form { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .custom-date-picker { background: #333 !important; border: 1px solid #444 !important; color: #fff !important; padding: 8px 12px; border-radius: 4px; cursor: pointer; width: 140px; }
+    .submit-btn { background: #ff4d88; color: white; border: none; padding: 9px 20px; border-radius: 4px; font-weight: 900; cursor: pointer; transition: 0.2s; }
+    .submit-btn:hover { background: #ff70a1; transform: scale(1.05); }
+
+    /* ✨ リセットボタン専用スタイル */
+    .reset-area { 
+        margin-top: 20px; padding: 15px; 
+        background: rgba(255, 68, 68, 0.05); 
+        border: 1px dashed #ff4444; 
+        border-radius: 10px; 
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .reset-btn { 
+        background: #ff4444; color: #fff; border: none; padding: 8px 20px; 
+        border-radius: 20px; font-weight: 900; cursor: pointer; transition: 0.3s;
+    }
+    .reset-btn:hover { background: #ff6666; box-shadow: 0 0 15px rgba(255, 68, 68, 0.4); }
+
+    /* コンテンツレイアウト */
+    .analysis-container { padding: 0 20px 20px 20px; display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; }
+    .analysis-section { background: #1a1a1a; padding: 20px; border-radius: 15px; border: 2px solid #333; }
+    .analysis-section h3 { margin-top: 0; margin-bottom: 15px; font-weight: 900; color: #fff; border-left: 4px solid #ff4d88; padding-left: 12px; }
+
+    table { width: 100%; border-collapse: collapse; }
+    th { text-align: left; color: #888; font-size: 12px; padding: 10px 5px; border-bottom: 2px solid #333; }
+    td { padding: 12px 5px; border-bottom: 1px solid #222; font-weight: 700; color: #eee; }
+    .rev { color: #00ffcc; text-align: right; font-weight: 900; }
+    .count-badge { background: #333; padding: 2px 8px; border-radius: 10px; font-size: 11px; color: #ffb3cc; }
+
+    .weekday-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 10px; margin-top: 20px; }
+    .day-box { background: #222; padding: 10px; border-radius: 10px; text-align: center; border: 1px solid #444; }
+    .day-name { font-size: 12px; color: #aaa; margin-bottom: 5px; display: block; }
+    .day-val { font-size: 14px; font-weight: 900; color: #00ffcc; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main" class="{{ cl_class }}">
+    <div class="dashboard-header">
+        <h2 class="period-title">🎬 インサイト分析：{{ period_title }}</h2>
+        <form method="get" class="date-form">
+            <span style="color: #888; font-weight: 900;">期間変更:</span>
+            <input type="text" name="start_date" id="start_date" class="custom-date-picker" value="{{ start_date }}">
+            <span style="color: #888;">〜</span>
+            <input type="text" name="end_date" id="end_date" class="custom-date-picker" value="{{ end_date }}">
+            <button type="submit" class="submit-btn">集計を更新</button>
+            <a href="." style="color: #888; font-size: 11px; text-decoration: underline; margin-left: 10px;">今月に戻す</a>
+        </form>
+
+        {% if is_admin %}
+        <div class="reset-area">
+            <span style="color: #ff4444; font-size: 12px; font-weight: 800;">
+                ⚠️ テストデータ消去用：実行すると全ての売上履歴が完全に削除されます
+            </span>
+            <form method="post" onsubmit="return confirm('🚀 本当に売上データをすべてリセットしますか？この操作は取り消せません。');">
+                {% csrf_token %}
+                <input type="hidden" name="reset_sales" value="true">
+                <button type="submit" class="reset-btn">🗑️ 売上データを全リセット</button>
+            </form>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="analysis-container">
+        <div class="analysis-section">
+            <h3>👤 キャラクター売上 TOP10</h3>
+            <table>
+                <thead><tr><th>キャラクター名</th><th>販売数</th><th style="text-align: right;">合計売上</th></tr></thead>
+                <tbody>
+                    {% for name, s in char_sales|slice:":10" %}
+                    <tr>
+                        <td>{{ name }}</td>
+                        <td><span class="count-badge">{{ s.count }} 件</span></td>
+                        <td class="rev">¥{{ s.revenue }}</td>
+                    </tr>
+                    {% empty %}<tr><td colspan="3" style="text-align:center; color:#666;">データなし</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="analysis-section">
+            <h3>📖 原作作品別ランキング</h3>
+            <table>
+                <thead><tr><th>作品タイトル</th><th>販売数</th><th style="text-align: right;">合計売上</th></tr></thead>
+                <tbody>
+                    {% for name, s in work_sales|slice:":10" %}
+                    <tr>
+                        <td>{{ name }}</td>
+                        <td><span class="count-badge">{{ s.count }} 件</span></td>
+                        <td class="rev">¥{{ s.revenue }}</td>
+                    </tr>
+                    {% empty %}<tr><td colspan="3" style="text-align:center; color:#666;">データなし</td></tr>{% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div style="padding: 0 20px 20px 20px;">
+        <div class="analysis-section">
+            <h3>📅 曜日別売上状況</h3>
+            <div class="weekday-grid">
+                {% for day in weekday_sales %}
+                <div class="day-box" {% if day.revenue > 0 %}style="border-color:#ff4d88;"{% endif %}>
+                    <span class="day-name">{{ day.name }}曜日</span>
+                    <span class="day-val">¥{{ day.revenue }}</span>
+                    <div style="font-size: 10px; color: #666; margin-top: 5px;">{{ day.count }}件</div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    flatpickr("#start_date", { locale: "ja", dateFormat: "Y-m-d", allowInput: true });
+    flatpickr("#end_date", { locale: "ja", dateFormat: "Y-m-d", allowInput: true });
+</script>
+{% endblock %}

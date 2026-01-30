@@ -1,0 +1,78 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Rounded+Mplus+1c:wght@700;900&display=swap');
+    
+    body { font-family: 'Rounded Mplus 1c', sans-serif !important; background: #121212; color: #eee; }
+    
+    /* ✨ ヘッダー装飾：他ページと統一 */
+    #header { 
+        background: #1a1c23 !important; 
+        padding: 15px 25px !important; 
+        border-bottom: 4px solid transparent !important; 
+        border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important; 
+    }
+    
+    /* ✨ ロゴ部分にハートを追加し、グラデーションを適用 */
+    #branding h1 { 
+        font-size: 28px !important; 
+        font-weight: 900 !important; 
+        display: flex !important; 
+        align-items: center !important; 
+        gap: 12px !important; 
+        background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important; 
+        -webkit-background-clip: text !important; 
+        -webkit-text-fill-color: transparent !important; 
+    }
+    #branding h1::before { content: '💕'; -webkit-text-fill-color: initial !important; font-size: 26px; }
+
+    /* 💡 強制カラー適用設定：この class が付いている時に紫色を維持 */
+    .pedia-mode h2, .pedia-mode h1 { background: #6f42c1 !important; color: #fff !important; padding: 10px; border-radius: 8px; }
+
+    /* コンテンツエリアの装飾 */
+    .pedia-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 20px; }
+    .char-card { background: #1e1e1e; border-radius: 20px; overflow: hidden; border: 2px solid #333; transition: 0.3s; position: relative; }
+    .char-card:hover { transform: translateY(-5px); border-color: #ff69b4; box-shadow: 0 10px 20px rgba(255,105,180,0.2); }
+    .img-box { width: 100%; height: 220px; overflow: hidden; background: #000; position: relative; }
+    .img-box img { width: 100%; height: 100%; object-fit: cover; opacity: 0.8; }
+    .total-badge { position: absolute; top: 15px; right: 15px; background: #ff4d94; color: #fff; padding: 4px 12px; border-radius: 15px; font-weight: 900; font-size: 12px; }
+    .info-box { padding: 15px; text-align: center; }
+    .info-box h2 { margin: 0 0 15px 0 !important; font-size: 18px !important; font-weight: 900 !important; color: #fff !important; background: transparent !important; }
+    .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+    .stat-item { background: #2a2a2a; padding: 8px; border-radius: 10px; }
+    .stat-label { font-size: 10px; color: #aaa; display: block; margin-bottom: 2px; }
+    .stat-val { font-size: 16px; font-weight: 900; color: #00ffcc; }
+    .link-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .btn { text-decoration: none; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 900; color: #fff; background: #333; border: 1px solid #444; transition: 0.2s; }
+    .btn:hover { background: #444; border-color: #007bff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main" class="{{ cl_class }}">
+    <div class="pedia-container">
+        {% for name, stats, thumb in char_list %}
+        <div class="char-card">
+            <div class="img-box">
+                {% if thumb %}<img src="{{ thumb }}" alt="">{% endif %}
+                <div class="total-badge">Total: {{ stats.total }}</div>
+            </div>
+            <div class="info-box">
+                <h2>{{ name }}</h2>
+                <div class="stat-row">
+                    <div class="stat-item"><span class="stat-label">A4サイズ</span><span class="stat-val">{{ stats.A4 }}</span></div>
+                    <div class="stat-item"><span class="stat-label">TCGカード</span><span class="stat-val">{{ stats.TCG }}</span></div>
+                </div>
+                <div class="link-row">
+                    <a href="{{ stats.a4_url }}" class="btn">A4一覧</a>
+                    <a href="{{ stats.tcg_url }}" class="btn">TCG一覧</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

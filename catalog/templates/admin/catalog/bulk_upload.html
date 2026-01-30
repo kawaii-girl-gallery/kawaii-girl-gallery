@@ -1,0 +1,43 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static %}
+
+{% block extrastyle %}{{ block.super }}
+<style>
+    #content { background: #1a1a1a; color: #eee; }
+    .module { background: #222; border: 1px solid #444; padding: 20px; border-radius: 8px; }
+    h2 { color: #ffcc00 !important; }
+    .form-row { padding: 15px 0; border-bottom: 1px solid #333; }
+    label { font-weight: bold; width: 120px; display: inline-block; }
+    input[type="number"], select { background: #333; color: white; border: 1px solid #555; padding: 5px; }
+    .help { color: #888; font-size: 0.9em; margin-top: 5px; }
+    .submit-row { background: #222; border: 1px solid #444; margin-top: 20px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div>
+            <fieldset class="module aligned">
+                <h2>📂 商品一括アップロード</h2>
+                <div class="form-row">
+                    {{ form.category.label_tag }} {{ form.category }}
+                </div>
+                <div class="form-row">
+                    {{ form.price.label_tag }} {{ form.price }}
+                </div>
+                <div class="form-row">
+                    {{ form.images.label_tag }} {{ form.images }}
+                    <p class="help">{{ form.images.help_text }}</p>
+                </div>
+            </fieldset>
+            
+            <div class="submit-row">
+                <input type="submit" value="🚀 アップロードを開始する" class="default" style="background: #28a745; height: 40px; padding: 0 30px; font-weight: bold;">
+                <a href=".." class="closelink" style="color: #ccc; margin-left: 20px;">キャンセル</a>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

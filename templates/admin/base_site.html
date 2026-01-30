@@ -1,0 +1,66 @@
+{% extends "admin/base.html" %}
+{% block branding %}
+<style>
+    /* 1. メモ帳（pos_system.js内のCSS）を完全に上書きする設定 */
+
+    /* 画像：メモ帳の 80% 指定を 70% に抑えてボタンの隙間を作る */
+    .modal-content {
+        position: fixed !important;
+        top: 45% !important; /* 少し上にずらす */
+        left: 50% !important;
+        transform: translate(-50%, -50%) !important;
+        height: 70vh !important; /* メモ帳の80%を無視して70%に固定 */
+        max-width: 85vw !important;
+        border: 3px solid #fff !important;
+        border-radius: 0 !important; /* 指示通り角丸を削除 */
+        z-index: 20001 !important;
+        margin: 0 !important;
+        display: block !important;
+    }
+
+    /* カウンター：画像の上端に吸着 */
+    #modal-counter, .modal-counter {
+        position: fixed !important;
+        top: calc(45% - (70vh / 2)) !important;
+        left: 50% !important;
+        transform: translate(-50%, -100%) !important;
+        background: rgba(0,0,0,0.8) !important;
+        padding: 5px 20px !important;
+        border: 2px solid #fff !important;
+        border-bottom: none !important;
+        border-radius: 10px 10px 0 0 !important;
+        z-index: 20010 !important;
+    }
+
+    /* カート追加ボタン：画像の下端に強制吸着（左上への逃げを阻止） */
+    #modal-cart-btn, .modal-cart-action, [onclick*="cart"], button[style*="top: 0"] {
+        position: fixed !important;
+        top: calc(45% + (70vh / 2)) !important; /* 画像の下端位置を計算 */
+        left: 50% !important;
+        transform: translate(-50%, 0) !important;
+        width: calc(85vw + 6px) !important; /* 画像の幅に合わせる */
+        background: #28a745 !important; /* 緑色 */
+        color: white !important;
+        padding: 15px 0 !important;
+        font-size: 18px !important;
+        font-weight: 900 !important;
+        border: 3px solid #fff !important;
+        border-top: none !important;
+        border-radius: 0 0 15px 15px !important;
+        cursor: pointer !important;
+        text-align: center !important;
+        z-index: 20015 !important;
+        display: block !important;
+    }
+
+    /* 2. サイドメニュー配色復元 */
+    #nav-sidebar .app-catalog_a4 caption { background: #ff4d94 !important; }
+    #nav-sidebar .app-catalog_tcg caption { background: #2684ff !important; }
+    #nav-sidebar .app-catalog_admin_custom caption { background: #f0ad4e !important; }
+
+    /* 3. ナビゲーション */
+    .modal-nav { position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; }
+    .close-btn { position: fixed !important; top: 20px !important; right: 40px !important; z-index: 20030 !important; }
+</style>
+<h1 id="site-name"><a href="{% url 'admin:index' %}">kawaii女の子図鑑</a></h1>
+{% endblock %}

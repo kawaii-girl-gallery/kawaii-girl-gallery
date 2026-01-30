@@ -1,0 +1,21 @@
+/* admin.py から抽出した共通デザイン */
+@import url('https://fonts.googleapis.com/css2?family=Rounded+Mplus+1c:wght@700;900&display=swap');
+
+body, #header, #content, #nav-sidebar, h1, h2, h3, .module caption { 
+    font-family: 'Rounded Mplus 1c', 'Hiragino Sans', 'Meiryo', sans-serif !important; 
+}
+
+/* ヘッダーと背景の設定 */
+#header { 
+    background: #1a1c23 !important; 
+    border-bottom: 4px solid transparent !important;
+    border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important;
+}
+
+#branding h1 { 
+    font-weight: 900 !important;
+    background: linear-gradient(to right, #ff69b4, #ff85c0, #2684ff, #00ffcc, #f0ad4e) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+}
+/* その他、サイドメニューの色設定などもここへ移動 */
