@@ -1,85 +1,90 @@
+{% extends "admin/base.html" %}
+{% block branding %}
 <style>
-    /* 1. モーダル等の基本設定（維持） */
-    .modal-content { position: fixed !important; top: 45% !important; left: 50% !important; transform: translate(-50%, -50%) !important; height: 70vh !important; max-width: 85vw !important; border: 3px solid #fff !important; z-index: 20001 !important; }
+    /* 1. 基本・モーダル設定（維持） */
+    .modal-content { position: fixed !important; top: 45% !important; left: 50% !important; transform: translate(-50%, -50%) !important; height: 70vh !important; max-width: 85vw !important; border: 3px solid #fff !important; z-index: 20001 !important; display: block !important; }
     #modal-cart-btn { position: fixed !important; top: calc(45% + (70vh / 2)) !important; left: 50% !important; transform: translate(-50%, 0) !important; width: calc(85vw + 6px) !important; background: #28a745 !important; color: white !important; padding: 15px 0 !important; font-size: 18px !important; font-weight: 900 !important; border: 3px solid #fff !important; z-index: 20015 !important; }
 
-    /* 2. お客さんに見やすく、操作しやすいカードデザイン */
+    /* 2. スマホ用：エラーを防ぎつつ、見やすさを最大化した縦並び設定 */
     @media (max-width: 768px) {
-        .results table, .results tbody { display: block !important; width: 100% !important; }
+        .results, .results table, .results tbody, .results tr {
+            display: table !important;
+            width: 100% !important;
+        }
         .results thead { display: none !important; }
 
         .results tr {
-            display: flex !important;
-            flex-direction: column !important;
-            margin: 15px !important;
-            padding: 15px !important;
-            background: #1e1e1e !important;
-            border: 1px solid #444 !important;
-            border-radius: 12px !important;
-            position: relative !important;
+            border-bottom: 2px solid #444 !important;
+            background: #1a1a1a !important;
+            margin-bottom: 10px !important;
         }
 
-        /* 価格を最上部に配置 */
+        /* 価格（画像の上に表示されるように調整） */
         .field-price, .field-product_price {
-            display: block !important; color: #ffcc00 !important; font-size: 18px !important; font-weight: bold !important; margin-bottom: 10px !important; text-align: center !important;
+            display: table-caption !important; /* テーブルの上に持ってくる */
+            caption-side: top !important;
+            color: #ffcc00 !important;
+            font-size: 18px !important;
+            font-weight: bold !important;
+            padding: 10px 0 !important;
+            text-align: center !important;
         }
 
-        /* 中央エリア（チェックボックス + 画像 + タイマー） */
-        .main-content-row { display: flex !important; align-items: center !important; justify-content: space-between !important; width: 100% !important; }
+        /* チェックボックス（左端） */
+        .action-checkbox, .action-checkbox-column {
+            display: table-cell !important;
+            width: 45px !important;
+            padding: 10px 5px !important;
+            vertical-align: middle !important;
+        }
 
-        /* 左：チェックボックス */
-        .action-checkbox { display: block !important; width: 40px !important; transform: scale(1.5); }
+        /* 画像（中央） */
+        .field-image, .field-product_image, [class*="image"] {
+            display: table-cell !important;
+            text-align: center !important;
+            padding: 10px 5px !important;
+        }
+        .results img { max-width: 140px !important; height: auto !important; border: 1px solid #555 !important; }
 
-        /* 真ん中：画像 */
-        .field-image, .field-product_image, [class*="image"] { display: block !important; flex-grow: 1 !important; text-align: center !important; }
-        .results img { max-width: 140px !important; border-radius: 8px !important; border: 1px solid #555 !important; }
-
-        /* 右：タイマー */
+        /* タイマー（右端） */
         td[class*="timer"], td[class*="time"], .field-timer_display {
-            display: block !important; width: 60px !important; color: #00ffcc !important; font-size: 12px !important; text-align: center !important;
+            display: table-cell !important;
+            color: #00ffcc !important;
+            font-weight: bold !important;
+            font-size: 12px !important;
+            width: 70px !important;
+            text-align: right !important;
+            padding-right: 10px !important;
         }
 
-        /* 下：商品名（2行表示） */
+        /* 商品名（画像の下に大きな文字で配置） */
         .field-name, .field-product_name, td:nth-child(2) {
-            display: block !important; width: 100% !important; margin-top: 15px !important; padding-top: 10px !important;
-            border-top: 1px solid #333 !important; text-align: center !important; line-height: 1.5 !important;
+            display: table-row !important; /* 行として下に配置 */
+            text-align: center !important;
+            color: #fff !important;
+            font-size: 15px !important;
+            line-height: 1.4 !important;
         }
     }
 </style>
 
 <script>
-    function fixMobileLayout() {
-        const rows = document.querySelectorAll('#result_list tbody tr');
-        rows.forEach(row => {
-            if (row.querySelector('.main-content-row')) return;
-
-            // 商品名の整形（「同人」でカットし、空白で改行）
-            const nameCell = row.querySelector('.field-name, .field-product_name, td:nth-child(2)');
-            if (nameCell) {
-                let cleanText = nameCell.innerText.split("同人")[0].trim();
-                nameCell.innerHTML = `<strong>${cleanText.replace(/[\s　]+/g, '</strong><br><span style="color:#aaa;font-size:13px;">')}</span>`;
-            }
-
-            // 画像の左右に要素を配置するための箱を作る
-            const mainRow = document.createElement('div');
-            mainRow.className = 'main-content-row';
+    /* 読み込みエラーを避けるため、安全な文字置換のみ実行 */
+    function safeLayout() {
+        const nameCells = document.querySelectorAll('.field-name, .field-product_name, td:nth-child(2)');
+        nameCells.forEach(cell => {
+            if (cell.getAttribute('data-cleaned')) return;
             
-            const cb = row.querySelector('.action-checkbox');
-            const img = row.querySelector('.field-image, .field-product_image, [class*="image"]');
-            const timer = row.querySelector('td[class*="timer"], td[class*="time"], .field-timer_display');
-
-            if (cb && img && timer) {
-                // 要素を箱の中に移動
-                mainRow.appendChild(cb);
-                mainRow.appendChild(img);
-                mainRow.appendChild(timer);
-                // 元の名前セルの前に挿入
-                row.insertBefore(mainRow, nameCell);
-            }
+            let text = cell.innerText.split("同人")[0].trim();
+            // スペースを改行に変えて、キャラと原作を分ける
+            cell.innerHTML = `<strong>${text.replace(/[\s　]+/g, '</strong><br><span style="color:#aaa;font-size:12px;">')}</span>`;
+            cell.setAttribute('data-cleaned', 'true');
         });
     }
 
-    document.addEventListener("DOMContentLoaded", fixMobileLayout);
-    window.addEventListener("load", fixMobileLayout);
-    setInterval(fixMobileLayout, 1500);
+    document.addEventListener("DOMContentLoaded", safeLayout);
+    window.addEventListener("load", safeLayout);
 </script>
+
+<h1 id="site-name"><a href="{% url 'admin:index' %}">kawaii女の子図鑑</a></h1>
+{% endblock %}
