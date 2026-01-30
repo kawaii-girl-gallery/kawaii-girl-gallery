@@ -6,13 +6,13 @@
     /* 画像：メモ帳の 80% 指定を 70% に抑えてボタンの隙間を作る */
     .modal-content {
         position: fixed !important;
-        top: 45% !important; /* 少し上にずらす */
+        top: 45% !important;
         left: 50% !important;
         transform: translate(-50%, -50%) !important;
-        height: 70vh !important; /* メモ帳の80%を無視して70%に固定 */
+        height: 70vh !important;
         max-width: 85vw !important;
         border: 3px solid #fff !important;
-        border-radius: 0 !important; /* 指示通り角丸を削除 */
+        border-radius: 0 !important;
         z-index: 20001 !important;
         margin: 0 !important;
         display: block !important;
@@ -32,14 +32,14 @@
         z-index: 20010 !important;
     }
 
-    /* カート追加ボタン：画像の下端に強制吸着（左上への逃げを阻止） */
+    /* カート追加ボタン：画像の下端に強制吸着 */
     #modal-cart-btn, .modal-cart-action, [onclick*="cart"], button[style*="top: 0"] {
         position: fixed !important;
-        top: calc(45% + (70vh / 2)) !important; /* 画像の下端位置を計算 */
+        top: calc(45% + (70vh / 2)) !important;
         left: 50% !important;
         transform: translate(-50%, 0) !important;
-        width: calc(85vw + 6px) !important; /* 画像の幅に合わせる */
-        background: #28a745 !important; /* 緑色 */
+        width: calc(85vw + 6px) !important;
+        background: #28a745 !important;
         color: white !important;
         padding: 15px 0 !important;
         font-size: 18px !important;
@@ -62,32 +62,41 @@
     .modal-nav { position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; }
     .close-btn { position: fixed !important; top: 20px !important; right: 40px !important; z-index: 20030 !important; }
 
-    /* ✨ 4. スマホ用：横スクロール設定 (追加分) */
+    /* ✨ 4. スマホ用：管理画面の一覧のみを横スクロールにする */
     @media (max-width: 768px) {
-        /* 原作一覧やキャラ一覧の並びを横に強制する */
-        .results, .results table, .results tbody, .results tr {
-            display: flex !important;
-            flex-direction: row !important;
+        /* 一覧のテーブル全体を横スクロール可能にする */
+        .change-list .results {
             overflow-x: auto !important;
-            white-space: nowrap !important;
+            display: block !important;
             -webkit-overflow-scrolling: touch;
         }
 
-        /* 項目ごとの幅を調整して横に並べる */
-        .results tr > * {
-            flex: 0 0 200px !important; /* 横幅200pxで固定 */
+        /* テーブルの中身を強制的に横並びにする */
+        .change-list #result_list {
+            display: block !important;
+            white-space: nowrap !important;
+        }
+
+        .change-list #result_list tbody {
+            display: flex !important;
+            flex-direction: row !important;
+        }
+
+        /* 各行をカード風に並べる */
+        .change-list #result_list tr {
+            flex: 0 0 220px !important; /* カード幅220px */
             display: inline-block !important;
-            margin-right: 10px;
-            white-space: normal !important; /* 中の文字は折り返す */
+            margin-right: 12px !important;
+            border: 1px solid #444 !important;
+            padding: 8px !important;
+            background: #222 !important;
         }
-        
-        /* スクロールバーを見やすく */
-        .results::-webkit-scrollbar {
-            height: 6px;
-        }
-        .results::-webkit-scrollbar-thumb {
-            background: #666;
-            border-radius: 10px;
+
+        /* セル内の折り返しを許可 */
+        .change-list #result_list td, .change-list #result_list th {
+            display: block !important;
+            white-space: normal !important;
+            border: none !important;
         }
     }
 </style>
