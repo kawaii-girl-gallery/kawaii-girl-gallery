@@ -88,22 +88,24 @@
 </style>
 
 <script>
-    /* 商品名から「同人」より前の文字だけを残すスクリプト */
-    document.addEventListener("DOMContentLoaded", function() {
-        const rows = document.querySelectorAll('#result_list tbody tr');
-        rows.forEach(row => {
-            const nameCell = row.querySelector('.field-name, .field-product_name, td:nth-child(2)');
-            if (nameCell) {
-                const text = nameCell.innerText;
-                const keyword = "同人";
-                const index = text.indexOf(keyword);
-                if (index !== -1) {
-                    // 「同人」という文字の位置より前を抽出して上書き
-                    nameCell.innerText = text.substring(0, index).trim();
-                }
+    /* 強力版：すべての列から「同人」を探してその前でカットする */
+    function cleanProductNames() {
+        const cells = document.querySelectorAll('#result_list td');
+        cells.forEach(cell => {
+            const text = cell.innerText;
+            const keyword = "同人";
+            const index = text.indexOf(keyword);
+            
+            // 「同人」という文字が見つかり、かつそれが先頭でない場合
+            if (index > 0) {
+                cell.innerText = text.substring(0, index).trim();
             }
         });
-    });
+    }
+
+    // 読み込み時と、念のため0.5秒後にも実行（Djangoの遅延対策）
+    document.addEventListener("DOMContentLoaded", cleanProductNames);
+    setTimeout(cleanProductNames, 500);
 </script>
 
 <h1 id="site-name"><a href="{% url 'admin:index' %}">kawaii女の子図鑑</a></h1>
