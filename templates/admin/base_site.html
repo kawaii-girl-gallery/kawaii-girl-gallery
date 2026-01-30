@@ -61,6 +61,35 @@
     /* 3. ナビゲーション */
     .modal-nav { position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; }
     .close-btn { position: fixed !important; top: 20px !important; right: 40px !important; z-index: 20030 !important; }
+
+    /* ✨ 4. スマホ用：横スクロール設定 (追加分) */
+    @media (max-width: 768px) {
+        /* 原作一覧やキャラ一覧の並びを横に強制する */
+        .results, .results table, .results tbody, .results tr {
+            display: flex !important;
+            flex-direction: row !important;
+            overflow-x: auto !important;
+            white-space: nowrap !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        /* 項目ごとの幅を調整して横に並べる */
+        .results tr > * {
+            flex: 0 0 200px !important; /* 横幅200pxで固定 */
+            display: inline-block !important;
+            margin-right: 10px;
+            white-space: normal !important; /* 中の文字は折り返す */
+        }
+        
+        /* スクロールバーを見やすく */
+        .results::-webkit-scrollbar {
+            height: 6px;
+        }
+        .results::-webkit-scrollbar-thumb {
+            background: #666;
+            border-radius: 10px;
+        }
+    }
 </style>
 <h1 id="site-name"><a href="{% url 'admin:index' %}">kawaii女の子図鑑</a></h1>
 {% endblock %}
