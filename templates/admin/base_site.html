@@ -1,13 +1,12 @@
 {% extends "admin/base.html" %}
 {% block branding %}
 <style>
-    /* 1. 基本・モーダル設定（維持） */
+    /* 1. 基本設定（維持） */
     .modal-content { position: fixed !important; top: 45% !important; left: 50% !important; transform: translate(-50%, -50%) !important; height: 70vh !important; max-width: 85vw !important; border: 3px solid #fff !important; z-index: 20001 !important; display: block !important; }
     #modal-cart-btn { position: fixed !important; top: calc(45% + (70vh / 2)) !important; left: 50% !important; transform: translate(-50%, 0) !important; width: calc(85vw + 6px) !important; background: #28a745 !important; color: white !important; padding: 15px 0 !important; font-size: 18px !important; font-weight: 900 !important; border: 3px solid #fff !important; z-index: 20015 !important; }
 
-    /* 2. スマホ用：画像・CB・タイマー・名前を安全に配置 */
+    /* 2. スマホ用：順番指定（n-child）で確実に要素を表示させる */
     @media (max-width: 768px) {
-        /* テーブルをカード状に独立させる */
         .results, .results table, .results tbody, .results tr {
             display: block !important;
             width: 100% !important;
@@ -16,60 +15,50 @@
 
         .results tr {
             position: relative !important;
-            margin-bottom: 20px !important;
-            padding: 40px 10px 10px 10px !important; /* 上部に金額用の余白 */
+            margin-bottom: 25px !important;
+            padding: 50px 10px 60px 10px !important; /* 上:金額、下:名前の余白 */
             background: #1a1a1a !important;
             border: 1px solid #444 !important;
-            border-radius: 10px !important;
-            min-height: 200px !important;
-            display: flex !important;
-            flex-wrap: wrap !important;
-            justify-content: center !important;
+            min-height: 220px !important;
         }
 
-        /* ① 画像名の上に金額 (trの最上部に絶対配置) */
-        .field-price, .field-product_price {
-            position: absolute !important; top: 10px !important; left: 0 !important; width: 100% !important;
-            display: block !important; text-align: center !important; 
-            color: #ffcc00 !important; font-weight: bold !important; font-size: 18px !important;
-            border: none !important;
+        /* ❌ 不要なデフォルトのセル枠を消す */
+        .results td { border: none !important; background: none !important; }
+
+        /* ① チェックボックス（1番目の列） */
+        .results td:nth-child(1) {
+            position: absolute !important; left: 10px !important; top: 55% !important;
+            display: block !important; width: 40px !important; z-index: 10 !important;
+            transform: translateY(-50%) scale(1.3) !important;
         }
 
-        /* ② 画像の左にチェックボックス (中央左に浮かせる) */
-        .action-checkbox, .action-checkbox-column {
-            position: absolute !important; left: 10px !important; top: 50% !important;
+        /* ② 商品名（2番目の列）を画像の下へ */
+        .results td:nth-child(2) {
+            position: absolute !important; bottom: 10px !important; left: 0 !important;
+            display: block !important; width: 100% !important;
+            text-align: center !important; color: #fff !important; font-size: 15px !important;
+        }
+
+        /* ③ 画像（3番目または画像タグがある列） */
+        .results td:has(img), .results td img {
+            display: block !important; margin: 0 auto !important;
+            max-width: 160px !important; height: auto !important;
+        }
+
+        /* ④ 価格（金額）（4番目の列）を画像の上へ */
+        .results td:nth-child(4) {
+            position: absolute !important; top: 10px !important; left: 0 !important;
+            display: block !important; width: 100% !important;
+            text-align: center !important; color: #ffcc00 !important; font-weight: bold !important; font-size: 18px !important;
+        }
+
+        /* ⑤ タイマー（5番目以降の列）を画像の右へ */
+        .results td:nth-child(5), .results td:nth-child(6) {
+            position: absolute !important; right: 5px !important; top: 55% !important;
             transform: translateY(-50%) !important;
-            display: block !important; width: 40px !important; border: none !important;
-            z-index: 10 !important;
-        }
-
-        /* ③ 画像 (中央) */
-        .field-image, .field-product_image, [class*="image"] {
-            display: block !important; width: auto !important; order: 2 !important;
-            margin: 0 auto !important; border: none !important;
-        }
-        .results img { max-width: 150px !important; height: auto !important; border: 2px solid #fff !important; display: block !important; }
-
-        /* ④ 画像の右にタイマー (中央右に浮かせる) */
-        td[class*="timer"], td[class*="time"], .field-timer_display {
-            position: absolute !important; right: 5px !important; top: 50% !important;
-            transform: translateY(-50%) !important;
-            display: block !important; width: 65px !important; 
-            color: #00ffcc !important; font-weight: bold !important; font-size: 12px !important;
-            border: none !important; text-align: center !important;
-        }
-
-        /* ⑤ 画像の下に商品名 (最下部に配置) */
-        .field-name, .field-product_name, td:nth-child(2) {
-            display: block !important; width: 100% !important; order: 3 !important;
-            text-align: center !important; color: #fff !important; 
-            padding-top: 15px !important; border: none !important;
-            line-height: 1.4 !important; font-size: 14px !important;
-        }
-
-        /* その他の不要なセルは非表示 */
-        .results td:not(.action-checkbox):not([class*="image"]):not([class*="timer"]):not([class*="time"]):not(.field-timer_display):not(.field-price):not(.field-product_price):not(.field-name):not(.field-product_name) {
-            display: none !important;
+            display: block !important; width: 70px !important;
+            color: #00ffcc !important; font-weight: bold !important; font-size: 11px !important;
+            text-align: center !important;
         }
     }
 </style>
