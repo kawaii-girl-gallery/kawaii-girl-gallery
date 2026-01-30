@@ -57,22 +57,19 @@
     .modal-nav { position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; }
     .close-btn { position: fixed !important; top: 20px !important; right: 40px !important; z-index: 20030 !important; }
 
-    /* 4. スマホ表示の正常化（すべてのページを通常の縦並びテーブルに戻す） */
+    /* 4. スマホ表示の正常化 */
     @media (max-width: 768px) {
-        /* テーブル構造を標準に戻し、横並び設定を完全に消去 */
         .results, .results table, .results tbody, .results tr {
             display: table !important;
             width: 100% !important;
         }
 
-        /* 消えていたチェックボックスを確実に表示 */
         .action-checkbox, .action-checkbox-column {
             display: table-cell !important;
             width: 40px !important;
             visibility: visible !important;
         }
 
-        /* タイマーや文字が重ならないよう、余白と折り返しを調整 */
         .results td, .results th {
             display: table-cell !important;
             padding: 10px 5px !important;
@@ -82,13 +79,32 @@
             border-bottom: 1px solid #444 !important;
         }
 
-        /* タイマー表示を見やすく強調 */
         td[class*="timer"], td[class*="time"], .field-timer_display {
-            color: #ffcc00 !important; /* タイマーを見やすい黄色に */
+            color: #ffcc00 !important;
             font-weight: bold !important;
             min-width: 90px !important;
         }
     }
 </style>
+
+<script>
+    /* 商品名から「同人」より前の文字だけを残すスクリプト */
+    document.addEventListener("DOMContentLoaded", function() {
+        const rows = document.querySelectorAll('#result_list tbody tr');
+        rows.forEach(row => {
+            const nameCell = row.querySelector('.field-name, .field-product_name, td:nth-child(2)');
+            if (nameCell) {
+                const text = nameCell.innerText;
+                const keyword = "同人";
+                const index = text.indexOf(keyword);
+                if (index !== -1) {
+                    // 「同人」という文字の位置より前を抽出して上書き
+                    nameCell.innerText = text.substring(0, index).trim();
+                }
+            }
+        });
+    });
+</script>
+
 <h1 id="site-name"><a href="{% url 'admin:index' %}">kawaii女の子図鑑</a></h1>
 {% endblock %}
