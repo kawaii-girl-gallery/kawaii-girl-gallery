@@ -58,48 +58,67 @@
     .close-btn { position: fixed !important; top: 20px !important; right: 40px !important; z-index: 20030 !important; }
 
     /* ✨ 4. スマホ用：特定のページ（原作・キャラ）のみ横スクロールにする設定 */
+    /* 適用対象のクラスを増やして確実にヒットさせます */
     @media (max-width: 768px) {
-        /* 原作 (original / originalwork) と キャラ (character) の一覧ページのみ適用 */
-        .model-original .results, 
-        .model-originalwork .results, 
-        .model-character .results {
+        body.model-original .results, 
+        body.model-originalwork .results, 
+        body.model-character .results,
+        body.model-characterpedia .results {
             overflow-x: auto !important;
             display: block !important;
             -webkit-overflow-scrolling: touch;
+            padding-bottom: 20px !important;
         }
 
+        /* テーブル構造を横並びに強制 */
         .model-original #result_list,
         .model-originalwork #result_list,
-        .model-character #result_list {
-            display: block !important;
-            white-space: nowrap !important;
+        .model-character #result_list,
+        .model-characterpedia #result_list {
+            display: flex !important;
+            flex-direction: row !important;
+            width: max-content !important;
+            border: none !important;
         }
 
         .model-original #result_list tbody,
         .model-originalwork #result_list tbody,
-        .model-character #result_list tbody {
+        .model-character #result_list tbody,
+        .model-characterpedia #result_list tbody {
             display: flex !important;
             flex-direction: row !important;
         }
 
-        /* カード並びの設定 */
+        /* 項目（行）をカード化 */
         .model-original #result_list tr,
         .model-originalwork #result_list tr,
-        .model-character #result_list tr {
-            flex: 0 0 220px !important;
-            display: inline-block !important;
-            margin-right: 12px !important;
-            border: 1px solid #444 !important;
-            padding: 8px !important;
-            background: #222 !important;
+        .model-character #result_list tr,
+        .model-characterpedia #result_list tr {
+            flex: 0 0 240px !important; /* 横幅240pxに固定 */
+            display: flex !important;
+            flex-direction: column !important;
+            margin-right: 15px !important;
+            border: 2px solid #444 !important;
+            background: #1a1a1a !important;
+            padding: 10px !important;
+            border-radius: 10px !important;
         }
 
+        /* セル内の調整 */
         .model-original #result_list td,
         .model-originalwork #result_list td,
-        .model-character #result_list td {
+        .model-character #result_list td,
+        .model-characterpedia #result_list td {
             display: block !important;
             white-space: normal !important;
             border: none !important;
+            padding: 5px 0 !important;
+            text-align: center !important;
+        }
+        
+        /* 不要なヘッダーを隠す */
+        .model-original thead, .model-originalwork thead, .model-character thead {
+            display: none !important;
         }
     }
 </style>
