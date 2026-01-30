@@ -46,7 +46,6 @@
         cursor: pointer !important;
         text-align: center !important;
         z-index: 20015 !important;
-        display: block !important;
     }
 
     /* 2. サイドメニュー配色（維持） */
@@ -60,7 +59,8 @@
 
     /* ✨ 4. スマホ用：特定のページ（原作・キャラ）のみ横スクロールにする設定 */
     @media (max-width: 768px) {
-        /* 原作一覧 (.model-originalwork) と キャラクター一覧 (.model-character) だけを狙い撃ち */
+        /* 原作 (original / originalwork) と キャラ (character) の一覧ページのみ適用 */
+        .model-original .results, 
         .model-originalwork .results, 
         .model-character .results {
             overflow-x: auto !important;
@@ -68,19 +68,22 @@
             -webkit-overflow-scrolling: touch;
         }
 
+        .model-original #result_list,
         .model-originalwork #result_list,
         .model-character #result_list {
             display: block !important;
             white-space: nowrap !important;
         }
 
+        .model-original #result_list tbody,
         .model-originalwork #result_list tbody,
         .model-character #result_list tbody {
             display: flex !important;
             flex-direction: row !important;
         }
 
-        /* 横に並べるカードの設定 */
+        /* カード並びの設定 */
+        .model-original #result_list tr,
         .model-originalwork #result_list tr,
         .model-character #result_list tr {
             flex: 0 0 220px !important;
@@ -91,7 +94,7 @@
             background: #222 !important;
         }
 
-        /* 商品一覧（.model-item 等）はこれらが適用されないため、標準の「縦」が維持されます */
+        .model-original #result_list td,
         .model-originalwork #result_list td,
         .model-character #result_list td {
             display: block !important;
