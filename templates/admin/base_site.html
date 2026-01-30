@@ -57,67 +57,65 @@
     .modal-nav { position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; }
     .close-btn { position: fixed !important; top: 20px !important; right: 40px !important; z-index: 20030 !important; }
 
-    /* ✨ 4. スマホ用：特定のページ（原作・キャラ）のみ横スクロールにする設定 */
-    /* 適用対象のクラスを増やして確実にヒットさせます */
+    /* ✨ 4. スマホ用：特定のページ（原作・キャラ）のみ「絶対」に横スクロールにする設定 */
     @media (max-width: 768px) {
-        body.model-original .results, 
-        body.model-originalwork .results, 
-        body.model-character .results,
-        body.model-characterpedia .results {
+        /* 管理画面の一覧テーブル構造を強制破壊して横並びにする */
+        .change-list.model-original .results, 
+        .change-list.model-originalwork .results, 
+        .change-list.model-character .results,
+        .change-list.model-characterpedia .results {
             overflow-x: auto !important;
             display: block !important;
             -webkit-overflow-scrolling: touch;
-            padding-bottom: 20px !important;
+            padding: 15px !important;
         }
 
-        /* テーブル構造を横並びに強制 */
-        .model-original #result_list,
-        .model-originalwork #result_list,
-        .model-character #result_list,
-        .model-characterpedia #result_list {
+        /* 内部テーブルとtbodyを横一行に強制 */
+        .change-list.model-original #result_list,
+        .change-list.model-originalwork #result_list,
+        .change-list.model-character #result_list,
+        .change-list.model-characterpedia #result_list,
+        .change-list.model-original #result_list tbody,
+        .change-list.model-originalwork #result_list tbody,
+        .change-list.model-character #result_list tbody,
+        .change-list.model-characterpedia #result_list tbody {
             display: flex !important;
             flex-direction: row !important;
             width: max-content !important;
             border: none !important;
         }
 
-        .model-original #result_list tbody,
-        .model-originalwork #result_list tbody,
-        .model-character #result_list tbody,
-        .model-characterpedia #result_list tbody {
-            display: flex !important;
-            flex-direction: row !important;
-        }
-
-        /* 項目（行）をカード化 */
-        .model-original #result_list tr,
-        .model-originalwork #result_list tr,
-        .model-character #result_list tr,
-        .model-characterpedia #result_list tr {
-            flex: 0 0 240px !important; /* 横幅240pxに固定 */
+        /* 項目（tr）を1枚のカードに変身させる */
+        .change-list.model-original #result_list tr,
+        .change-list.model-originalwork #result_list tr,
+        .change-list.model-character #result_list tr,
+        .change-list.model-characterpedia #result_list tr {
+            flex: 0 0 260px !important; /* 横幅260pxで固定 */
             display: flex !important;
             flex-direction: column !important;
             margin-right: 15px !important;
-            border: 2px solid #444 !important;
+            border: 2px solid #555 !important;
             background: #1a1a1a !important;
-            padding: 10px !important;
-            border-radius: 10px !important;
+            padding: 12px !important;
+            border-radius: 15px !important;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5) !important;
         }
 
-        /* セル内の調整 */
-        .model-original #result_list td,
-        .model-originalwork #result_list td,
-        .model-character #result_list td,
-        .model-characterpedia #result_list td {
+        /* セル内の文字と画像の配置調整 */
+        .change-list.model-original #result_list td,
+        .change-list.model-character #result_list td {
             display: block !important;
-            white-space: normal !important;
+            width: 100% !important;
             border: none !important;
-            padding: 5px 0 !important;
+            white-space: normal !important;
+            padding: 6px 0 !important;
             text-align: center !important;
         }
-        
-        /* 不要なヘッダーを隠す */
-        .model-original thead, .model-originalwork thead, .model-character thead {
+
+        /* 不要なテーブルヘッダー（項目名）を非表示 */
+        .change-list.model-original thead, 
+        .change-list.model-originalwork thead, 
+        .change-list.model-character thead {
             display: none !important;
         }
     }
