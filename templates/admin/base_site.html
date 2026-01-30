@@ -1,120 +1,84 @@
 {% extends "admin/base.html" %}
 {% block branding %}
 <style>
-    /* 1. モーダル・基本設定（維持） */
-    .modal-content {
-        position: fixed !important;
-        top: 45% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
-        height: 70vh !important;
-        max-width: 85vw !important;
-        border: 3px solid #fff !important;
-        border-radius: 0 !important;
-        z-index: 20001 !important;
-        margin: 0 !important;
-        display: block !important;
-    }
-
-    #modal-counter, .modal-counter {
-        position: fixed !important;
-        top: calc(45% - (70vh / 2)) !important;
-        left: 50% !important;
-        transform: translate(-50%, -100%) !important;
-        background: rgba(0,0,0,0.8) !important;
-        padding: 5px 20px !important;
-        border: 2px solid #fff !important;
-        border-bottom: none !important;
-        border-radius: 10px 10px 0 0 !important;
-        z-index: 20010 !important;
-    }
-
-    #modal-cart-btn, .modal-cart-action, [onclick*="cart"], button[style*="top: 0"] {
-        position: fixed !important;
-        top: calc(45% + (70vh / 2)) !important;
-        left: 50% !important;
-        transform: translate(-50%, 0) !important;
-        width: calc(85vw + 6px) !important;
-        background: #28a745 !important;
-        color: white !important;
-        padding: 15px 0 !important;
-        font-size: 18px !important;
-        font-weight: 900 !important;
-        border: 3px solid #fff !important;
-        border-top: none !important;
-        border-radius: 0 0 15px 15px !important;
-        cursor: pointer !important;
-        text-align: center !important;
-        z-index: 20015 !important;
-    }
-
-    /* 2. サイドメニュー配色（維持） */
+    /* 1〜3. 基本設定（維持） */
+    .modal-content { position: fixed !important; top: 45% !important; left: 50% !important; transform: translate(-50%, -50%) !important; height: 70vh !important; max-width: 85vw !important; border: 3px solid #fff !important; z-index: 20001 !important; display: block !important; }
+    #modal-cart-btn { position: fixed !important; top: calc(45% + (70vh / 2)) !important; left: 50% !important; transform: translate(-50%, 0) !important; width: calc(85vw + 6px) !important; background: #28a745 !important; color: white !important; padding: 15px 0 !important; font-size: 18px !important; font-weight: 900 !important; border: 3px solid #fff !important; z-index: 20015 !important; }
     #nav-sidebar .app-catalog_a4 caption { background: #ff4d94 !important; }
     #nav-sidebar .app-catalog_tcg caption { background: #2684ff !important; }
-    #nav-sidebar .app-catalog_admin_custom caption { background: #f0ad4e !important; }
 
-    /* 3. ナビゲーション（維持） */
-    .modal-nav { position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; }
-    .close-btn { position: fixed !important; top: 20px !important; right: 40px !important; z-index: 20030 !important; }
-
-    /* 4. スマホ表示の正常化（縦並び・チェックボックス復活） */
+    /* 4. スマホ表示の調整 */
     @media (max-width: 768px) {
-        /* 全ページを確実にテーブル形式（縦並び）で表示 */
         .results, .results table, .results tbody, .results tr {
             display: table !important;
             width: 100% !important;
         }
-
-        /* 💡 チェックボックスを左端に強制復活 */
-        .action-checkbox, .action-checkbox-column, #result_list td:first-child, #result_list th:first-child {
+        .action-checkbox, .action-checkbox-column, #result_list td:first-child {
             display: table-cell !important;
             width: 45px !important;
-            min-width: 45px !important;
             visibility: visible !important;
-            opacity: 1 !important;
-            padding: 10px 5px !important;
+        }
+        /* 画像の下に配置する価格ラベルのスタイル */
+        .mobile-price-tag {
+            display: block !important;
+            background: #28a745 !important;
+            color: #fff !important;
+            font-weight: bold !important;
+            font-size: 12px !important;
             text-align: center !important;
+            padding: 2px 0 !important;
+            margin-top: 3px !important;
+            border-radius: 4px !important;
         }
-
-        .results td, .results th {
-            display: table-cell !important;
-            padding: 12px 5px !important;
-            vertical-align: middle !important;
-            white-space: normal !important;
-            border-bottom: 1px solid #444 !important;
+        /* 商品名セルの改行を有効にする */
+        .field-name, .field-product_name, td:nth-child(2) {
+            line-height: 1.3 !important;
+            white-space: pre-wrap !important;
         }
-
-        /* タイマー設定（黄色で強調） */
+        /* 元の価格列はスマホで隠す（画像下に移動するため） */
+        .field-price, .field-product_price {
+            display: none !important;
+        }
+        /* タイマー設定 */
         td[class*="timer"], td[class*="time"], .field-timer_display {
             color: #ffcc00 !important;
             font-weight: bold !important;
-            min-width: 90px !important;
+            min-width: 85px !important;
             text-align: right !important;
         }
     }
 </style>
 
 <script>
-    /* 縦・横共通ルール：商品名から「同人」以降を削除して短くする */
-    function cleanProductNames() {
-        // 商品名が含まれるセル（名前、画像、タイマー以外など）をスキャン
-        const cells = document.querySelectorAll('#result_list td');
-        cells.forEach(cell => {
-            const text = cell.innerText;
-            const keyword = "同人";
-            const index = text.indexOf(keyword);
-            
-            // 「同人」が見つかり、かつ商品名らしい長さがある場合のみ実行
-            if (index > 0) {
-                cell.innerText = text.substring(0, index).trim();
+    function updateLayout() {
+        const rows = document.querySelectorAll('#result_list tbody tr');
+        rows.forEach(row => {
+            // 1. 商品名を「同人」でカットし、空白で改行する
+            const nameCell = row.querySelector('.field-name, .field-product_name, td:nth-child(2)');
+            if (nameCell) {
+                let rawText = nameCell.innerText.split("同人")[0].trim();
+                // スペース（全角・半角）をすべて改行に変換
+                nameCell.innerHTML = rawText.replace(/[\s　]+/g, '<br>');
+            }
+
+            // 2. 価格を画像の下に移動する
+            const priceCell = row.querySelector('.field-price, .field-product_price');
+            const imageCell = row.querySelector('.field-image, .field-product_image');
+            if (priceCell && imageCell && !imageCell.querySelector('.mobile-price-tag')) {
+                const price = priceCell.innerText.trim();
+                if (price) {
+                    const tag = document.createElement('span');
+                    tag.className = 'mobile-price-tag';
+                    tag.innerText = price;
+                    imageCell.appendChild(tag);
+                }
             }
         });
     }
 
-    // 読み込み時と、遅延実行で確実に適用
-    document.addEventListener("DOMContentLoaded", cleanProductNames);
-    window.addEventListener("load", cleanProductNames);
-    setTimeout(cleanProductNames, 800);
+    document.addEventListener("DOMContentLoaded", updateLayout);
+    window.addEventListener("load", updateLayout);
+    setTimeout(updateLayout, 800);
 </script>
 
 <h1 id="site-name"><a href="{% url 'admin:index' %}">kawaii女の子図鑑</a></h1>
