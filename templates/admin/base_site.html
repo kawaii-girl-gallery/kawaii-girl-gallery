@@ -1,7 +1,7 @@
 {% extends "admin/base.html" %}
 {% block branding %}
 <style>
-    /* 1. モーダル・基本設定（正常な状態を維持） */
+    /* 1. モーダル・基本設定（維持） */
     .modal-content {
         position: fixed !important;
         top: 45% !important;
@@ -57,55 +57,64 @@
     .modal-nav { position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; }
     .close-btn { position: fixed !important; top: 20px !important; right: 40px !important; z-index: 20030 !important; }
 
-    /* 4. スマホ表示の正常化 */
+    /* 4. スマホ表示の正常化（縦並び・チェックボックス復活） */
     @media (max-width: 768px) {
+        /* 全ページを確実にテーブル形式（縦並び）で表示 */
         .results, .results table, .results tbody, .results tr {
             display: table !important;
             width: 100% !important;
         }
 
-        .action-checkbox, .action-checkbox-column {
+        /* 💡 チェックボックスを左端に強制復活 */
+        .action-checkbox, .action-checkbox-column, #result_list td:first-child, #result_list th:first-child {
             display: table-cell !important;
-            width: 40px !important;
+            width: 45px !important;
+            min-width: 45px !important;
             visibility: visible !important;
+            opacity: 1 !important;
+            padding: 10px 5px !important;
+            text-align: center !important;
         }
 
         .results td, .results th {
             display: table-cell !important;
-            padding: 10px 5px !important;
+            padding: 12px 5px !important;
             vertical-align: middle !important;
             white-space: normal !important;
-            word-break: break-all !important;
             border-bottom: 1px solid #444 !important;
         }
 
+        /* タイマー設定（黄色で強調） */
         td[class*="timer"], td[class*="time"], .field-timer_display {
             color: #ffcc00 !important;
             font-weight: bold !important;
             min-width: 90px !important;
+            text-align: right !important;
         }
     }
 </style>
 
 <script>
-    /* 強力版：すべての列から「同人」を探してその前でカットする */
+    /* 縦・横共通ルール：商品名から「同人」以降を削除して短くする */
     function cleanProductNames() {
+        // 商品名が含まれるセル（名前、画像、タイマー以外など）をスキャン
         const cells = document.querySelectorAll('#result_list td');
         cells.forEach(cell => {
             const text = cell.innerText;
             const keyword = "同人";
             const index = text.indexOf(keyword);
             
-            // 「同人」という文字が見つかり、かつそれが先頭でない場合
+            // 「同人」が見つかり、かつ商品名らしい長さがある場合のみ実行
             if (index > 0) {
                 cell.innerText = text.substring(0, index).trim();
             }
         });
     }
 
-    // 読み込み時と、念のため0.5秒後にも実行（Djangoの遅延対策）
+    // 読み込み時と、遅延実行で確実に適用
     document.addEventListener("DOMContentLoaded", cleanProductNames);
-    setTimeout(cleanProductNames, 500);
+    window.addEventListener("load", cleanProductNames);
+    setTimeout(cleanProductNames, 800);
 </script>
 
 <h1 id="site-name"><a href="{% url 'admin:index' %}">kawaii女の子図鑑</a></h1>
