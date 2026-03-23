@@ -8,15 +8,16 @@
     
     body { font-family: 'Rounded Mplus 1c', sans-serif !important; background: #121212; color: #eee; }
     
-    /* ✨ ヘッダー装飾：他ページと統一 */
     #header { 
         background: #1a1c23 !important; 
         padding: 15px 25px !important; 
         border-bottom: 4px solid transparent !important; 
-        border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important; 
+        border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 1000 !important;
     }
     
-    /* ✨ ロゴ部分にハートを追加し、グラデーションを適用 */
     #branding h1 { 
         font-size: 28px !important; 
         font-weight: 900 !important; 
@@ -28,11 +29,26 @@
         -webkit-text-fill-color: transparent !important; 
     }
     #branding h1::before { content: '💕'; -webkit-text-fill-color: initial !important; font-size: 26px; }
+    #branding h1 a { color: inherit !important; text-decoration: none !important; }
 
-    /* 💡 強制カラー適用設定：この class が付いている時に紫色を維持 */
+    /* パンくずの色を統一 */
+    .breadcrumbs { 
+        background: #1a1c23 !important; 
+        color: #ccc !important;
+        position: sticky !important;
+        top: 75px !important;
+        z-index: 999 !important;
+    }
+    .breadcrumbs a { color: #aaa !important; }
+
+    /* 左メニューの大カテゴリリンク無効化 */
+    #nav-sidebar .module caption a { pointer-events: none !important; cursor: default !important; text-decoration: none !important; color: inherit !important; }
+
+    /* 左メニューの一覧表を紫色に */
+    .app-catalog_pedia caption, .app-catalog_pedia h2 { background: #6f42c1 !important; color: #fff !important; }
+
     .pedia-mode h2, .pedia-mode h1 { background: #6f42c1 !important; color: #fff !important; padding: 10px; border-radius: 8px; }
 
-    /* コンテンツエリアの装飾 */
     .pedia-container { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 25px; padding: 20px; }
     .char-card { background: #1e1e1e; border-radius: 20px; overflow: hidden; border: 2px solid #333; transition: 0.3s; position: relative; }
     .char-card:hover { transform: translateY(-5px); border-color: #ff69b4; box-shadow: 0 10px 20px rgba(255,105,180,0.2); }
@@ -49,6 +65,11 @@
     .btn { text-decoration: none; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 900; color: #fff; background: #333; border: 1px solid #444; transition: 0.2s; }
     .btn:hover { background: #444; border-color: #007bff; }
 </style>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('app-catalog_pedia');
+    });
+</script>
 {% endblock %}
 
 {% block content %}
