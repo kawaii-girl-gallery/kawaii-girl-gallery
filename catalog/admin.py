@@ -44,6 +44,7 @@ COMMON_STYLE = """
     }
     .home-tile-bg img { width: 100%; height: 160px; object-fit: cover; border-radius: 0px; }
     #container { height: auto !important; overflow: visible !important; }
+    .results { overflow: visible !important; }
     #content { position: relative; z-index: 1; background: rgba(18, 18, 18, 0.85) !important; margin: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     #content-main { padding: 0 !important; }
     .changelist-form-container { padding: 0 !important; }
