@@ -434,6 +434,12 @@ class BaseProductAdmin(admin.ModelAdmin):
                 // changelist の直前に挿入
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
+                // ✨ スクロール前からwidthを明示的に設定してspacerを効かせる
+                setTimeout(function() {{
+                    var w = document.documentElement.clientWidth - topBar.getBoundingClientRect().left;
+                    topBar.style.width = w + "px";
+                    actionBar.style.width = w + "px";
+                }}, 100);
 
                 // ✨ 全要素の初期位置を記録
                 var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
