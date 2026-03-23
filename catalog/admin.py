@@ -403,6 +403,14 @@ function closePanel(id) {{
         </style>
         <script>
             document.addEventListener('DOMContentLoaded', function() {{
+                // ✨ アコーディオンパネルとタブをbodyに移動（messagelistから脱出）
+                var tabWrap = document.querySelector(".qs-tab-wrap");
+                var charPanel = document.getElementById("char-panel");
+                var workPanel = document.getElementById("work-panel");
+                if (tabWrap) document.body.appendChild(tabWrap);
+                if (charPanel) document.body.appendChild(charPanel);
+                if (workPanel) document.body.appendChild(workPanel);
+
                 var changelist = document.querySelector('#changelist');
                 if (!changelist) return;
 
@@ -528,6 +536,13 @@ function closePanel(id) {{
                 }}
 
                 changelist.parentNode.insertBefore(actionBar, changelist);
+                // ✨ タブとパネルをbodyに移動（fixed positionを効かせるため）
+                var tabWrap = document.querySelector(".qs-tab-wrap");
+                var charPanel = document.querySelector("#char-panel");
+                var workPanel = document.querySelector("#work-panel");
+                if (tabWrap) document.body.appendChild(tabWrap);
+                if (charPanel) document.body.appendChild(charPanel);
+                if (workPanel) document.body.appendChild(workPanel);
                 changelist.parentNode.insertBefore(topBar, actionBar);
             }});
         </script>"""
