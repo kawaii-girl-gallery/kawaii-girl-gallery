@@ -44,6 +44,8 @@ COMMON_STYLE = """
     }
     .home-tile-bg img { width: 100%; height: 160px; object-fit: cover; border-radius: 0px; }
     #container { height: auto !important; overflow: visible !important; }
+    nav { height: auto !important; }
+    .quick-search-sticky { background: #121212 !important; }
     .results { overflow: visible !important; }
     #content { position: relative; z-index: 1; background: rgba(18, 18, 18, 0.85) !important; margin: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     #content-main { padding: 0 !important; }
@@ -174,7 +176,7 @@ class BaseProductAdmin(admin.ModelAdmin):
             /* ✨ サイト上部〜テーブルヘッダーまで全固定 */
             #header {{ position: sticky !important; top: 0 !important; z-index: 500 !important; }}
             .breadcrumbs {{ position: sticky !important; top: 75px !important; z-index: 490 !important; background: #1a1c23 !important; }}
-            .quick-search-sticky {{ position: sticky !important; top: 116px !important; z-index: 480 !important; background: #121212 !important; padding: 4px 0; }}
+            .quick-search-sticky {{ position: sticky !important; top: 116px !important; z-index: 1000 !important; background: #121212 !important; padding: 4px 0; }}
             .smart-top-bar {{ position: sticky !important; top: 353px !important; z-index: 470 !important; }}
             .smart-action-bar {{ position: sticky !important; top: 404px !important; z-index: 460 !important; }}
             #result_list {{ overflow: visible !important; }}
