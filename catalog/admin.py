@@ -190,7 +190,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                 background: #1a1a1a;
                 padding: 10px 15px;
                 border-radius: 10px;
-                margin-bottom: 8px;
+                margin-bottom: 4px;
                 flex-wrap: nowrap;
             }}
             .smart-search-form {{ display: flex; align-items: center; gap: 6px; flex-shrink: 0; }}
@@ -440,7 +440,7 @@ class BaseProductAdmin(admin.ModelAdmin):
 # ✨ 「すべて表示」ボタンをタイトルの右上に配置
 def create_panel(pid, icon, title, color, btns, is_active, back_btn_html):
     chk = 'checked' if is_active else ''
-    return mark_safe(f'''<div style="margin-bottom: 8px; padding: 10px; background: #1a1a1a; border-radius: 12px; border: 2px solid {color}44;">
+    return mark_safe(f'''<div style="margin-bottom: 4px; padding: 10px; background: #1a1a1a; border-radius: 12px; border: 2px solid {color}44;">
 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
   <h3 style="margin:0; font-size:15px; display:flex; align-items:center; gap:10px; color:{color}; font-weight:900;">{icon} {title} {back_btn_html}</h3>
   <input type="checkbox" id="{pid}-toggle" class="expand-toggle" style="display: none;" {chk}>
