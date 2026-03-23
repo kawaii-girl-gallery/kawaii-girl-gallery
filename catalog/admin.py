@@ -470,12 +470,18 @@ class BaseProductAdmin(admin.ModelAdmin):
                 }}
 
                 // ✨ ヘッダー・パンくず・クイック検索分のスペーサーを挿入
-                var totalFixedH = headerH + breadcrumbsH;
+                var totalFixedH = headerH + breadcrumbsH + msgListH;
                 var spacerDiv = document.createElement("div");
                 spacerDiv.style.height = totalFixedH + "px";
                 spacerDiv.style.display = "block";
                 if (msgList && msgList.parentNode) {{
-                    msgList.parentNode.insertBefore(spacerDiv, msgList);
+                    // クイック検索の次の兄弟要素の前に挿入
+                    var nextSibling = msgList.nextSibling;
+                    if (nextSibling) {{
+                        msgList.parentNode.insertBefore(spacerDiv, nextSibling);
+                    }} else {{
+                        msgList.parentNode.appendChild(spacerDiv);
+                    }}
                 // 左メニューにmargin-topを追加
                 var navSidebar = document.querySelector("#nav-sidebar");
                 if (navSidebar) {{
