@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-import dj_database_url
 
 # プロジェクトのルートディレクトリ
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -55,12 +54,22 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 # --- データベース設定（PostgreSQL） ---
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.environ.get('DATABASE_URL'),
-        conn_max_age=600,
-    )
-}
+DATABASE_URL = os.environ.get('DATABASE_URL')
+if DATABASE_URL:
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=DATABASE_URL,
+            conn_max_age=600,
+        )
+    }
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # --- 言語・時刻設定 ---
 LANGUAGE_CODE = 'ja'
