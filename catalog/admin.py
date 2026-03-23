@@ -578,11 +578,8 @@ function closePanel(id) {{
                     var origToggle = document.querySelector('#action-toggle');
                     if (origToggle) {{
                         origToggle.checked = this.checked;
-                        origToggle.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                        origToggle.click();
                     }}
-                    document.querySelectorAll('.action-select').forEach(function(cb) {{
-                        cb.checked = selectAllChk.checked;
-                    }});
                 }});
                 var selectAllLabel = document.createElement('span');
                 selectAllLabel.textContent = '全選択';
