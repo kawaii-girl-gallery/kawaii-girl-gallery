@@ -477,6 +477,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                     el.style.top = top + "px";
                     el.style.left = contentLeft + "px";
                     el.style.right = "0";
+                    el.style.width = "auto";
                     el.style.zIndex = "600";
                     el.style.background = "#121212";
                     el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
@@ -487,6 +488,8 @@ class BaseProductAdmin(admin.ModelAdmin):
                     el.style.left = "";
                     el.style.right = "";
                     el.style.background = "";
+                    el.style.width = "";
+                    el.style.boxShadow = "";
                 }}
 
                 window.addEventListener("scroll", function() {{
@@ -503,7 +506,14 @@ class BaseProductAdmin(admin.ModelAdmin):
                         applyFixed(actionBar, headerH + breadcrumbsH + qH + topBarH); actionBar.style.zIndex = "502";
                         // 商品名行
                         var thead = document.querySelector("#result_list thead");
-                        if (thead) {{ applyFixed(thead, headerH + breadcrumbsH + qH + topBarH + actionBarH); thead.style.zIndex = "503"; }}
+                        if (thead) {{
+                            // th幅を固定前に記録
+                            var ths = thead.querySelectorAll("th");
+                            ths.forEach(function(th) {{ th.style.width = th.offsetWidth + "px"; }});
+                            applyFixed(thead, headerH + breadcrumbsH + qH + topBarH + actionBarH);
+                            thead.style.zIndex = "503";
+                            thead.style.width = (document.querySelector("#result_list").offsetWidth) + "px";
+                        }}
                     }} else {{
                         if (msgList) clearFixed(msgList);
                         clearFixed(topBar);
