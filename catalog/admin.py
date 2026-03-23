@@ -447,7 +447,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var topBarH = topBar.offsetHeight;
                 var actionBarH = actionBar.offsetHeight;
                 var contentLeft = sidebarW + 20;
-                var contentWidth = window.innerWidth - contentLeft;
+                var contentWidth = window.innerWidth - contentLeft - 17; // スクロールバー幅分を引く
                 var msgListOrigTop = msgList ? msgList.getBoundingClientRect().top + window.scrollY : 0;
 
                 // ✨ ヘッダー・パンくずを固定
