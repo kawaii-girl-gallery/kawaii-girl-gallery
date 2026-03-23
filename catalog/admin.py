@@ -470,7 +470,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                 }}
 
                 // ✨ ヘッダー・パンくず・クイック検索分のスペーサーを挿入
-                var totalFixedH = headerH + breadcrumbsH + msgListH;
+                var totalFixedH = headerH + breadcrumbsH;
                 var spacerDiv = document.createElement("div");
                 spacerDiv.style.height = totalFixedH + "px";
                 spacerDiv.style.display = "block";
@@ -526,7 +526,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                     el.style.position = "fixed";
                     el.style.top = top + "px";
                     el.style.left = contentLeft + "px";
-                    el.style.width = contentWidth + "px";
+                    el.style.width = (window.innerWidth - contentLeft) + "px";
                     el.style.zIndex = "600";
                     el.style.background = "#121212";
                     el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
