@@ -434,13 +434,6 @@ class BaseProductAdmin(admin.ModelAdmin):
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
                 // ✨ sticky top値をクイック検索の高さに合わせて動的設定
-                setTimeout(function() {{
-                    var qh = stickyWrap ? stickyWrap.offsetHeight : 0;
-                    topBar.style.top = qh + "px";
-                    actionBar.style.top = (qh + topBar.offsetHeight) + "px";
-                    var ths = document.querySelectorAll("#result_list thead th");
-                    ths.forEach(function(th) {{ th.style.top = (qh + topBar.offsetHeight + actionBar.offsetHeight) + "px"; }});
-                }}, 100);
                 // ✨ クイック検索パネルをstickyラッパーで包む
                 var msgList = document.querySelector(".messagelist");
                 if (msgList) {{
@@ -449,6 +442,14 @@ class BaseProductAdmin(admin.ModelAdmin):
                     msgList.parentNode.insertBefore(stickyWrap, msgList);
                     stickyWrap.appendChild(msgList);
                 }}
+                // ✨ sticky top値をクイック検索の高さに合わせて動的設定
+                setTimeout(function() {{
+                    var qh = stickyWrap ? stickyWrap.offsetHeight : 0;
+                    topBar.style.top = qh + "px";
+                    actionBar.style.top = (qh + topBar.offsetHeight) + "px";
+                    var ths = document.querySelectorAll("#result_list thead th");
+                    ths.forEach(function(th) {{ th.style.top = (qh + topBar.offsetHeight + actionBar.offsetHeight) + "px"; th.style.position = "sticky"; th.style.zIndex = "197"; th.style.background = "#1a1a1a"; }});
+                }}, 300);
             }});
         </script>"""
         
