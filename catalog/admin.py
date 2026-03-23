@@ -171,7 +171,7 @@ class BaseProductAdmin(admin.ModelAdmin):
             .object-tools {{ display: none !important; }}
             #changelist .actions {{ display: none !important; }}
             /* ✨ グレー行・区切り線をすべて非表示 */
-            #toolbar { display: none !important; }
+            #toolbar {{ display: none !important; }}
             #changelist .actions + p,
             #changelist > div:has(> .actions),
             .changelist-form-wrapper > div:empty,
