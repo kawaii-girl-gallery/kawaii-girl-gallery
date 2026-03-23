@@ -32,6 +32,8 @@
 
     /* 左メニューの大カテゴリリンク無効化 */
     #nav-sidebar .module caption a { pointer-events: none !important; cursor: default !important; text-decoration: none !important; color: inherit !important; }
+    #header #user-tools a:not([href*="logout"]) { display: none !important; }
+    #header #user-tools .divider { display: none !important; }
 
     /* カテゴリ色 */
     .app-catalog_pedia caption, .app-catalog_pedia h2 { background: #6f42c1 !important; color: #fff !important; }
