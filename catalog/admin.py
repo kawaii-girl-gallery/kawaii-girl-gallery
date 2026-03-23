@@ -55,6 +55,8 @@ COMMON_STYLE = """
     .dashboard #content { background: rgba(18, 18, 18, 0.7) !important; }
     #header #user-tools a:not([href*="logout"]) { display: none !important; }
     #header #user-tools .divider { display: none !important; }
+    #header #user-tools { font-size: 0 !important; }
+    #header #user-tools strong, #header #user-tools form, #header #user-tools a[href*="logout"] { font-size: 13px !important; }
     #nav-sidebar .module caption a, #content-main .module caption a.section { pointer-events: none !important; cursor: default !important; text-decoration: none !important; color: inherit !important; }
     .breadcrumbs a:not([href="/admin/"]) { pointer-events: none !important; cursor: default !important; text-decoration: none !important; color: #aaa !important; }
     .breadcrumbs a:not([href="/admin/"]) { pointer-events: none !important; cursor: default !important; text-decoration: none !important; color: #ccc !important; }
