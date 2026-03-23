@@ -437,12 +437,20 @@ class BaseProductAdmin(admin.ModelAdmin):
 
                 // ✨ 全要素の初期位置を記録
                 var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
+                // ✨ 全要素の初期位置・サイズを記録（固定前）
                 var msgList = document.querySelector(".messagelist");
-                var msgListOrigTop = msgList ? msgList.getBoundingClientRect().top + window.scrollY : 0;
                 var header = document.querySelector("#header");
                 var breadcrumbs = document.querySelector(".breadcrumbs");
+                var headerH = header ? header.offsetHeight : 75;
                 var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
-                // ✨ ヘッダーとパンくずを即座にfixedで固定
+                var msgListH = msgList ? msgList.offsetHeight : 0;
+                var topBarH = topBar.offsetHeight;
+                var actionBarH = actionBar.offsetHeight;
+                var contentLeft = topBar.getBoundingClientRect().left;
+                var contentWidth = topBar.offsetWidth;
+                var msgListOrigTop = msgList ? msgList.getBoundingClientRect().top + window.scrollY : 0;
+
+                // ✨ ヘッダー・パンくずを固定
                 if (header) {{
                     header.style.position = "fixed";
                     header.style.top = "0";
@@ -460,21 +468,31 @@ class BaseProductAdmin(admin.ModelAdmin):
                     breadcrumbs.style.width = "100%";
                     breadcrumbs.style.background = "#1a1c23";
                 }}
-                // ヘッダー・パンくず分のスペーサー
-                var headerSpacer = document.createElement("div");
-                headerSpacer.style.height = (headerH + breadcrumbsH) + "px";
-                document.body.insertBefore(headerSpacer, document.body.firstChild);
-                var msgListH = msgList ? msgList.offsetHeight : 0;
-                var topBarH = topBar.offsetHeight;
-                var actionBarH = actionBar.offsetHeight;
-                var contentLeft = topBar.getBoundingClientRect().left;
-                var contentWidth = topBar.offsetWidth;
+
+                // ✨ ヘッダー・パンくず・クイック検索分のスペーサーを挿入
+                var totalFixedH = headerH + breadcrumbsH + msgListH;
+                var spacerDiv = document.createElement("div");
+                spacerDiv.style.height = totalFixedH + "px";
+                spacerDiv.style.display = "block";
+                if (msgList && msgList.parentNode) {{
+                    msgList.parentNode.insertBefore(spacerDiv, msgList);
+                }}
+
+                // ✨ クイック検索も即座に固定
+                if (msgList) {{
+                    msgList.style.position = "fixed";
+                    msgList.style.top = (headerH + breadcrumbsH) + "px";
+                    msgList.style.left = contentLeft + "px";
+                    msgList.style.width = contentWidth + "px";
+                    msgList.style.zIndex = "500";
+                    msgList.style.background = "#121212";
+                    msgList.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
+                }}
 
                 function applyFixed(el, top) {{
                     el.style.position = "fixed";
                     el.style.top = top + "px";
                     el.style.left = contentLeft + "px";
-                    el.style.right = "0";
                     el.style.width = contentWidth + "px";
                     el.style.zIndex = "600";
                     el.style.background = "#121212";
@@ -485,35 +503,27 @@ class BaseProductAdmin(admin.ModelAdmin):
                     el.style.top = "";
                     el.style.left = "";
                     el.style.right = "";
-                    el.style.background = "";
                     el.style.width = "";
+                    el.style.background = "";
                     el.style.boxShadow = "";
                 }}
 
+                // ✨ スクロールで検索窓・操作行・商品名行を固定
+                var threshold = msgListOrigTop - headerH - breadcrumbsH;
                 window.addEventListener("scroll", function() {{
                     var scrollY = window.scrollY;
-                    var threshold = msgListOrigTop - headerH - breadcrumbsH;
-
                     if (scrollY > threshold) {{
-                        // クイック検索
-                        if (msgList) {{ applyFixed(msgList, headerH + breadcrumbsH); msgList.style.background = "#121212"; msgList.style.zIndex = "500"; }}
-                        // 検索窓行
-                        var qH = msgListH;
-                        applyFixed(topBar, headerH + breadcrumbsH + qH); topBar.style.zIndex = "501";
-                        // 操作行
-                        applyFixed(actionBar, headerH + breadcrumbsH + qH + topBarH); actionBar.style.zIndex = "502";
-                        // 商品名行
+                        applyFixed(topBar, headerH + breadcrumbsH + msgListH); topBar.style.zIndex = "501";
+                        applyFixed(actionBar, headerH + breadcrumbsH + msgListH + topBarH); actionBar.style.zIndex = "502";
                         var thead = document.querySelector("#result_list thead");
                         if (thead) {{
-                            // th幅を固定前に記録
                             var ths = thead.querySelectorAll("th");
                             ths.forEach(function(th) {{ th.style.width = th.offsetWidth + "px"; }});
-                            applyFixed(thead, headerH + breadcrumbsH + qH + topBarH + actionBarH);
+                            applyFixed(thead, headerH + breadcrumbsH + msgListH + topBarH + actionBarH);
                             thead.style.zIndex = "503";
-                            thead.style.width = (document.querySelector("#result_list").offsetWidth) + "px";
+                            thead.style.width = document.querySelector("#result_list").offsetWidth + "px";
                         }}
                     }} else {{
-                        if (msgList) clearFixed(msgList);
                         clearFixed(topBar);
                         clearFixed(actionBar);
                         var thead = document.querySelector("#result_list thead");
