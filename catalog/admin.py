@@ -45,6 +45,8 @@ COMMON_STYLE = """
     .home-tile-bg img { width: 100%; height: 160px; object-fit: cover; border-radius: 0px; }
     #container { height: auto !important; overflow: visible !important; }
     nav { height: auto !important; }
+    #header { position: sticky !important; top: 0 !important; z-index: 2000 !important; }
+    .breadcrumbs { position: sticky !important; top: 75px !important; z-index: 1900 !important; background: #1a1c23 !important; }
     .quick-search-sticky { background: #121212 !important; }
     .results { overflow: visible !important; }
     #content { position: relative; z-index: 1; background: rgba(18, 18, 18, 0.85) !important; margin: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
@@ -174,7 +176,7 @@ class BaseProductAdmin(admin.ModelAdmin):
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
 
             /* ✨ 固定ヘッダーラッパー */
-            .sticky-wrapper {{ position: fixed !important; top: 0 !important; left: 260px !important; right: 0 !important; z-index: 1000 !important; background: #121212 !important; padding: 10px 15px !important; box-shadow: 0 2px 10px rgba(0,0,0,0.8) !important; }}
+            .sticky-wrapper {{ position: fixed !important; top: 0 !important; left: 276px !important; right: 0 !important; z-index: 1000 !important; background: #121212 !important; padding: 10px 15px !important; box-shadow: 0 2px 10px rgba(0,0,0,0.8) !important; }}
             .sticky-wrapper .messagelist {{ margin: 0 !important; }}
             .sticky-spacer {{ display: block; }}
             /* 商品一覧タイトルを非表示 */
