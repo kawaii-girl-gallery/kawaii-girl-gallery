@@ -23,7 +23,7 @@ COMMON_STYLE = """
     body, #header, #content, #nav-sidebar, h1, h2, h3, .module caption { font-family: 'Rounded Mplus 1c', sans-serif !important; }
     
     .messagelist { background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }
-    .messagelist li { background: none !important; border: none !important; padding: 0 !important; color: transparent !important; margin-bottom: 10px !important; }
+    .messagelist li { background: none !important; border: none !important; padding: 0 !important; color: transparent !important; margin-bottom: 0 !important; }
     .messagelist li > div { color: initial !important; }
 
     #header { background: #1a1c23 !important; padding: 15px 25px !important; border-bottom: 4px solid transparent !important; border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important; position: relative; z-index: 10; }
@@ -530,7 +530,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                     var lis = msgList.querySelectorAll("li");
                     lis.forEach(function(li) {{
                         li.style.background = "#121212";
-                        li.style.marginBottom = "0";
+                        li.style.marginBottom = "0px";
                         li.style.paddingBottom = "0";
                         var innerDiv = li.querySelector("div");
                         if (innerDiv) innerDiv.style.background = "#121212";
