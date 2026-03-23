@@ -43,7 +43,10 @@ COMMON_STYLE = """
         gap: 0px; padding: 0; z-index: 0; opacity: 0.22; pointer-events: none; overflow: hidden; filter: blur(0.5px);
     }
     .home-tile-bg img { width: 100%; height: 160px; object-fit: cover; border-radius: 0px; }
-    #container { height: auto !important; overflow: visible !important; }
+    #container { height: 100vh !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
+    #main { flex: 1 !important; overflow: hidden !important; display: flex !important; }
+    #nav-sidebar { overflow-y: auto !important; flex-shrink: 0 !important; }
+    #content-main { overflow-y: auto !important; flex: 1 !important; height: 100% !important; }
     .results { overflow: visible !important; }
     #content { position: relative; z-index: 1; background: rgba(18, 18, 18, 0.85) !important; margin: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     #content-main { padding: 0 !important; }
@@ -169,6 +172,8 @@ class BaseProductAdmin(admin.ModelAdmin):
         is_admin_flag = 'true' if self.has_change_permission(request) else 'false'
         custom_css = f"""<style>
             #result_list thead th, #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
+            #result_list thead {{ position: sticky !important; top: 110px !important; z-index: 98 !important; }}
+            #result_list thead th {{ background: #1a1a1a !important; }}
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
 
             /* ✨ 固定ヘッダーラッパー */
@@ -200,6 +205,9 @@ class BaseProductAdmin(admin.ModelAdmin):
                 padding: 10px 15px;
                 border-radius: 10px;
                 margin-bottom: 4px;
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 100 !important;
                 flex-wrap: nowrap;
                 width: 100%;
                 box-sizing: border-box;
@@ -234,6 +242,9 @@ class BaseProductAdmin(admin.ModelAdmin):
 
             /* ✨ 行2：操作セレクト + Run + 選択数 */
             .smart-action-bar {{
+                position: sticky !important;
+                top: 55px !important;
+                z-index: 99 !important;
                 display: flex;
                 align-items: center;
                 gap: 10px;
