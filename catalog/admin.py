@@ -336,9 +336,6 @@ function closePanel(id) {{
 
             /* 検索窓行 */
             .smart-top-bar {{
-                position: sticky !important;
-                top: 0 !important;
-                z-index: 100 !important;
                 display: flex;
                 align-items: center;
                 gap: 10px;
@@ -376,9 +373,6 @@ function closePanel(id) {{
 
             /* 操作行 */
             .smart-action-bar {{
-                position: sticky !important;
-                top: 53px !important;
-                z-index: 99 !important;
                 display: flex;
                 align-items: center;
                 gap: 10px;
