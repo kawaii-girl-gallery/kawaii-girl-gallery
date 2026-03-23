@@ -442,6 +442,23 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var msgList = document.querySelector(".messagelist");
                 var msgListOrigTop = msgList ? msgList.getBoundingClientRect().top + window.scrollY : 0;
                 var header = document.querySelector("#header");
+                // ✨ 左メニューを固定
+                var sidebar = document.querySelector("#nav-sidebar");
+                if (sidebar) {{
+                    var sidebarW = sidebar.offsetWidth;
+                    sidebar.style.position = "fixed";
+                    sidebar.style.top = "0";
+                    sidebar.style.left = "0";
+                    sidebar.style.width = sidebarW + "px";
+                    sidebar.style.height = "100vh";
+                    sidebar.style.overflowY = "auto";
+                    sidebar.style.zIndex = "1500";
+                    // サイドバー分のスペーサー
+                    var sidebarSpacer = document.createElement("div");
+                    sidebarSpacer.style.width = sidebarW + "px";
+                    sidebarSpacer.style.flexShrink = "0";
+                    sidebar.parentNode.insertBefore(sidebarSpacer, sidebar);
+                }}
                 var headerH = header ? header.offsetHeight : 75;
                 var breadcrumbs = document.querySelector(".breadcrumbs");
                 var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
@@ -477,7 +494,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                     el.style.top = top + "px";
                     el.style.left = contentLeft + "px";
                     el.style.right = "0";
-                    el.style.width = "auto";
+                    el.style.width = (window.innerWidth - contentLeft) + "px";
                     el.style.zIndex = "600";
                     el.style.background = "#121212";
                     el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
