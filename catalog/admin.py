@@ -153,7 +153,7 @@ class BaseProductAdmin(admin.ModelAdmin):
         
         def make_btns(data, color):
             sorted_data = sorted(data.items(), key=lambda x: x[0])
-            return "".join([format_html('<a href="?q={}" style="text-decoration:none; display:inline-block; margin-bottom:5px;"><div style="background:#222; border:2px solid {}; padding:5px 12px; border-radius:20px; color:#fff; font-size:12px; font-weight:800;">{} <span style="color:#00ffcc;">({})</span></div></a>', n, "#00ffcc" if current_query == n else color, n, c) for n, c in sorted_data])
+            return "".join([format_html('<a href="?q={}" style="text-decoration:none; display:inline-block; margin-bottom:5px;"><div style="background:#222; border:2px solid {}; padding:3px 9px; border-radius:20px; color:#fff; font-size:10px; font-weight:800;">{} <span style="color:#00ffcc;">({})</span></div></a>', n, "#00ffcc" if current_query == n else color, n, c) for n, c in sorted_data])
 
         char_p = create_panel("char", "👤", "キャラクタークイック検索", "#ff69b4", make_btns(char_counts, "#ff69b4"), (current_query in char_counts), back_btn_html)
         work_p = create_panel("work", "🎬", "原作作品クイック検索", "#007bff", make_btns(work_counts, "#007bff"), (current_query in work_counts), "")
@@ -440,7 +440,7 @@ class BaseProductAdmin(admin.ModelAdmin):
 # ✨ 「すべて表示」ボタンをタイトルの右上に配置
 def create_panel(pid, icon, title, color, btns, is_active, back_btn_html):
     chk = 'checked' if is_active else ''
-    return mark_safe(f'''<div style="margin-bottom: 15px; padding: 15px; background: #1a1a1a; border-radius: 12px; border: 2px solid {color}44;">
+    return mark_safe(f'''<div style="margin-bottom: 8px; padding: 10px; background: #1a1a1a; border-radius: 12px; border: 2px solid {color}44;">
 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
   <h3 style="margin:0; font-size:15px; display:flex; align-items:center; gap:10px; color:{color}; font-weight:900;">{icon} {title} {back_btn_html}</h3>
   <input type="checkbox" id="{pid}-toggle" class="expand-toggle" style="display: none;" {chk}>
