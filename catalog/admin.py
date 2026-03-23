@@ -352,9 +352,9 @@ function closePanel(id) {{
             .smart-top-bar {{
                 display: flex;
                 align-items: center;
-                gap: 10px;
+                gap: 6px;
                 background: #1a1a1a;
-                padding: 10px 15px;
+                padding: 8px 12px;
                 border-radius: 10px;
                 margin-bottom: 4px;
                 flex-wrap: nowrap;
@@ -363,24 +363,24 @@ function closePanel(id) {{
             .smart-search-form {{ display: flex; align-items: center; gap: 6px; flex-shrink: 0; }}
             .smart-search-form input[type=text] {{
                 background: #2a2a2a; border: 1px solid #555; color: #fff;
-                border-radius: 8px; padding: 5px 12px; font-size: 13px; font-weight: 700; width: 140px;
+                border-radius: 8px; padding: 5px 8px; font-size: 12px; font-weight: 700; width: 100px;
             }}
             .smart-search-form input[type=submit] {{
                 background: #333; border: 1px solid #555; color: #fff;
                 border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 900; cursor: pointer;
             }}
-            .smart-paginator {{ display: flex; align-items: center; gap: 4px; flex-shrink: 1; flex-wrap: wrap; }}
+            .smart-paginator {{ display: flex; align-items: center; gap: 2px; flex-shrink: 1; flex-wrap: nowrap; }}
             .smart-paginator a, .smart-paginator span.this-page {{
                 display: inline-flex !important; align-items: center; justify-content: center;
-                min-width: 28px; height: 28px; padding: 0 6px;
-                background: #2a2a2a; border: 1px solid #444; border-radius: 6px;
-                color: #00ffcc !important; font-weight: 900; font-size: 13px; text-decoration: none;
+                min-width: 22px; height: 22px; padding: 0 4px;
+                background: #2a2a2a; border: 1px solid #444; border-radius: 4px;
+                color: #00ffcc !important; font-weight: 900; font-size: 11px; text-decoration: none;
             }}
             .smart-paginator span.this-page {{
                 background: #007bff; border-color: #007bff; color: #fff !important;
             }}
             .smart-paginator .total-count {{
-                color: #aaa; font-size: 12px; font-weight: 700; white-space: nowrap; margin-left: 4px;
+                color: #aaa; font-size: 11px; font-weight: 700; white-space: nowrap; margin-left: 4px;
             }}
             .smart-top-bar-spacer {{ flex: 1; }}
             .smart-btn-group {{ display: flex; align-items: center; gap: 8px; flex-shrink: 0; }}
