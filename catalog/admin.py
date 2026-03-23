@@ -45,7 +45,8 @@ COMMON_STYLE = """
     .home-tile-bg img { width: 100%; height: 160px; object-fit: cover; border-radius: 0px; }
     #content { position: relative; z-index: 1; background: rgba(18, 18, 18, 0.85) !important; margin: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     #content-main { padding: 0 !important; }
-    #changelist-form { padding: 0 10px !important; }
+    #changelist-form { padding: 0 !important; }
+    #content-main > * { padding-left: 0 !important; padding-right: 0 !important; }
     #changelist { margin: 0 !important; }
     .dashboard #content { background: rgba(18, 18, 18, 0.7) !important; }
 </style>
