@@ -26,7 +26,7 @@ COMMON_STYLE = """
     .messagelist li { background: none !important; border: none !important; padding: 0 !important; color: transparent !important; margin-bottom: 0 !important; }
     .messagelist li > div { color: initial !important; }
 
-    #header { background: #1a1c23 !important; padding: 15px 25px !important; border-bottom: 4px solid transparent !important; border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important; position: relative; z-index: 10; }
+    #header { background: #1a1c23 !important; padding: 15px 25px !important; border-bottom: 4px solid transparent !important; border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important; position: sticky !important; top: 0 !important; z-index: 1000 !important; }
     #branding h1 { font-size: 28px !important; font-weight: 900 !important; display: flex !important; align-items: center !important; gap: 12px !important; background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; }
     #branding h1::before { content: '💕'; -webkit-text-fill-color: initial !important; font-size: 26px; }
     #branding h1 a { color: inherit !important; text-decoration: none !important; }
@@ -53,6 +53,7 @@ COMMON_STYLE = """
     #content-main > * { padding-left: 0 !important; padding-right: 0 !important; }
     #changelist { margin: 0 !important; }
     .dashboard #content { background: rgba(18, 18, 18, 0.7) !important; }
+    .breadcrumbs { position: sticky !important; top: 75px !important; z-index: 999 !important; background: #1a1c23 !important; }
 </style>
 """
 
@@ -310,6 +311,7 @@ function closePanel(id) {{
 
         custom_css = f"""<style>
             #result_list thead th, #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
+            #result_list thead {{ position: sticky !important; top: 101px !important; z-index: 98 !important; }}
             #result_list thead th {{ background: #1a1a1a !important; }}
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
 
@@ -333,6 +335,9 @@ function closePanel(id) {{
 
             /* 検索窓行 */
             .smart-top-bar {{
+                position: sticky !important;
+                top: 0 !important;
+                z-index: 100 !important;
                 display: flex;
                 align-items: center;
                 gap: 10px;
@@ -370,6 +375,9 @@ function closePanel(id) {{
 
             /* 操作行 */
             .smart-action-bar {{
+                position: sticky !important;
+                top: 53px !important;
+                z-index: 99 !important;
                 display: flex;
                 align-items: center;
                 gap: 10px;
