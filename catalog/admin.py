@@ -568,14 +568,28 @@ function closePanel(id) {{
                 if (tabWrap) document.body.appendChild(tabWrap);
                 if (charPanel) document.body.appendChild(charPanel);
                 if (workPanel) document.body.appendChild(workPanel);
-                // ✨ スクロール前にth幅を記録
-                var theadForClone = document.querySelector("#result_list thead");
-                var thWidths = [];
-                if (theadForClone) {{
-                    theadForClone.querySelectorAll("th").forEach(function(th) {{
-                        thWidths.push(th.getBoundingClientRect().width);
+                // ✨ 全選択チェックボックスをactionBarに追加
+                var selectAllWrap = document.createElement('label');
+                selectAllWrap.style.cssText = 'display:flex; align-items:center; gap:6px; cursor:pointer; color:#aaa; font-size:12px; font-weight:900;';
+                var selectAllChk = document.createElement('input');
+                selectAllChk.type = 'checkbox';
+                selectAllChk.style.cssText = 'width:16px; height:16px; cursor:pointer; accent-color:#007bff;';
+                selectAllChk.addEventListener('change', function() {{
+                    var origToggle = document.querySelector('#action-toggle');
+                    if (origToggle) {{
+                        origToggle.checked = this.checked;
+                        origToggle.dispatchEvent(new Event('change', {{ bubbles: true }}));
+                    }}
+                    document.querySelectorAll('.action-select').forEach(function(cb) {{
+                        cb.checked = selectAllChk.checked;
                     }});
-                }}
+                }});
+                var selectAllLabel = document.createElement('span');
+                selectAllLabel.textContent = '全選択';
+                selectAllWrap.appendChild(selectAllChk);
+                selectAllWrap.appendChild(selectAllLabel);
+                actionBar.insertBefore(selectAllWrap, actionBar.firstChild);
+
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
                 // DOMに挿入後に位置を計算
@@ -603,22 +617,7 @@ function closePanel(id) {{
                         actionBar.style.width = adjustedW + "px";
                         actionBar.style.zIndex = "599";
                         actionBar.style.background = "#1a1a1a";
-                        // 商品名行をコピーして固定表示
-                        var thead = document.querySelector("#result_list thead");
-                        var resultTable = document.querySelector("#result_list");
-                        if (thead && resultTable && !document.getElementById("fixed-thead-clone")) {{
-                            var cloneTable = document.createElement("table");
-                            cloneTable.id = "fixed-thead-clone";
-                            cloneTable.style.cssText = "position:fixed; top:" + (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px; left:" + resultTable.getBoundingClientRect().left + "px; width:" + resultTable.offsetWidth + "px; z-index:598; background:#1a1a1a; table-layout:auto; border-collapse:collapse;";
-                            var cloneThead = thead.cloneNode(true);
-                            var origThs = thead.querySelectorAll("th");
-                            var cloneThs = cloneThead.querySelectorAll("th");
-                            origThs.forEach(function(th, i) {{
-                                if (cloneThs[i] && thWidths[i]) {{ cloneThs[i].style.width = thWidths[i] + "px"; cloneThs[i].style.boxSizing = "border-box"; }}
-                            }});
-                            cloneTable.appendChild(cloneThead);
-                            document.body.appendChild(cloneTable);
-                        }}
+
                     }} else {{
                         topBar.style.position = "";
                         topBar.style.top = "";
@@ -630,18 +629,7 @@ function closePanel(id) {{
                         actionBar.style.left = "";
                         actionBar.style.width = "";
                         actionBar.style.background = "";
-                        var thead = document.querySelector("#result_list thead");
-                        if (thead) {{
-                            thead.style.position = "";
-                            thead.style.top = "";
-                            thead.style.left = "";
-                            thead.style.width = "";
-                            thead.style.background = "";
-                            var clone = document.getElementById("fixed-thead-clone");
-                            if (clone) clone.parentNode.removeChild(clone);
-                            var tbody = document.querySelector("#result_list tbody");
-                            if (tbody) tbody.style.marginTop = "";
-                        }}
+
                     }}
                 }});
             }});
