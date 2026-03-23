@@ -50,7 +50,7 @@ def process_product_image(img_path):
         s_l, s_t, s_r, s_b = draw.textbbox((0, 0), text_s, font=font_sample)
         sx = (img.width - (s_r - s_l)) / 2 - s_l
         sy = (img.height - (s_b - s_t)) / 2 - s_t
-        draw.text((sx, sy), text_s, fill=(255, 255, 255, 120), font=font_sample)
+        draw.text((sx, sy), text_s, fill=(255, 255, 255, 160), font=font_sample)
 
         # スタンプ（右下）
         text_k = "kawaii女の子図鑑"
