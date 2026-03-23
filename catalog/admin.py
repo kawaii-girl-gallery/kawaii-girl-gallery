@@ -484,8 +484,9 @@ class BaseProductAdmin(admin.ModelAdmin):
                     }}
                 // 左メニューにmargin-topを追加
                 var navSidebar = document.querySelector("#nav-sidebar");
+                var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
                 if (navSidebar) {{
-                    var sidebarW = navSidebar.offsetWidth;
+
                     var sidebarTop = navSidebar.getBoundingClientRect().top;
                     navSidebar.style.position = "fixed";
                     navSidebar.style.top = (headerH + breadcrumbsH) + "px";
@@ -511,8 +512,9 @@ class BaseProductAdmin(admin.ModelAdmin):
                 if (msgList) {{
                     msgList.style.position = "fixed";
                     msgList.style.top = (headerH + breadcrumbsH) + "px";
-                    msgList.style.left = contentLeft + "px";
-                    msgList.style.width = (window.innerWidth - contentLeft) + "px";
+                    var msgLeft = sidebarW + 10;
+                    msgList.style.left = msgLeft + "px";
+                    msgList.style.width = (window.innerWidth - msgLeft) + "px";
                     msgList.style.zIndex = "500";
                     msgList.style.background = "#121212";
                     msgList.style.padding = "0";
