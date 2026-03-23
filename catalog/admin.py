@@ -575,24 +575,27 @@ function closePanel(id) {{
                 if (tabWrap) document.body.appendChild(tabWrap);
                 if (charPanel) document.body.appendChild(charPanel);
                 if (workPanel) document.body.appendChild(workPanel);
+                changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
-                // ✨ スクロールで検索窓行・操作行を固定
+                // DOMに挿入後に位置を計算
                 var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
-                var fixedTop = headerH + breadcrumbsH;
+                var fixedTopVal = header ? header.offsetHeight : 75;
+                fixedTopVal += breadcrumbs ? breadcrumbs.offsetHeight : 37;
                 var topBarW = topBar.offsetWidth;
                 var topBarLeft = topBar.getBoundingClientRect().left;
+                // ✨ スクロールで検索窓行・操作行を固定
 
                 window.addEventListener("scroll", function() {{
                     var scrollY = window.scrollY;
-                    if (scrollY > topBarOrigTop - fixedTop) {{
+                    if (scrollY > topBarOrigTop - fixedTopVal) {{
                         topBar.style.position = "fixed";
-                        topBar.style.top = fixedTop + "px";
+                        topBar.style.top = fixedTopVal + "px";
                         topBar.style.left = topBarLeft + "px";
                         topBar.style.width = topBarW + "px";
                         topBar.style.zIndex = "600";
                         topBar.style.background = "#1a1a1a";
                         actionBar.style.position = "fixed";
-                        actionBar.style.top = (fixedTop + topBar.offsetHeight) + "px";
+                        actionBar.style.top = (fixedTopVal + topBar.offsetHeight) + "px";
                         actionBar.style.left = topBarLeft + "px";
                         actionBar.style.width = topBarW + "px";
                         actionBar.style.zIndex = "599";
