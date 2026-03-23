@@ -312,7 +312,6 @@ function closePanel(id) {{
 
         custom_css = f"""<style>
             #result_list thead th, #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
-            #result_list thead {{ position: sticky !important; top: 101px !important; z-index: 98 !important; }}
             #result_list thead th {{ background: #1a1a1a !important; }}
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
 
