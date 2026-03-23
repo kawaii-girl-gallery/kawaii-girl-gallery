@@ -173,15 +173,10 @@ class BaseProductAdmin(admin.ModelAdmin):
             #result_list thead th, #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
 
-            /* ✨ サイト上部〜テーブルヘッダーまで全固定 */
-            #header {{ position: sticky !important; top: 0 !important; z-index: 500 !important; }}
-            .breadcrumbs {{ position: sticky !important; top: 75px !important; z-index: 490 !important; background: #1a1c23 !important; }}
-            .quick-search-sticky {{ position: sticky !important; top: 116px !important; z-index: 1000 !important; background: #121212 !important; padding: 4px 0; }}
-            .smart-top-bar {{ position: sticky !important; top: 353px !important; z-index: 470 !important; }}
-            .smart-action-bar {{ position: sticky !important; top: 404px !important; z-index: 460 !important; }}
-            #result_list {{ overflow: visible !important; }}
-            #result_list thead {{ position: sticky !important; top: 452px !important; z-index: 450 !important; }}
-            #result_list thead th {{ background: #1a1a1a !important; border-bottom: 2px solid #333 !important; }}
+            /* ✨ 固定ヘッダーラッパー */
+            .sticky-wrapper {{ position: fixed !important; top: 0 !important; left: 260px !important; right: 0 !important; z-index: 1000 !important; background: #121212 !important; padding: 10px 15px !important; box-shadow: 0 2px 10px rgba(0,0,0,0.8) !important; }}
+            .sticky-wrapper .messagelist {{ margin: 0 !important; }}
+            .sticky-spacer {{ display: block; }}
             /* 商品一覧タイトルを非表示 */
             #content h1 {{ display: none !important; }}
 
@@ -441,15 +436,35 @@ class BaseProductAdmin(admin.ModelAdmin):
                 // changelist の直前に挿入
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
-                // ✨ sticky top値をクイック検索の高さに合わせて動的設定
-                // ✨ クイック検索パネルをstickyラッパーで包む
+
+                // ✨ 全固定要素をfixedラッパーにまとめる
                 var msgList = document.querySelector(".messagelist");
-                if (msgList) {{
-                    var stickyWrap = document.createElement("div");
-                    stickyWrap.className = "quick-search-sticky";
-                    msgList.parentNode.insertBefore(stickyWrap, msgList);
-                    stickyWrap.appendChild(msgList);
-                }}
+                var fixedWrap = document.createElement("div");
+                fixedWrap.className = "sticky-wrapper";
+                document.body.appendChild(fixedWrap);
+
+                // クイック検索を移動
+                if (msgList) fixedWrap.appendChild(msgList);
+                // 検索窓行と操作行を移動
+                fixedWrap.appendChild(topBar);
+                fixedWrap.appendChild(actionBar);
+
+                // 固定ラッパーの高さ分だけスペーサーを挿入
+                setTimeout(function() {{
+                    var spacerDiv = document.createElement("div");
+                    spacerDiv.className = "sticky-spacer";
+                    spacerDiv.style.height = fixedWrap.offsetHeight + "px";
+                    changelist.parentNode.insertBefore(spacerDiv, changelist);
+
+                    // テーブルヘッダーを固定
+                    var ths = document.querySelectorAll("#result_list thead th");
+                    ths.forEach(function(th) {{
+                        th.style.position = "sticky";
+                        th.style.top = fixedWrap.offsetHeight + "px";
+                        th.style.zIndex = "450";
+                        th.style.background = "#1a1a1a";
+                    }});
+                }}, 300);
             }});
         </script>"""
         storage = messages.get_messages(request)
