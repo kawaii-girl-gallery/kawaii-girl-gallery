@@ -168,12 +168,15 @@ class BaseProductAdmin(admin.ModelAdmin):
         custom_css = f"""<style>
             #result_list thead th, #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
-            /* ✨ sticky固定 */
-            .quick-search-sticky {{ position: sticky !important; top: 0 !important; z-index: 200 !important; background: #121212; padding: 4px 0; }}
-            .smart-top-bar {{ position: sticky !important; top: 0 !important; z-index: 199 !important; }}
-            .smart-action-bar {{ position: sticky !important; top: 49px !important; z-index: 198 !important; }}
-            #result_list thead th {{ position: sticky !important; top: 93px !important; z-index: 197 !important; background: #1a1a1a !important; }}
 
+            /* ✨ サイト上部〜テーブルヘッダーまで全固定 */
+            #header {{ position: sticky !important; top: 0 !important; z-index: 500 !important; }}
+            #nav-sidebar {{ position: sticky !important; top: 0 !important; }}
+            div[role="navigation"], .breadcrumbs {{ position: sticky !important; top: 63px !important; z-index: 490 !important; background: #1a1c23 !important; }}
+            .quick-search-sticky {{ position: sticky !important; top: 103px !important; z-index: 480 !important; background: #121212 !important; padding: 4px 0; }}
+            .smart-top-bar {{ position: sticky !important; z-index: 470 !important; }}
+            .smart-action-bar {{ position: sticky !important; z-index: 460 !important; }}
+            #result_list thead th {{ position: sticky !important; z-index: 450 !important; background: #1a1a1a !important; }}
             /* 商品一覧タイトルを非表示 */
             #content h1 {{ display: none !important; }}
 
@@ -444,11 +447,22 @@ class BaseProductAdmin(admin.ModelAdmin):
                 }}
                 // ✨ sticky top値をクイック検索の高さに合わせて動的設定
                 setTimeout(function() {{
+                    var header = document.querySelector("#header");
+                    var breadcrumbs = document.querySelector(".breadcrumbs");
+                    var hh = header ? header.offsetHeight : 0;
+                    var bh = breadcrumbs ? breadcrumbs.offsetHeight : 0;
                     var qh = stickyWrap ? stickyWrap.offsetHeight : 0;
-                    topBar.style.top = qh + "px";
-                    actionBar.style.top = (qh + topBar.offsetHeight) + "px";
+                    if (breadcrumbs) breadcrumbs.style.top = hh + "px";
+                    if (stickyWrap) stickyWrap.style.top = (hh + bh) + "px";
+                    topBar.style.top = (hh + bh + qh) + "px";
+                    actionBar.style.top = (hh + bh + qh + topBar.offsetHeight) + "px";
                     var ths = document.querySelectorAll("#result_list thead th");
-                    ths.forEach(function(th) {{ th.style.top = (qh + topBar.offsetHeight + actionBar.offsetHeight) + "px"; th.style.position = "sticky"; th.style.zIndex = "197"; th.style.background = "#1a1a1a"; }});
+                    ths.forEach(function(th) {{
+                        th.style.top = (hh + bh + qh + topBar.offsetHeight + actionBar.offsetHeight) + "px";
+                        th.style.position = "sticky";
+                        th.style.zIndex = "450";
+                        th.style.background = "#1a1a1a";
+                    }});
                 }}, 300);
             }});
         </script>"""
