@@ -104,7 +104,20 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         super().save(*args, **kwargs)
         if self.image:
-            process_product_image(self.image.path)
+            try:
+                process_product_image(self.image.path)
+            except Exception:
+                pass
+
+    def delete(self, *args, **kwargs):
+        # Cloudinaryから画像を削除
+        if self.image:
+            try:
+                import cloudinary.uploader
+                cloudinary.uploader.destroy(self.image.name)
+            except Exception as e:
+                print(f"Cloudinary delete error: {e}")
+        super().delete(*args, **kwargs)
 
 # --- 売上記録モデル ---
 class Sale(models.Model):
