@@ -440,58 +440,56 @@ class BaseProductAdmin(admin.ModelAdmin):
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
 
-                // ✨ スクロールイベントで固定
-                window.addEventListener("scroll", function() {{
-                    var scrollY = window.scrollY;
-                    var topBarTop = topBar.getBoundingClientRect().top + scrollY;
-                    var actionBarTop = actionBar.getBoundingClientRect().top + scrollY;
-                    if (scrollY > topBarTop - 75) {{
-                        topBar.style.position = "fixed";
-                        topBar.style.top = "116px";
-                        topBar.style.left = "359px";
-                        topBar.style.right = "0";
-                        topBar.style.zIndex = "500";
-                    }} else {{
-                        topBar.style.position = "";
-                        topBar.style.top = "";
-                        topBar.style.left = "";
-                        topBar.style.right = "";
-                    }}
-                }});
-                // 初期位置を記録
+                // ✨ 全要素の初期位置を記録
                 var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
+                var msgList = document.querySelector(".messagelist");
+                var msgListOrigTop = msgList ? msgList.getBoundingClientRect().top + window.scrollY : 0;
+                var header = document.querySelector("#header");
+                var headerH = header ? header.offsetHeight : 75;
+                var breadcrumbs = document.querySelector(".breadcrumbs");
+                var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
+                var msgListH = msgList ? msgList.offsetHeight : 0;
+                var topBarH = topBar.offsetHeight;
+                var actionBarH = actionBar.offsetHeight;
+                var contentLeft = topBar.getBoundingClientRect().left;
+
+                function applyFixed(el, top) {{
+                    el.style.position = "fixed";
+                    el.style.top = top + "px";
+                    el.style.left = contentLeft + "px";
+                    el.style.right = "0";
+                    el.style.zIndex = "600";
+                    el.style.background = "#1a1a1a";
+                }}
+                function clearFixed(el) {{
+                    el.style.position = "";
+                    el.style.top = "";
+                    el.style.left = "";
+                    el.style.right = "";
+                    el.style.background = "";
+                }}
+
                 window.addEventListener("scroll", function() {{
                     var scrollY = window.scrollY;
-                    var threshold = topBarOrigTop - 116;
-                    // 操作行
+                    var threshold = msgListOrigTop - headerH - breadcrumbsH;
+
                     if (scrollY > threshold) {{
-                        actionBar.style.position = "fixed";
-                        actionBar.style.top = "167px";
-                        actionBar.style.left = "359px";
-                        actionBar.style.right = "0";
-                        actionBar.style.zIndex = "499";
+                        // クイック検索
+                        if (msgList) applyFixed(msgList, headerH + breadcrumbsH);
+                        // 検索窓行
+                        var qH = msgList ? msgList.offsetHeight : 0;
+                        applyFixed(topBar, headerH + breadcrumbsH + qH);
+                        // 操作行
+                        applyFixed(actionBar, headerH + breadcrumbsH + qH + topBarH);
                         // 商品名行
                         var thead = document.querySelector("#result_list thead");
-                        if (thead) {{
-                            thead.style.position = "fixed";
-                            thead.style.top = "215px";
-                            thead.style.left = "359px";
-                            thead.style.right = "0";
-                            thead.style.zIndex = "498";
-                            thead.style.background = "#1a1a1a";
-                        }}
+                        if (thead) applyFixed(thead, headerH + breadcrumbsH + qH + topBarH + actionBarH);
                     }} else {{
-                        actionBar.style.position = "";
-                        actionBar.style.top = "";
-                        actionBar.style.left = "";
-                        actionBar.style.right = "";
+                        if (msgList) clearFixed(msgList);
+                        clearFixed(topBar);
+                        clearFixed(actionBar);
                         var thead = document.querySelector("#result_list thead");
-                        if (thead) {{
-                            thead.style.position = "";
-                            thead.style.top = "";
-                            thead.style.left = "";
-                            thead.style.right = "";
-                        }}
+                        if (thead) clearFixed(thead);
                     }}
                 }});
             }});
