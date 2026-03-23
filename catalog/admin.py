@@ -44,7 +44,7 @@ COMMON_STYLE = """
     }
     .home-tile-bg img { width: 100%; height: 160px; object-fit: cover; border-radius: 0px; }
     #container { height: auto !important; overflow: visible !important; }
-    nav { height: auto !important; }
+    nav, nav.breadcrumbs, #nav-sidebar, div > nav { height: auto !important; max-height: none !important; overflow: visible !important; }
     #header { position: sticky !important; top: 0 !important; z-index: 2000 !important; }
     .breadcrumbs { position: sticky !important; top: 75px !important; z-index: 1900 !important; background: #1a1c23 !important; }
     .quick-search-sticky { background: #121212 !important; }
@@ -440,13 +440,15 @@ class BaseProductAdmin(admin.ModelAdmin):
                 changelist.parentNode.insertBefore(topBar, actionBar);
 
                 // ✨ 全固定要素をfixedラッパーにまとめる
-                var msgList = document.querySelector(".messagelist");
+                // クイック検索（全メッセージリスト）をfixedラッパーに移動
                 var fixedWrap = document.createElement("div");
                 fixedWrap.className = "sticky-wrapper";
                 document.body.appendChild(fixedWrap);
 
-                // クイック検索を移動
-                if (msgList) fixedWrap.appendChild(msgList);
+                var allMsgLists = document.querySelectorAll(".messagelist");
+                allMsgLists.forEach(function(msgList) {{
+                    fixedWrap.appendChild(msgList);
+                }});
                 // 検索窓行と操作行を移動
                 fixedWrap.appendChild(topBar);
                 fixedWrap.appendChild(actionBar);
