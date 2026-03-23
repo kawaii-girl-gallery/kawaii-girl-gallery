@@ -523,9 +523,10 @@ function closePanel(id) {{
                     runBtn.className = 'run-btn';
                     runBtn.textContent = 'Run';
                     runBtn.addEventListener('click', function() {{
-                        if (sel) sel.value = actionBar.querySelector('select').value;
-                        var origRun = origActions.querySelector('input[type=submit]');
-                        if (origRun) origRun.click();
+                        var newSel = actionBar.querySelector('select');
+                        if (sel && newSel) sel.value = newSel.value;
+                        var actionForm = origActions.closest('form');
+                        if (actionForm) actionForm.submit();
                     }});
                     actionBar.appendChild(runBtn);
                     var counter = origActions.querySelector('.action-counter');
