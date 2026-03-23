@@ -448,6 +448,28 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var headerH = header ? header.offsetHeight : 75;
                 var breadcrumbs = document.querySelector(".breadcrumbs");
                 var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
+                // ✨ ヘッダーとパンくずを即座にfixedで固定
+                if (header) {{
+                    header.style.position = "fixed";
+                    header.style.top = "0";
+                    header.style.left = "0";
+                    header.style.right = "0";
+                    header.style.zIndex = "2000";
+                    header.style.width = "100%";
+                }}
+                if (breadcrumbs) {{
+                    breadcrumbs.style.position = "fixed";
+                    breadcrumbs.style.top = headerH + "px";
+                    breadcrumbs.style.left = "0";
+                    breadcrumbs.style.right = "0";
+                    breadcrumbs.style.zIndex = "1999";
+                    breadcrumbs.style.width = "100%";
+                    breadcrumbs.style.background = "#1a1c23";
+                }}
+                // ヘッダー・パンくず分のスペーサー
+                var headerSpacer = document.createElement("div");
+                headerSpacer.style.height = (headerH + breadcrumbsH) + "px";
+                document.body.insertBefore(headerSpacer, document.body.firstChild);
                 var msgListH = msgList ? msgList.offsetHeight : 0;
                 var topBarH = topBar.offsetHeight;
                 var actionBarH = actionBar.offsetHeight;
