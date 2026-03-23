@@ -44,8 +44,6 @@ COMMON_STYLE = """
     }
     .home-tile-bg img { width: 100%; height: 160px; object-fit: cover; border-radius: 0px; }
     #container { height: auto !important; overflow: visible !important; }
-    #nav-sidebar { position: sticky !important; top: 0 !important; height: 100vh !important; overflow-y: auto !important; align-self: flex-start !important; }
-    #main { display: flex !important; align-items: flex-start !important; }
     .results { overflow: visible !important; }
     #content { position: relative; z-index: 1; background: rgba(18, 18, 18, 0.85) !important; margin: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     #content-main { padding: 0 !important; }
@@ -442,24 +440,6 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var msgList = document.querySelector(".messagelist");
                 var msgListOrigTop = msgList ? msgList.getBoundingClientRect().top + window.scrollY : 0;
                 var header = document.querySelector("#header");
-                // ✨ 左メニューを固定
-                var sidebar = document.querySelector("#nav-sidebar");
-                if (sidebar) {{
-                    var sidebarW = sidebar.offsetWidth;
-                    sidebar.style.position = "fixed";
-                    sidebar.style.top = "0";
-                    sidebar.style.left = "0";
-                    sidebar.style.width = sidebarW + "px";
-                    sidebar.style.height = "100vh";
-                    sidebar.style.overflowY = "auto";
-                    sidebar.style.zIndex = "1500";
-                    // サイドバー分のスペーサー
-                    var sidebarSpacer = document.createElement("div");
-                    sidebarSpacer.style.width = sidebarW + "px";
-                    sidebarSpacer.style.flexShrink = "0";
-                    sidebar.parentNode.insertBefore(sidebarSpacer, sidebar);
-                }}
-                var headerH = header ? header.offsetHeight : 75;
                 var breadcrumbs = document.querySelector(".breadcrumbs");
                 var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
                 // ✨ ヘッダーとパンくずを即座にfixedで固定
@@ -488,13 +468,14 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var topBarH = topBar.offsetHeight;
                 var actionBarH = actionBar.offsetHeight;
                 var contentLeft = topBar.getBoundingClientRect().left;
+                var contentWidth = topBar.offsetWidth;
 
                 function applyFixed(el, top) {{
                     el.style.position = "fixed";
                     el.style.top = top + "px";
                     el.style.left = contentLeft + "px";
                     el.style.right = "0";
-                    el.style.width = (window.innerWidth - contentLeft) + "px";
+                    el.style.width = contentWidth + "px";
                     el.style.zIndex = "600";
                     el.style.background = "#121212";
                     el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
