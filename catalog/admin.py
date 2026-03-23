@@ -170,11 +170,14 @@ class BaseProductAdmin(admin.ModelAdmin):
             #changelist-search {{ display: none !important; }}
             .object-tools {{ display: none !important; }}
             #changelist .actions {{ display: none !important; }}
-            /* ✨ actionsのグレー背景行を完全に消す */
+            /* ✨ グレー行・区切り線をすべて非表示 */
             #changelist .actions + p,
             #changelist > div:has(> .actions),
-            .changelist-form-wrapper > div:empty {{ display: none !important; }}
-            #changelist > div {{ background: none !important; border: none !important; box-shadow: none !important; }}
+            .changelist-form-wrapper > div:empty,
+            #changelist hr,
+            #changelist p.paginator {{ display: none !important; }}
+            #changelist > div {{ background: none !important; border: none !important; box-shadow: none !important; padding: 0 !important; margin: 0 !important; }}
+            #changelist-form > p {{ display: none !important; }}
             .top-paginator {{ display: none !important; }}
             #changelist .paginator {{ display: none !important; }}
 
