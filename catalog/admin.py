@@ -492,6 +492,9 @@ class BaseProductAdmin(admin.ModelAdmin):
                     var contentMain = document.querySelector("#content-main");
                     var contentWrapper = document.querySelector("#content");
                     if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
+                    // contentLeftとcontentWidthをサイドバー固定後に再計算
+                    contentLeft = topBar.getBoundingClientRect().left;
+                    contentWidth = topBar.offsetWidth;
                 }}
                 // ✨ ヘッダー分のpaddingをbodyに追加（左メニュー対策）
                 
@@ -508,8 +511,14 @@ class BaseProductAdmin(admin.ModelAdmin):
                     msgList.style.background = "#121212";
                     msgList.style.padding = "0";
                     // li間の隙間を塞ぐ
-                    var lis = msgList.querySelectorAll("li > div");
-                    lis.forEach(function(li) {{ li.style.background = "#121212"; li.style.marginBottom = "0"; }});
+                    var lis = msgList.querySelectorAll("li");
+                    lis.forEach(function(li) {{
+                        li.style.background = "#121212";
+                        li.style.marginBottom = "0";
+                        li.style.paddingBottom = "0";
+                        var innerDiv = li.querySelector("div");
+                        if (innerDiv) innerDiv.style.background = "#121212";
+                    }});
                     msgList.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
                 }}
 
@@ -540,12 +549,19 @@ class BaseProductAdmin(admin.ModelAdmin):
                         applyFixed(topBar, headerH + breadcrumbsH + msgListH); topBar.style.zIndex = "501";
                         applyFixed(actionBar, headerH + breadcrumbsH + msgListH + topBarH); actionBar.style.zIndex = "502";
                         var thead = document.querySelector("#result_list thead");
-                        if (thead) {{
+                        var resultList = document.querySelector("#result_list");
+                        if (thead && resultList) {{
+                            var tableLeft = resultList.getBoundingClientRect().left;
+                            var tableWidth = resultList.offsetWidth;
                             var ths = thead.querySelectorAll("th");
                             ths.forEach(function(th) {{ th.style.width = th.offsetWidth + "px"; }});
-                            applyFixed(thead, headerH + breadcrumbsH + msgListH + topBarH + actionBarH);
+                            thead.style.position = "fixed";
+                            thead.style.top = (headerH + breadcrumbsH + msgListH + topBarH + actionBarH) + "px";
+                            thead.style.left = tableLeft + "px";
+                            thead.style.width = tableWidth + "px";
                             thead.style.zIndex = "503";
-                            thead.style.width = document.querySelector("#result_list").offsetWidth + "px";
+                            thead.style.background = "#1a1a1a";
+                            thead.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
                         }}
                     }} else {{
                         clearFixed(topBar);
