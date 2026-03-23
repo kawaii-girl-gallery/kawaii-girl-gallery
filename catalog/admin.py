@@ -447,8 +447,8 @@ class BaseProductAdmin(admin.ModelAdmin):
                     var actionBarTop = actionBar.getBoundingClientRect().top + scrollY;
                     if (scrollY > topBarTop - 75) {{
                         topBar.style.position = "fixed";
-                        topBar.style.top = "75px";
-                        topBar.style.left = "276px";
+                        topBar.style.top = "116px";
+                        topBar.style.left = "359px";
                         topBar.style.right = "0";
                         topBar.style.zIndex = "500";
                     }} else {{
@@ -456,6 +456,42 @@ class BaseProductAdmin(admin.ModelAdmin):
                         topBar.style.top = "";
                         topBar.style.left = "";
                         topBar.style.right = "";
+                    }}
+                }});
+                // 初期位置を記録
+                var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
+                window.addEventListener("scroll", function() {{
+                    var scrollY = window.scrollY;
+                    var threshold = topBarOrigTop - 116;
+                    // 操作行
+                    if (scrollY > threshold) {{
+                        actionBar.style.position = "fixed";
+                        actionBar.style.top = "167px";
+                        actionBar.style.left = "359px";
+                        actionBar.style.right = "0";
+                        actionBar.style.zIndex = "499";
+                        // 商品名行
+                        var thead = document.querySelector("#result_list thead");
+                        if (thead) {{
+                            thead.style.position = "fixed";
+                            thead.style.top = "215px";
+                            thead.style.left = "359px";
+                            thead.style.right = "0";
+                            thead.style.zIndex = "498";
+                            thead.style.background = "#1a1a1a";
+                        }}
+                    }} else {{
+                        actionBar.style.position = "";
+                        actionBar.style.top = "";
+                        actionBar.style.left = "";
+                        actionBar.style.right = "";
+                        var thead = document.querySelector("#result_list thead");
+                        if (thead) {{
+                            thead.style.position = "";
+                            thead.style.top = "";
+                            thead.style.left = "";
+                            thead.style.right = "";
+                        }}
                     }}
                 }});
             }});
