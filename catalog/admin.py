@@ -576,6 +576,40 @@ function closePanel(id) {{
                 if (charPanel) document.body.appendChild(charPanel);
                 if (workPanel) document.body.appendChild(workPanel);
                 changelist.parentNode.insertBefore(topBar, actionBar);
+                // ✨ スクロールで検索窓行・操作行を固定
+                var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
+                var fixedTop = headerH + breadcrumbsH;
+                var topBarW = topBar.offsetWidth;
+                var topBarLeft = topBar.getBoundingClientRect().left;
+
+                window.addEventListener("scroll", function() {{
+                    var scrollY = window.scrollY;
+                    if (scrollY > topBarOrigTop - fixedTop) {{
+                        topBar.style.position = "fixed";
+                        topBar.style.top = fixedTop + "px";
+                        topBar.style.left = topBarLeft + "px";
+                        topBar.style.width = topBarW + "px";
+                        topBar.style.zIndex = "600";
+                        topBar.style.background = "#1a1a1a";
+                        actionBar.style.position = "fixed";
+                        actionBar.style.top = (fixedTop + topBar.offsetHeight) + "px";
+                        actionBar.style.left = topBarLeft + "px";
+                        actionBar.style.width = topBarW + "px";
+                        actionBar.style.zIndex = "599";
+                        actionBar.style.background = "#1a1a1a";
+                    }} else {{
+                        topBar.style.position = "";
+                        topBar.style.top = "";
+                        topBar.style.left = "";
+                        topBar.style.width = "";
+                        topBar.style.background = "";
+                        actionBar.style.position = "";
+                        actionBar.style.top = "";
+                        actionBar.style.left = "";
+                        actionBar.style.width = "";
+                        actionBar.style.background = "";
+                    }}
+                }});
             }});
         </script>"""
         
