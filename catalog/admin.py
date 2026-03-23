@@ -452,18 +452,21 @@ class BaseProductAdmin(admin.ModelAdmin):
                     var hh = header ? header.offsetHeight : 0;
                     var bh = breadcrumbs ? breadcrumbs.offsetHeight : 0;
                     var qh = stickyWrap ? stickyWrap.offsetHeight : 0;
+                    var tbh = topBar ? topBar.offsetHeight : 0;
+                    var abh = actionBar ? actionBar.offsetHeight : 0;
+                    console.log("hh:", hh, "bh:", bh, "qh:", qh, "tbh:", tbh, "abh:", abh);
                     if (breadcrumbs) breadcrumbs.style.top = hh + "px";
                     if (stickyWrap) stickyWrap.style.top = (hh + bh) + "px";
                     topBar.style.top = (hh + bh + qh) + "px";
-                    actionBar.style.top = (hh + bh + qh + topBar.offsetHeight) + "px";
+                    actionBar.style.top = (hh + bh + qh + tbh) + "px";
                     var ths = document.querySelectorAll("#result_list thead th");
                     ths.forEach(function(th) {{
-                        th.style.top = (hh + bh + qh + topBar.offsetHeight + actionBar.offsetHeight) + "px";
+                        th.style.top = (hh + bh + qh + tbh + abh) + "px";
                         th.style.position = "sticky";
                         th.style.zIndex = "450";
                         th.style.background = "#1a1a1a";
                     }});
-                }}, 300);
+                }}, 500);
             }});
         </script>"""
         
