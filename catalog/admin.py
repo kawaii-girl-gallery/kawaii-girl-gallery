@@ -585,7 +585,7 @@ function closePanel(id) {{
                         topBar.style.position = "fixed";
                         topBar.style.top = fixedTopVal + "px";
                         topBar.style.left = topBarLeft + "px";
-                        var adjustedW = document.documentElement.clientWidth - topBarLeft;
+                        var adjustedW = document.querySelector("#result_list") ? document.querySelector("#result_list").offsetWidth : topBarW;
                         topBar.style.width = adjustedW + "px";
                         topBar.style.zIndex = "600";
                         topBar.style.background = "#1a1a1a";
@@ -601,7 +601,7 @@ function closePanel(id) {{
                         if (thead && resultTable && !document.getElementById("fixed-thead-clone")) {{
                             var cloneTable = document.createElement("table");
                             cloneTable.id = "fixed-thead-clone";
-                            cloneTable.style.cssText = "position:fixed; top:" + (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px; left:" + topBarLeft + "px; width:" + adjustedW + "px; z-index:598; background:#1a1a1a; table-layout:auto; border-collapse:collapse;";
+                            cloneTable.style.cssText = "position:fixed; top:" + (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px; left:" + resultTable.getBoundingClientRect().left + "px; width:" + resultTable.offsetWidth + "px; z-index:598; background:#1a1a1a; table-layout:auto; border-collapse:collapse;";
                             var cloneThead = thead.cloneNode(true);
                             var origThs = thead.querySelectorAll("th");
                             var cloneThs = cloneThead.querySelectorAll("th");
