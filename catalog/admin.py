@@ -440,6 +440,24 @@ class BaseProductAdmin(admin.ModelAdmin):
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
 
+                // ✨ スクロールイベントで固定
+                window.addEventListener("scroll", function() {{
+                    var scrollY = window.scrollY;
+                    var topBarTop = topBar.getBoundingClientRect().top + scrollY;
+                    var actionBarTop = actionBar.getBoundingClientRect().top + scrollY;
+                    if (scrollY > topBarTop - 75) {{
+                        topBar.style.position = "fixed";
+                        topBar.style.top = "75px";
+                        topBar.style.left = "276px";
+                        topBar.style.right = "0";
+                        topBar.style.zIndex = "500";
+                    }} else {{
+                        topBar.style.position = "";
+                        topBar.style.top = "";
+                        topBar.style.left = "";
+                        topBar.style.right = "";
+                    }}
+                }});
             }});
         </script>"""
         storage = messages.get_messages(request)
