@@ -599,7 +599,7 @@ function closePanel(id) {{
                         if (thead && resultTable && !document.getElementById("fixed-thead-clone")) {{
                             var cloneTable = document.createElement("table");
                             cloneTable.id = "fixed-thead-clone";
-                            cloneTable.style.cssText = "position:fixed; top:" + (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px; left:" + topBarLeft + "px; width:" + topBarW + "px; z-index:598; background:#1a1a1a; table-layout:fixed; border-collapse:collapse;";
+                            cloneTable.style.cssText = "position:fixed; top:" + (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px; left:" + topBarLeft + "px; width:" + topBarW + "px; z-index:598; background:#1a1a1a; table-layout:auto; border-collapse:collapse;";
                             var cloneThead = thead.cloneNode(true);
                             var origThs = thead.querySelectorAll("th");
                             var cloneThs = cloneThead.querySelectorAll("th");
