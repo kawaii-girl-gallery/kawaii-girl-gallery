@@ -1,5 +1,5 @@
 from django.db import models
-from django.conf import settings # 追加
+from django.conf import settings
 from PIL import Image, ImageDraw, ImageFont
 import os
 import io
@@ -21,16 +21,29 @@ def process_product_image(img_path):
         
         sample_size = int(img.width / 4.5) 
         stamp_size = int(img.width / 18)
-        
-        try:
-            font_sample = ImageFont.truetype("ariblk.ttf", sample_size)
-            font_stamp = ImageFont.truetype("meiryo.ttc", stamp_size)
-        except:
-            try:
-                font_sample = ImageFont.truetype("msgothic.ttc", sample_size)
-                font_stamp = ImageFont.truetype("msgothic.ttc", stamp_size)
-            except:
-                font_sample = font_stamp = ImageFont.load_default()
+
+        # Linuxで使えるフォントを順番に試す
+        def load_font(size):
+            font_paths = [
+                "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+                "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+                "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf",
+                "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf",
+                "/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf",
+                "ariblk.ttf",
+                "meiryo.ttc",
+                "msgothic.ttc",
+            ]
+            for path in font_paths:
+                try:
+                    return ImageFont.truetype(path, size)
+                except:
+                    continue
+            # どれも使えない場合はデフォルトを大きく
+            return ImageFont.load_default(size=max(size, 20))
+
+        font_sample = load_font(sample_size)
+        font_stamp = load_font(stamp_size)
 
         # SAMPLE（中央）
         text_s = "SAMPLE"
@@ -53,6 +66,7 @@ def process_product_image(img_path):
         # 合成してJPEGで保存
         out = Image.alpha_composite(img, txt_layer)
         out.convert("RGB").save(img_path, "JPEG", quality=90, optimize=True)
+        print(f"Image processed successfully: {img_path}")
         
     except Exception as e:
         print(f"Image Processing Error: {e}")
@@ -85,7 +99,6 @@ class Sale(models.Model):
     price = models.IntegerField('売上金額')
     category = models.CharField('種別', max_length=50, blank=True)
     sold_at = models.DateTimeField('販売日時', auto_now_add=True)
-    # ✨ 追加：ログインユーザーを紐付けるフィールド
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
         on_delete=models.SET_NULL, 
