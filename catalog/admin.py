@@ -444,9 +444,8 @@ class BaseProductAdmin(admin.ModelAdmin):
                     msgList.parentNode.insertBefore(stickyWrap, msgList);
                     stickyWrap.appendChild(msgList);
                 }}
-                // ✨ sticky top値をクイック検索の高さに合わせて動的設定
-                setTimeout(function() {{
-        
+            }});
+        </script>"""
         storage = messages.get_messages(request)
         is_already_sent = any("キャラクタークイック検索" in str(m) for m in storage)
         storage.used = False 
