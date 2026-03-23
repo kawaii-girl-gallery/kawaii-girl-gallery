@@ -476,11 +476,12 @@ class BaseProductAdmin(admin.ModelAdmin):
                 spacerDiv.style.display = "block";
                 if (msgList && msgList.parentNode) {{
                     msgList.parentNode.insertBefore(spacerDiv, msgList);
-                // ✨ ヘッダー分のpaddingをbodyに追加（左メニュー対策）
-                document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
-                // 左メニューのpadding
+                // 左メニューにmargin-topを追加
                 var navSidebar = document.querySelector("#nav-sidebar");
-                if (navSidebar) navSidebar.style.paddingTop = (headerH + breadcrumbsH) + "px";
+                if (navSidebar) navSidebar.style.marginTop = (headerH + breadcrumbsH) + "px";
+                // ✨ ヘッダー分のpaddingをbodyに追加（左メニュー対策）
+                
+                // 左メニューのpadding
                 }}
 
                 // ✨ クイック検索も即座に固定
