@@ -580,7 +580,7 @@ function closePanel(id) {{
 
                 window.addEventListener("scroll", function() {{
                     var scrollY = window.scrollY;
-                    if (scrollY > topBarOrigTop - fixedTopVal) {{
+                    if (scrollY > 44) {{
                         topBar.style.position = "fixed";
                         topBar.style.top = fixedTopVal + "px";
                         topBar.style.left = topBarLeft + "px";
@@ -604,8 +604,8 @@ function closePanel(id) {{
                             }}
                             thead.style.position = "fixed";
                             thead.style.top = (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px";
-                            thead.style.left = resultList.getBoundingClientRect().left + "px";
-                            thead.style.width = resultList.offsetWidth + "px";
+                            thead.style.left = topBarLeft + "px";
+                            thead.style.width = topBarW + "px";
                             thead.style.zIndex = "598";
                             thead.style.background = "#1a1a1a";
                         }}
