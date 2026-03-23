@@ -433,7 +433,6 @@ class BaseProductAdmin(admin.ModelAdmin):
                 changelist.parentNode.insertBefore(topBar, actionBar);
 
             }});
-            }});
         </script>"""
         storage = messages.get_messages(request)
         is_already_sent = any("キャラクタークイック検索" in str(m) for m in storage)
