@@ -54,6 +54,7 @@ COMMON_STYLE = """
     #changelist { margin: 0 !important; }
     .dashboard #content { background: rgba(18, 18, 18, 0.7) !important; }
     .breadcrumbs { position: sticky !important; top: 75px !important; z-index: 999 !important; background: #1a1c23 !important; }
+    nav { height: auto !important; overflow: visible !important; }
 </style>
 """
 
