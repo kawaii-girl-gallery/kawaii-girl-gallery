@@ -446,7 +446,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var msgListH = msgList ? msgList.offsetHeight : 0;
                 var topBarH = topBar.offsetHeight;
                 var actionBarH = actionBar.offsetHeight;
-                var contentLeft = sidebarW + 20;
+                var contentLeft = topBar.getBoundingClientRect().left;
                     contentWidth = document.documentElement.clientWidth - contentLeft;
                 var contentWidth = document.documentElement.clientWidth - contentLeft;
                 var msgListOrigTop = msgList ? msgList.getBoundingClientRect().top + window.scrollY : 0;
@@ -501,7 +501,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                     var contentWrapper = document.querySelector("#content");
                     if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
                     // contentLeftとcontentWidthをサイドバー固定後に再計算
-                    contentLeft = sidebarW + 20;
+                    contentLeft = topBar.getBoundingClientRect().left;
                     contentWidth = document.documentElement.clientWidth - contentLeft;
                     contentWidth = window.innerWidth - contentLeft;
                 }}
