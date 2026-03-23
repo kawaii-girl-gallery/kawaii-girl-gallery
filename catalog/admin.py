@@ -447,7 +447,8 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var topBarH = topBar.offsetHeight;
                 var actionBarH = actionBar.offsetHeight;
                 var contentLeft = sidebarW + 20;
-                var contentWidth = window.innerWidth - contentLeft - 17; // スクロールバー幅分を引く
+                    contentWidth = topBar.offsetWidth;
+                var contentWidth = topBar.offsetWidth; // スクロール前の実際の幅を記録
                 var msgListOrigTop = msgList ? msgList.getBoundingClientRect().top + window.scrollY : 0;
 
                 // ✨ ヘッダー・パンくずを固定
@@ -501,6 +502,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                     if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
                     // contentLeftとcontentWidthをサイドバー固定後に再計算
                     contentLeft = sidebarW + 20;
+                    contentWidth = topBar.offsetWidth;
                     contentWidth = window.innerWidth - contentLeft;
                 }}
                 // ✨ ヘッダー分のpaddingをbodyに追加（左メニュー対策）
