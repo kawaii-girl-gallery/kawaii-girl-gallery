@@ -576,11 +576,11 @@ function closePanel(id) {{
                 selectAllChk.type = 'checkbox';
                 selectAllChk.style.cssText = 'width:16px; height:16px; cursor:pointer; accent-color:#007bff;';
                 selectAllChk.addEventListener('change', function() {{
+                    document.querySelectorAll('.action-select').forEach(function(cb) {{
+                        cb.checked = selectAllChk.checked;
+                    }});
                     var origToggle = document.querySelector('#action-toggle');
-                    if (origToggle) {{
-                        origToggle.checked = this.checked;
-                        origToggle.click();
-                    }}
+                    if (origToggle) origToggle.checked = selectAllChk.checked;
                 }});
                 var selectAllLabel = document.createElement('span');
                 selectAllLabel.textContent = '全選択';
