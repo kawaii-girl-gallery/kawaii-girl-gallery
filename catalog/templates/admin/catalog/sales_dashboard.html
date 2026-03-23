@@ -31,6 +31,11 @@
     .breadcrumbs a { color: #aaa !important; }
 
     #nav-sidebar .module caption a { pointer-events: none !important; cursor: default !important; text-decoration: none !important; color: inherit !important; }
+    /* 左メニューカテゴリ色を固定 */
+    #nav-sidebar .app-catalog_pedia .module > h2, #nav-sidebar .app-catalog_pedia caption { background: #6f42c1 !important; color: #fff !important; }
+    #nav-sidebar .app-catalog_a4 .module > h2, #nav-sidebar .app-catalog_a4 caption { background: #ff4d94 !important; color: #fff !important; }
+    #nav-sidebar .app-catalog_tcg .module > h2, #nav-sidebar .app-catalog_tcg caption { background: #2684ff !important; color: #fff !important; }
+    #nav-sidebar .app-catalog_admin_custom .module > h2, #nav-sidebar .app-catalog_admin_custom caption { background: #f0ad4e !important; color: #fff !important; }
 
     .app-catalog_pedia caption, .app-catalog_pedia h2 { background: #6f42c1 !important; color: #fff !important; }
     .app-catalog_a4 caption, .app-catalog_a4 h2 { background: #ff4d94 !important; color: #fff !important; }
@@ -75,7 +80,7 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        document.body.classList.add('app-catalog_admin_custom');
+        
 
         var header = document.querySelector('#header');
         var breadcrumbs = document.querySelector('.breadcrumbs');
