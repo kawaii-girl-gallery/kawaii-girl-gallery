@@ -447,7 +447,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var topBarH = topBar.offsetHeight;
                 var actionBarH = actionBar.offsetHeight;
                 var contentLeft = topBar.getBoundingClientRect().left;
-                var contentWidth = topBar.offsetWidth;
+                var contentWidth = window.innerWidth - contentLeft;
                 var msgListOrigTop = msgList ? msgList.getBoundingClientRect().top + window.scrollY : 0;
 
                 // ✨ ヘッダー・パンくずを固定
@@ -494,7 +494,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                     if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
                     // contentLeftとcontentWidthをサイドバー固定後に再計算
                     contentLeft = topBar.getBoundingClientRect().left;
-                    contentWidth = topBar.offsetWidth;
+                    contentWidth = window.innerWidth - contentLeft;
                 }}
                 // ✨ ヘッダー分のpaddingをbodyに追加（左メニュー対策）
                 
@@ -506,7 +506,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                     msgList.style.position = "fixed";
                     msgList.style.top = (headerH + breadcrumbsH) + "px";
                     msgList.style.left = contentLeft + "px";
-                    msgList.style.width = contentWidth + "px";
+                    msgList.style.width = (window.innerWidth - contentLeft) + "px";
                     msgList.style.zIndex = "500";
                     msgList.style.background = "#121212";
                     msgList.style.padding = "0";
