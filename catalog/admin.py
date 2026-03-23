@@ -158,21 +158,161 @@ class BaseProductAdmin(admin.ModelAdmin):
         
         current_query = request.GET.get('q')
         back_btn_html = f'<a href="." style="text-decoration:none; margin-left:10px;"><div style="background:#ff4444; border:2px solid #ff6666; padding:4px 15px; border-radius:20px; color:#fff; font-size:12px; font-weight:900; display:inline-block;">⬅ 戻る</div></a>' if current_query else ""
-        
-        def make_btns(data, color):
-            sorted_data = sorted(data.items(), key=lambda x: x[0])
-            return "".join([format_html('<a href="?q={}" style="text-decoration:none; display:inline-block; margin-bottom:5px;"><div style="background:#222; border:2px solid {}; padding:3px 9px; border-radius:20px; color:#fff; font-size:10px; font-weight:800;">{} <span style="color:#00ffcc;">({})</span></div></a>', n, "#00ffcc" if current_query == n else color, n, c) for n, c in sorted_data])
 
-        char_p = create_panel("char", "👤", "キャラクタークイック検索", "#ff69b4", make_btns(char_counts, "#ff69b4"), (current_query in char_counts), back_btn_html)
-        work_p = create_panel("work", "🎬", "原作作品クイック検索", "#007bff", make_btns(work_counts, "#007bff"), (current_query in work_counts), "")
-        
+        def make_btns(data, color, panel_id):
+            sorted_data = sorted(data.items(), key=lambda x: x[0])
+            return "".join([format_html(
+                '<a href="?q={}" onclick="closePanel(\'{}\');" style="text-decoration:none; display:inline-block; margin-bottom:6px;"><div style="background:#222; border:2px solid {}; padding:4px 10px; border-radius:20px; color:#fff; font-size:11px; font-weight:800;">{} <span style="color:#00ffcc;">({})</span></div></a>',
+                n, panel_id, "#00ffcc" if current_query == n else color, n, c
+            ) for n, c in sorted_data])
+
+        char_btns = make_btns(char_counts, "#ff69b4", "char-panel")
+        work_btns = make_btns(work_counts, "#007bff", "work-panel")
+
         is_admin_flag = 'true' if self.has_change_permission(request) else 'false'
+
+        # アコーディオンパネルHTML + CSS + JS
+        accordion_html = mark_safe(f'''
+<style>
+    /* アコーディオンタブ */
+    .qs-tab-wrap {{
+        position: fixed;
+        right: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        z-index: 3000;
+    }}
+    .qs-tab {{
+        writing-mode: vertical-rl;
+        text-orientation: mixed;
+        padding: 16px 8px;
+        border-radius: 10px 0 0 10px;
+        font-size: 12px;
+        font-weight: 900;
+        cursor: pointer;
+        color: #fff;
+        user-select: none;
+        letter-spacing: 1px;
+        border: 2px solid transparent;
+        border-right: none;
+        transition: opacity 0.2s;
+    }}
+    .qs-tab:hover {{ opacity: 0.85; }}
+    .qs-tab-char {{ background: #ff69b4; border-color: #ff69b4; }}
+    .qs-tab-work {{ background: #007bff; border-color: #007bff; }}
+
+    /* パネル本体 */
+    .qs-panel {{
+        position: fixed;
+        right: -420px;
+        top: 0;
+        width: 400px;
+        height: 100vh;
+        background: #111;
+        z-index: 2999;
+        display: flex;
+        flex-direction: column;
+        transition: right 0.3s ease;
+        box-shadow: -4px 0 20px rgba(0,0,0,0.7);
+    }}
+    .qs-panel.open {{ right: 0; }}
+    .qs-panel-header {{
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px;
+        border-bottom: 2px solid #333;
+        flex-shrink: 0;
+    }}
+    .qs-panel-title {{
+        font-size: 15px;
+        font-weight: 900;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }}
+    .qs-panel-close {{
+        background: #222;
+        border: 1px solid #444;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: #aaa;
+        font-size: 14px;
+        font-weight: 900;
+    }}
+    .qs-panel-close:hover {{ background: #333; color: #fff; }}
+    .qs-panel-body {{
+        flex: 1;
+        overflow-y: auto;
+        padding: 14px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        align-content: flex-start;
+    }}
+    /* スクロールバー */
+    .qs-panel-body::-webkit-scrollbar {{ width: 6px; }}
+    .qs-panel-body::-webkit-scrollbar-track {{ background: #1a1a1a; }}
+    .qs-panel-body::-webkit-scrollbar-thumb {{ background: #444; border-radius: 3px; }}
+
+    /* 元のクイック検索パネルを非表示 */
+    .messagelist {{ display: none !important; }}
+    .top-paginator {{ display: none !important; }}
+</style>
+
+<!-- キャラクタータブ -->
+<div class="qs-tab-wrap">
+    <div class="qs-tab qs-tab-char" onclick="togglePanel('char-panel')">👤 キャラクター</div>
+    <div class="qs-tab qs-tab-work" onclick="togglePanel('work-panel')">🎬 原作作品</div>
+</div>
+
+<!-- キャラクター検索パネル -->
+<div id="char-panel" class="qs-panel" style="border-left: 3px solid #ff69b4;">
+    <div class="qs-panel-header">
+        <div class="qs-panel-title" style="color: #ff69b4;">👤 キャラクター検索 {back_btn_html}</div>
+        <div class="qs-panel-close" onclick="closePanel('char-panel')">✕</div>
+    </div>
+    <div class="qs-panel-body">{char_btns}</div>
+</div>
+
+<!-- 原作作品検索パネル -->
+<div id="work-panel" class="qs-panel" style="border-left: 3px solid #007bff;">
+    <div class="qs-panel-header">
+        <div class="qs-panel-title" style="color: #007bff;">🎬 原作作品検索</div>
+        <div class="qs-panel-close" onclick="closePanel('work-panel')">✕</div>
+    </div>
+    <div class="qs-panel-body">{work_btns}</div>
+</div>
+
+<script>
+function togglePanel(id) {{
+    var panel = document.getElementById(id);
+    if (panel.classList.contains('open')) {{
+        panel.classList.remove('open');
+    }} else {{
+        panel.classList.add('open');
+    }}
+}}
+function closePanel(id) {{
+    var panel = document.getElementById(id);
+    if (panel) panel.classList.remove('open');
+}}
+</script>
+''')
+
         custom_css = f"""<style>
             #result_list thead th, #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
             #result_list thead th {{ background: #1a1a1a !important; }}
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
 
-            /* ✨ 固定ヘッダーラッパー */
             /* 商品一覧タイトルを非表示 */
             #content h1 {{ display: none !important; }}
 
@@ -180,7 +320,6 @@ class BaseProductAdmin(admin.ModelAdmin):
             #changelist-search {{ display: none !important; }}
             .object-tools {{ display: none !important; }}
             #changelist .actions {{ display: none !important; }}
-            /* ✨ グレー行・区切り線をすべて非表示 */
             #toolbar {{ display: none !important; }}
             #changelist .actions + p,
             #changelist > div:has(> .actions),
@@ -192,7 +331,7 @@ class BaseProductAdmin(admin.ModelAdmin):
             .top-paginator {{ display: none !important; }}
             #changelist .paginator {{ display: none !important; }}
 
-            /* ✨ 行1：検索窓 + ページネーター（横並び） + 右詰めボタン群 */
+            /* 検索窓行 */
             .smart-top-bar {{
                 display: flex;
                 align-items: center;
@@ -201,9 +340,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                 padding: 10px 15px;
                 border-radius: 10px;
                 margin-bottom: 4px;
-                z-index: 10 !important;
                 flex-wrap: nowrap;
-                width: 100%;
                 box-sizing: border-box;
             }}
             .smart-search-form {{ display: flex; align-items: center; gap: 6px; flex-shrink: 0; }}
@@ -215,8 +352,6 @@ class BaseProductAdmin(admin.ModelAdmin):
                 background: #333; border: 1px solid #555; color: #fff;
                 border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 900; cursor: pointer;
             }}
-
-            /* ✨ ページネーターを横並びに強制 */
             .smart-paginator {{ display: flex; align-items: center; gap: 4px; flex-shrink: 0; }}
             .smart-paginator a, .smart-paginator span.this-page {{
                 display: inline-flex !important; align-items: center; justify-content: center;
@@ -230,13 +365,11 @@ class BaseProductAdmin(admin.ModelAdmin):
             .smart-paginator .total-count {{
                 color: #aaa; font-size: 12px; font-weight: 700; white-space: nowrap; margin-left: 4px;
             }}
-
             .smart-top-bar-spacer {{ flex: 1; }}
             .smart-btn-group {{ display: flex; align-items: center; gap: 8px; flex-shrink: 0; }}
 
-            /* ✨ 行2：操作セレクト + Run + 選択数 */
+            /* 操作行 */
             .smart-action-bar {{
-                z-index: 9 !important;
                 display: flex;
                 align-items: center;
                 gap: 10px;
@@ -245,7 +378,6 @@ class BaseProductAdmin(admin.ModelAdmin):
                 border-radius: 10px;
                 margin-bottom: 15px;
                 flex-wrap: wrap;
-                width: 100%;
                 box-sizing: border-box;
             }}
             .smart-action-bar select {{
@@ -268,14 +400,9 @@ class BaseProductAdmin(admin.ModelAdmin):
             .modal-content {{ max-height: 70vh !important; max-width: 80vw !important; border: 3px solid #fff !important; border-radius: 0 !important; display: block !important; }}
             #modal-add-btn {{ position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 40px !important; background: rgba(40, 167, 69, 0.9) !important; color: white !important; font-size: 15px !important; font-weight: 900 !important; border: none !important; border-bottom: 2px solid #fff !important; z-index: 21000 !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; }}
             .close-btn {{ position: fixed !important; top: 50px !important; right: 30px !important; color: #fff !important; font-size: 50px !important; z-index: 21100 !important; cursor: pointer; }}
-            .expand-container {{ display: flex; flex-wrap: wrap; gap: 8px; overflow: hidden; max-height: 42px; transition: max-height 0.3s; }}
-            .expand-toggle:checked + .expand-container {{ max-height: 1000px; }}
-            .expand-label::after {{ content: '▼ すべて表示'; }}
-            .expand-toggle:checked ~ .expand-label::after {{ content: '▲ 閉じる'; }}
         </style>
         <script>
             document.addEventListener('DOMContentLoaded', function() {{
-
                 var changelist = document.querySelector('#changelist');
                 if (!changelist) return;
 
@@ -283,11 +410,10 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var origPaginator = document.querySelector('#changelist .paginator');
                 var origActions = document.querySelector('#changelist .actions');
 
-                // ── 行1：スマートトップバー ──
+                // 検索窓行
                 var topBar = document.createElement('div');
                 topBar.className = 'smart-top-bar';
 
-                // 検索フォーム
                 var searchForm = document.createElement('form');
                 searchForm.method = 'GET';
                 searchForm.className = 'smart-search-form';
@@ -303,19 +429,9 @@ class BaseProductAdmin(admin.ModelAdmin):
                 searchForm.appendChild(sSubmit);
                 topBar.appendChild(searchForm);
 
-                // ✨ ページネーターを横並びに再構築
                 if (origPaginator) {{
                     var pagDiv = document.createElement('div');
                     pagDiv.className = 'smart-paginator';
-
-                    // aタグ（ページ番号リンク）を取得
-                    var allLinks = origPaginator.querySelectorAll('a');
-                    var currentSpan = origPaginator.querySelector('span.this-page');
-                    var totalText = origPaginator.textContent.match(/\d+\s*商品一覧/);
-
-                    // ページネーターのliやaを横に並べる
-                    var items = origPaginator.querySelectorAll('li, a, span.this-page');
-                    // liベースで処理
                     var lis = origPaginator.querySelectorAll('li');
                     if (lis.length > 0) {{
                         lis.forEach(function(li) {{
@@ -334,38 +450,27 @@ class BaseProductAdmin(admin.ModelAdmin):
                             }}
                         }});
                     }} else {{
-                        // liがない場合はaタグだけ処理
-                        allLinks.forEach(function(a) {{
+                        origPaginator.querySelectorAll('a').forEach(function(a) {{
                             var newA = document.createElement('a');
                             newA.href = a.href;
                             newA.textContent = a.textContent.trim();
                             pagDiv.appendChild(newA);
                         }});
-                        if (currentSpan) {{
-                            var newS = document.createElement('span');
-                            newS.className = 'this-page';
-                            newS.textContent = currentSpan.textContent.trim();
-                            pagDiv.appendChild(newS);
-                        }}
                     }}
-
-                    // 合計数テキスト
+                    var totalText = origPaginator.textContent.match(/\d+\s*商品一覧/);
                     if (totalText) {{
                         var countSpan = document.createElement('span');
                         countSpan.className = 'total-count';
                         countSpan.textContent = totalText[0];
                         pagDiv.appendChild(countSpan);
                     }}
-
                     topBar.appendChild(pagDiv);
                 }}
 
-                // スペーサー
                 var spacer = document.createElement('div');
                 spacer.className = 'smart-top-bar-spacer';
                 topBar.appendChild(spacer);
 
-                // 右詰めボタン群
                 var btnGroup = document.createElement('div');
                 btnGroup.className = 'smart-btn-group';
 
@@ -390,26 +495,19 @@ class BaseProductAdmin(admin.ModelAdmin):
                     btnUpload.style.cssText = 'background:#f0ad4e; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px;';
                     btnGroup.appendChild(btnUpload);
                 }}
-
                 topBar.appendChild(btnGroup);
 
-                // ── 行2：スマートアクションバー（操作 + Run + 選択数） ──
+                // 操作行
                 var actionBar = document.createElement('div');
                 actionBar.className = 'smart-action-bar';
 
                 if (origActions) {{
-                    var actionForm = origActions.closest('form');
-
-                    // セレクト
                     var sel = origActions.querySelector('select');
                     if (sel) {{
                         var newSel = sel.cloneNode(true);
-                        // 値変更時に元のセレクトにも反映
                         newSel.addEventListener('change', function() {{ sel.value = this.value; }});
                         actionBar.appendChild(newSel);
                     }}
-
-                    // ✨ Runボタン：元のフォームをsubmitする
                     var runBtn = document.createElement('button');
                     runBtn.type = 'button';
                     runBtn.className = 'run-btn';
@@ -420,8 +518,6 @@ class BaseProductAdmin(admin.ModelAdmin):
                         if (origRun) origRun.click();
                     }});
                     actionBar.appendChild(runBtn);
-
-                    // 選択数ラベル
                     var counter = origActions.querySelector('.action-counter');
                     if (counter) {{
                         var newCounter = document.createElement('span');
@@ -431,169 +527,17 @@ class BaseProductAdmin(admin.ModelAdmin):
                     }}
                 }}
 
-                // changelist の直前に挿入
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
-                // ✨ スクロール前からwidthを明示的に設定してspacerを効かせる
-                setTimeout(function() {{
-                    var w = document.documentElement.clientWidth - topBar.getBoundingClientRect().left;
-                    topBar.style.width = w + "px";
-                    actionBar.style.width = w + "px";
-                }}, 100);
-
-                // ✨ 全要素の初期位置を記録
-                var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
-                // ✨ 全要素の初期位置・サイズを記録（固定前）
-                var msgList = document.querySelector(".messagelist");
-                var header = document.querySelector("#header");
-                var breadcrumbs = document.querySelector(".breadcrumbs");
-                var headerH = header ? header.offsetHeight : 75;
-                var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
-                var msgListH = msgList ? msgList.offsetHeight : 0;
-                var topBarH = topBar.offsetHeight;
-                var actionBarH = actionBar.offsetHeight;
-                var contentLeft = topBar.getBoundingClientRect().left;
-                    contentWidth = document.documentElement.clientWidth - contentLeft;
-                var contentWidth = document.documentElement.clientWidth - contentLeft;
-                var msgListOrigTop = msgList ? msgList.getBoundingClientRect().top + window.scrollY : 0;
-
-                // ✨ ヘッダー・パンくずを固定
-                if (header) {{
-                    header.style.position = "fixed";
-                    header.style.top = "0";
-                    header.style.left = "0";
-                    header.style.right = "0";
-                    header.style.zIndex = "2000";
-                    header.style.width = "100%";
-                }}
-                if (breadcrumbs) {{
-                    breadcrumbs.style.position = "fixed";
-                    breadcrumbs.style.top = headerH + "px";
-                    breadcrumbs.style.left = "0";
-                    breadcrumbs.style.right = "0";
-                    breadcrumbs.style.zIndex = "1999";
-                    breadcrumbs.style.width = "100%";
-                    breadcrumbs.style.background = "#1a1c23";
-                }}
-
-                // ✨ ヘッダー・パンくず・クイック検索分のスペーサーを挿入
-                var totalFixedH = headerH + breadcrumbsH + msgListH;
-                var spacerDiv = document.createElement("div");
-                spacerDiv.style.height = totalFixedH + "px";
-                spacerDiv.style.display = "block";
-                if (msgList && msgList.parentNode) {{
-                    // クイック検索の次の兄弟要素の前に挿入
-                    var nextSibling = msgList.nextSibling;
-                    if (nextSibling) {{
-                        msgList.parentNode.insertBefore(spacerDiv, nextSibling);
-                    }} else {{
-                        msgList.parentNode.appendChild(spacerDiv);
-                    }}
-                // 左メニューにmargin-topを追加
-                var navSidebar = document.querySelector("#nav-sidebar");
-                var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
-                if (navSidebar) {{
-
-                    var sidebarTop = navSidebar.getBoundingClientRect().top;
-                    navSidebar.style.position = "fixed";
-                    navSidebar.style.top = (headerH + breadcrumbsH) + "px";
-                    navSidebar.style.left = "0";
-                    navSidebar.style.width = sidebarW + "px";
-                    navSidebar.style.height = "calc(100vh - " + (headerH + breadcrumbsH) + "px)";
-                    navSidebar.style.overflowY = "auto";
-                    navSidebar.style.zIndex = "1500";
-                    // コンテンツエリアにmargin-leftを追加
-                    var contentMain = document.querySelector("#content-main");
-                    var contentWrapper = document.querySelector("#content");
-                    if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
-                    // contentLeftとcontentWidthをサイドバー固定後に再計算
-                    contentLeft = topBar.getBoundingClientRect().left;
-                    contentWidth = document.documentElement.clientWidth - contentLeft;
-                    contentWidth = window.innerWidth - contentLeft;
-                }}
-                // ✨ ヘッダー分のpaddingをbodyに追加（左メニュー対策）
-                
-                // 左メニューのpadding
-                }}
-
-                // ✨ クイック検索も即座に固定
-                if (msgList) {{
-                    msgList.style.position = "fixed";
-                    msgList.style.top = (headerH + breadcrumbsH) + "px";
-                    var msgLeft = sidebarW + 10;
-                    msgList.style.left = msgLeft + "px";
-                    msgList.style.width = (document.documentElement.clientWidth - msgLeft) + "px";
-                    msgList.style.zIndex = "500";
-                    msgList.style.background = "#121212";
-                    msgList.style.padding = "0";
-                    // li間の隙間を塞ぐ
-                    var lis = msgList.querySelectorAll("li");
-                    lis.forEach(function(li) {{
-                        li.style.background = "#121212";
-                        li.style.marginBottom = "0px";
-                        li.style.paddingBottom = "0";
-                        var innerDiv = li.querySelector("div");
-                        if (innerDiv) innerDiv.style.background = "#121212";
-                    }});
-                    msgList.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
-                }}
-
-                function applyFixed(el, top) {{
-                    el.style.position = "fixed";
-                    el.style.top = top + "px";
-                    el.style.left = contentLeft + "px";
-                    el.style.width = (document.documentElement.clientWidth - contentLeft) + "px";
-                    el.style.zIndex = "600";
-                    el.style.background = "#121212";
-                    el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
-                }}
-                function clearFixed(el) {{
-                    el.style.position = "";
-                    el.style.top = "";
-                    el.style.left = "";
-                    el.style.right = "";
-                    el.style.width = "";
-                    el.style.background = "";
-                    el.style.boxShadow = "";
-                }}
-
-                // ✨ スクロールで検索窓・操作行・商品名行を固定
-                var threshold = msgListOrigTop - headerH - breadcrumbsH;
-                window.addEventListener("scroll", function() {{
-                    var scrollY = window.scrollY;
-                    if (scrollY > threshold) {{
-                        applyFixed(topBar, headerH + breadcrumbsH + msgListH); topBar.style.zIndex = "501";
-                        applyFixed(actionBar, headerH + breadcrumbsH + msgListH + topBarH); actionBar.style.zIndex = "502";
-                        var thead = document.querySelector("#result_list thead");
-                        var resultList = document.querySelector("#result_list");
-                        if (thead && resultList) {{
-                            var tableLeft = resultList.getBoundingClientRect().left;
-                            var tableWidth = resultList.offsetWidth;
-                            var ths = thead.querySelectorAll("th");
-                            ths.forEach(function(th) {{ th.style.width = th.offsetWidth + "px"; }});
-                            thead.style.position = "fixed";
-                            thead.style.top = (headerH + breadcrumbsH + msgListH + topBarH + actionBarH) + "px";
-                            thead.style.left = tableLeft + "px";
-                            thead.style.width = tableWidth + "px";
-                            thead.style.zIndex = "503";
-                            thead.style.background = "#1a1a1a";
-                            thead.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
-                        }}
-                    }} else {{
-                        clearFixed(topBar);
-                        clearFixed(actionBar);
-                        var thead = document.querySelector("#result_list thead");
-                        if (thead) clearFixed(thead);
-                    }}
-                }});
             }});
         </script>"""
+        
         storage = messages.get_messages(request)
         is_already_sent = any("キャラクタークイック検索" in str(m) for m in storage)
         storage.used = False 
         
         if not is_already_sent:
-            self.message_user(request, mark_safe(COMMON_STYLE + custom_css + char_p + work_p + pagination_html))
+            self.message_user(request, mark_safe(COMMON_STYLE + custom_css + accordion_html + pagination_html))
             
         return super().changelist_view(request, extra_context)
 
@@ -603,18 +547,6 @@ class BaseProductAdmin(admin.ModelAdmin):
     def move_to_archive(self, request, queryset): queryset.update(is_archived=True)
     @admin.action(description="⏪ 選択した商品を商品一覧に戻す")
     def restore_from_archive(self, request, queryset): queryset.update(is_archived=False)
-
-# ✨ 「すべて表示」ボタンをタイトルの右上に配置
-def create_panel(pid, icon, title, color, btns, is_active, back_btn_html):
-    chk = 'checked' if is_active else ''
-    return mark_safe(f'''<div style="margin-bottom: 4px; padding: 10px; margin-left: 20px; margin-right: 20px; background: #1a1a1a; border-radius: 12px; border: 2px solid {color}44;">
-<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-  <h3 style="margin:0; font-size:15px; display:flex; align-items:center; gap:10px; color:{color}; font-weight:900;">{icon} {title} {back_btn_html}</h3>
-  <input type="checkbox" id="{pid}-toggle" class="expand-toggle" style="display: none;" {chk}>
-  <label for="{pid}-toggle" class="expand-label" style="color:#aaa; font-size:12px; cursor:pointer; font-weight:800; white-space:nowrap; padding:4px 12px; border:1px solid #444; border-radius:20px;"></label>
-</div>
-<div id="{pid}-container" class="expand-container">{btns}</div>
-</div>''')
 
 @admin.register(Show_ProductList_A4)
 class A4PosterAdmin(BaseProductAdmin):
