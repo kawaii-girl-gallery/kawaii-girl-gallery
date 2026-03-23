@@ -593,21 +593,23 @@ function closePanel(id) {{
                         actionBar.style.width = topBarW + "px";
                         actionBar.style.zIndex = "599";
                         actionBar.style.background = "#1a1a1a";
-                        // 商品名行も固定
+                        // 商品名行を固定
                         var thead = document.querySelector("#result_list thead");
-                        var resultList = document.querySelector("#result_list");
-                        if (thead && resultList) {{
-                            if (!thead._widthSet) {{
-                                var ths = thead.querySelectorAll("th");
-                                ths.forEach(function(th) {{ th.style.width = th.offsetWidth + "px"; }});
-                                thead._widthSet = true;
-                            }}
+                        var tbody = document.querySelector("#result_list tbody");
+                        if (thead && !thead._fixed) {{
+                            var theadH = thead.offsetHeight;
+                            var ths = thead.querySelectorAll("th");
+                            ths.forEach(function(th) {{ th.style.width = th.offsetWidth + "px"; }});
                             thead.style.position = "fixed";
                             thead.style.top = (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px";
                             thead.style.left = topBarLeft + "px";
                             thead.style.width = topBarW + "px";
                             thead.style.zIndex = "598";
                             thead.style.background = "#1a1a1a";
+                            thead.style.tableLayout = "fixed";
+                            // theadが消えた分の高さをtbodyに追加
+                            if (tbody) tbody.style.marginTop = theadH + "px";
+                            thead._fixed = true;
                         }}
                     }} else {{
                         topBar.style.position = "";
@@ -627,7 +629,9 @@ function closePanel(id) {{
                             thead.style.left = "";
                             thead.style.width = "";
                             thead.style.background = "";
-                            thead._widthSet = false;
+                            thead._fixed = false;
+                            var tbody = document.querySelector("#result_list tbody");
+                            if (tbody) tbody.style.marginTop = "";
                         }}
                     }}
                 }});
