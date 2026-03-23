@@ -43,10 +43,7 @@ COMMON_STYLE = """
         gap: 0px; padding: 0; z-index: 0; opacity: 0.22; pointer-events: none; overflow: hidden; filter: blur(0.5px);
     }
     .home-tile-bg img { width: 100%; height: 160px; object-fit: cover; border-radius: 0px; }
-    #container { height: 100vh !important; overflow: hidden !important; display: flex !important; flex-direction: column !important; }
-    #main { flex: 1 !important; overflow: hidden !important; display: flex !important; }
-    #nav-sidebar { overflow-y: auto !important; flex-shrink: 0 !important; }
-    #content-main { overflow-y: auto !important; flex: 1 !important; height: 100% !important; }
+    #container { height: auto !important; overflow: visible !important; }
     .results { overflow: visible !important; }
     #content { position: relative; z-index: 1; background: rgba(18, 18, 18, 0.85) !important; margin: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     #content-main { padding: 0 !important; }
