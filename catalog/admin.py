@@ -574,6 +574,7 @@ function closePanel(id) {{
                 var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
                 var fixedTopVal = header ? header.offsetHeight : 75;
                 fixedTopVal += breadcrumbs ? breadcrumbs.offsetHeight : 37;
+                var scrollBarW = window.innerWidth - document.documentElement.clientWidth;
                 var topBarW = topBar.offsetWidth;
                 var topBarLeft = topBar.getBoundingClientRect().left;
                 // ✨ スクロールで検索窓行・操作行を固定
@@ -584,13 +585,14 @@ function closePanel(id) {{
                         topBar.style.position = "fixed";
                         topBar.style.top = fixedTopVal + "px";
                         topBar.style.left = topBarLeft + "px";
-                        topBar.style.width = topBarW + "px";
+                        var adjustedW = document.documentElement.clientWidth - topBarLeft;
+                        topBar.style.width = adjustedW + "px";
                         topBar.style.zIndex = "600";
                         topBar.style.background = "#1a1a1a";
                         actionBar.style.position = "fixed";
                         actionBar.style.top = (fixedTopVal + topBar.offsetHeight) + "px";
                         actionBar.style.left = topBarLeft + "px";
-                        actionBar.style.width = topBarW + "px";
+                        actionBar.style.width = adjustedW + "px";
                         actionBar.style.zIndex = "599";
                         actionBar.style.background = "#1a1a1a";
                         // 商品名行をコピーして固定表示
@@ -599,7 +601,7 @@ function closePanel(id) {{
                         if (thead && resultTable && !document.getElementById("fixed-thead-clone")) {{
                             var cloneTable = document.createElement("table");
                             cloneTable.id = "fixed-thead-clone";
-                            cloneTable.style.cssText = "position:fixed; top:" + (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px; left:" + topBarLeft + "px; width:" + topBarW + "px; z-index:598; background:#1a1a1a; table-layout:auto; border-collapse:collapse;";
+                            cloneTable.style.cssText = "position:fixed; top:" + (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px; left:" + topBarLeft + "px; width:" + adjustedW + "px; z-index:598; background:#1a1a1a; table-layout:auto; border-collapse:collapse;";
                             var cloneThead = thead.cloneNode(true);
                             var origThs = thead.querySelectorAll("th");
                             var cloneThs = cloneThead.querySelectorAll("th");
