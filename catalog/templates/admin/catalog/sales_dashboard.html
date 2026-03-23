@@ -5,39 +5,46 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
 
 <style>
-    /* 共通フォント・ヘッダー装飾 */
     @import url('https://fonts.googleapis.com/css2?family=Rounded+Mplus+1c:wght@700;900&display=swap');
-    body, #header, #content, h1 { font-family: 'Rounded Mplus 1c', sans-serif !important; }
-    
-    /* ✨ ヘッダー装飾 */
-    #header { 
-        background: #1a1c23 !important; 
-        padding: 15px 25px !important; 
-        border-bottom: 4px solid transparent !important; 
-        border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important; 
+    body, #header, #content, #nav-sidebar, h1, h2, h3, .module caption { font-family: 'Rounded Mplus 1c', sans-serif !important; }
+
+    #header {
+        background: #1a1c23 !important;
+        padding: 15px 25px !important;
+        border-bottom: 4px solid transparent !important;
+        border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important;
     }
-    #branding h1 { 
-        font-size: 28px !important; 
-        font-weight: 900 !important; 
-        display: flex !important; 
-        align-items: center !important; 
-        gap: 12px !important; 
-        background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important; 
-        -webkit-background-clip: text !important; 
-        -webkit-text-fill-color: transparent !important; 
+    #branding h1 {
+        font-size: 28px !important;
+        font-weight: 900 !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 12px !important;
+        background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
     }
     #branding h1::before { content: '💕'; -webkit-text-fill-color: initial !important; font-size: 26px; }
+    #branding h1 a { color: inherit !important; text-decoration: none !important; }
 
-    /* 💡 強制カラー適用設定：この class が付いている時にオレンジ色を維持 */
-    .admin-custom-mode .period-title { 
-        background: #f0ad4e !important; 
-        color: #fff !important; 
-        padding: 10px 20px; 
-        border-radius: 8px; 
+    .breadcrumbs { background: #1a1c23 !important; color: #ccc !important; }
+    .breadcrumbs a { color: #aaa !important; }
+
+    #nav-sidebar .module caption a { pointer-events: none !important; cursor: default !important; text-decoration: none !important; color: inherit !important; }
+
+    .app-catalog_pedia caption, .app-catalog_pedia h2 { background: #6f42c1 !important; color: #fff !important; }
+    .app-catalog_a4 caption, .app-catalog_a4 h2 { background: #ff4d94 !important; color: #fff !important; }
+    .app-catalog_tcg caption, .app-catalog_tcg h2 { background: #2684ff !important; color: #fff !important; }
+    .app-catalog_admin_custom caption, .app-catalog_admin_custom h2, .admin-custom-mode h2, .admin-custom-mode caption, .admin-custom-mode .period-title { background: #f0ad4e !important; color: #fff !important; }
+
+    .admin-custom-mode .period-title {
+        background: #f0ad4e !important;
+        color: #fff !important;
+        padding: 10px 20px;
+        border-radius: 8px;
         display: inline-block;
     }
 
-    /* ダッシュボードヘッダー */
     .dashboard-header { margin-bottom: 30px; padding: 20px; background: #1a1a1a; border-radius: 12px; border: 1px solid #333; }
     .period-title { font-size: 28px; color: #00ffcc; margin: 0; font-weight: bold; }
     .date-form { display: flex; align-items: center; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
@@ -45,35 +52,58 @@
     .submit-btn { background: #ff4d88; color: white; border: none; padding: 9px 20px; border-radius: 4px; font-weight: bold; cursor: pointer; transition: 0.2s; }
     .submit-btn:hover { background: #ff70a1; transform: scale(1.05); }
 
-    /* ✨ リセットエリア専用スタイル */
-    .reset-area { 
-        margin-top: 20px; padding: 15px; 
-        background: rgba(255, 68, 68, 0.05); 
-        border: 1px dashed #ff4444; 
-        border-radius: 10px; 
+    .reset-area {
+        margin-top: 20px; padding: 15px;
+        background: rgba(255, 68, 68, 0.05);
+        border: 1px dashed #ff4444;
+        border-radius: 10px;
         display: flex; align-items: center; justify-content: space-between;
     }
-    .reset-btn { 
-        background: #ff4444; color: #fff; border: none; padding: 8px 20px; 
+    .reset-btn {
+        background: #ff4444; color: #fff; border: none; padding: 8px 20px;
         border-radius: 20px; font-weight: 900; cursor: pointer; transition: 0.3s;
     }
     .reset-btn:hover { background: #ff6666; box-shadow: 0 0 15px rgba(255, 68, 68, 0.4); }
-    
-    /* 統計グリッド */
+
     .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-top: 20px; }
     .stat-card { background: #1e1e1e; padding: 25px; border-radius: 12px; border: 2px solid #333; text-align: center; font-weight: 900; }
     .stat-label { color: #888; font-size: 14px; margin-bottom: 10px; }
     .stat-value { font-size: 32px; color: #fff; font-weight: bold; }
     .stat-unit { font-size: 16px; color: #888; margin-left: 4px; }
-
-    /* 熱量カード（特別色） */
     .heat-card { border-color: #ff4d88; background: linear-gradient(145deg, #1e1e1e, #251a1f); }
 </style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.body.classList.add('app-catalog_admin_custom');
+
+        var header = document.querySelector('#header');
+        var breadcrumbs = document.querySelector('.breadcrumbs');
+        var navSidebar = document.querySelector('#nav-sidebar');
+        var headerH = header ? header.offsetHeight : 75;
+        var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 37;
+        var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
+
+        if (header) {
+            header.style.cssText += 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;';
+        }
+        if (breadcrumbs) {
+            document.body.appendChild(breadcrumbs);
+            breadcrumbs.style.cssText = 'position: fixed !important; top: ' + headerH + 'px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1999 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important;';
+        }
+        if (navSidebar) {
+            navSidebar.style.cssText += 'position: fixed !important; top: ' + (headerH + breadcrumbsH) + 'px !important; left: 0 !important; width: ' + sidebarW + 'px !important; height: calc(100vh - ' + (headerH + breadcrumbsH) + 'px) !important; overflow-y: auto !important; z-index: 1500 !important;';
+            var content = document.querySelector('#content');
+            if (content) content.style.marginLeft = sidebarW + 'px';
+        }
+        document.body.style.paddingTop = (headerH + breadcrumbsH) + 'px';
+    });
+</script>
 
 <div id="content-main" class="{{ cl_class }}">
     <div class="dashboard-header">
         <h1 class="period-title">📊 集計期間：{{ period_title }}</h1>
-        
+
         <form method="get" class="date-form">
             <span style="color: #888;">期間変更:</span>
             <input type="text" name="start_date" id="start_date" class="custom-date-picker" value="{{ start_date }}">
@@ -102,7 +132,7 @@
             <div class="stat-label">売上合計</div>
             <div class="stat-value price-tag" style="color: #00ffcc;">¥{{ stats.total_revenue }}</div>
         </div>
-        
+
         <div class="stat-card">
             <div class="stat-label">販売点数</div>
             <div class="stat-value">{{ stats.total_items }}<span class="stat-unit">件</span></div>
