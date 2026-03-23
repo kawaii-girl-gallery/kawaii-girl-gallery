@@ -171,12 +171,12 @@ class BaseProductAdmin(admin.ModelAdmin):
 
             /* ✨ サイト上部〜テーブルヘッダーまで全固定 */
             #header {{ position: sticky !important; top: 0 !important; z-index: 500 !important; }}
-            .breadcrumbs {{ position: sticky !important; top: 75px !important; z-index: 490 !important; background: #1a1c23 !important; }}
-            .quick-search-sticky {{ position: sticky !important; top: 116px !important; z-index: 480 !important; background: #121212 !important; padding: 4px 0; }}
-            .smart-top-bar {{ position: sticky !important; top: 353px !important; z-index: 470 !important; }}
-            .smart-action-bar {{ position: sticky !important; top: 404px !important; z-index: 460 !important; }}
+            .breadcrumbs {{ position: sticky !important; top: 50px !important; z-index: 490 !important; background: #1a1c23 !important; }}
+            .quick-search-sticky {{ position: sticky !important; top: 80px !important; z-index: 480 !important; background: #121212 !important; padding: 4px 0; }}
+            .smart-top-bar {{ position: sticky !important; top: 240px !important; z-index: 470 !important; }}
+            .smart-action-bar {{ position: sticky !important; top: 289px !important; z-index: 460 !important; }}
             #result_list {{ overflow: visible !important; }}
-            #result_list thead {{ position: sticky !important; top: 404px !important; z-index: 450 !important; }}
+            #result_list thead {{ position: sticky !important; top: 335px !important; z-index: 450 !important; }}
             #result_list thead th {{ background: #1a1a1a !important; border-bottom: 2px solid #333 !important; }}
             /* 商品一覧タイトルを非表示 */
             #content h1 {{ display: none !important; }}
