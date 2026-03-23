@@ -604,7 +604,7 @@ function closePanel(id) {{
                             var origThs = thead.querySelectorAll("th");
                             var cloneThs = cloneThead.querySelectorAll("th");
                             origThs.forEach(function(th, i) {{
-                                if (cloneThs[i]) cloneThs[i].style.width = th.offsetWidth + "px";
+                                if (cloneThs[i]) {{ cloneThs[i].style.width = th.getBoundingClientRect().width + "px"; cloneThs[i].style.boxSizing = "border-box"; }}
                             }});
                             cloneTable.appendChild(cloneThead);
                             document.body.appendChild(cloneTable);
