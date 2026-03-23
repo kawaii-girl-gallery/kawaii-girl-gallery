@@ -175,7 +175,9 @@ class BaseProductAdmin(admin.ModelAdmin):
             .quick-search-sticky {{ position: sticky !important; top: 116px !important; z-index: 480 !important; background: #121212 !important; padding: 4px 0; }}
             .smart-top-bar {{ position: sticky !important; top: 353px !important; z-index: 470 !important; }}
             .smart-action-bar {{ position: sticky !important; top: 404px !important; z-index: 460 !important; }}
-            #result_list thead th {{ position: sticky !important; top: 452px !important; z-index: 450 !important; background: #1a1a1a !important; }}
+            #result_list {{ overflow: visible !important; }}
+            #result_list thead {{ position: sticky !important; top: 404px !important; z-index: 450 !important; }}
+            #result_list thead th {{ background: #1a1a1a !important; border-bottom: 2px solid #333 !important; }}
             /* 商品一覧タイトルを非表示 */
             #content h1 {{ display: none !important; }}
 
