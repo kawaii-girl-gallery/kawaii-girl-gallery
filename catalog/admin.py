@@ -568,6 +568,14 @@ function closePanel(id) {{
                 if (tabWrap) document.body.appendChild(tabWrap);
                 if (charPanel) document.body.appendChild(charPanel);
                 if (workPanel) document.body.appendChild(workPanel);
+                // ✨ スクロール前にth幅を記録
+                var theadForClone = document.querySelector("#result_list thead");
+                var thWidths = [];
+                if (theadForClone) {{
+                    theadForClone.querySelectorAll("th").forEach(function(th) {{
+                        thWidths.push(th.getBoundingClientRect().width);
+                    }});
+                }}
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
                 // DOMに挿入後に位置を計算
@@ -606,7 +614,7 @@ function closePanel(id) {{
                             var origThs = thead.querySelectorAll("th");
                             var cloneThs = cloneThead.querySelectorAll("th");
                             origThs.forEach(function(th, i) {{
-                                if (cloneThs[i]) {{ cloneThs[i].style.width = th.getBoundingClientRect().width + "px"; cloneThs[i].style.boxSizing = "border-box"; }}
+                                if (cloneThs[i] && thWidths[i]) {{ cloneThs[i].style.width = thWidths[i] + "px"; cloneThs[i].style.boxSizing = "border-box"; }}
                             }});
                             cloneTable.appendChild(cloneThead);
                             document.body.appendChild(cloneTable);
