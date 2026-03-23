@@ -166,26 +166,60 @@ class BaseProductAdmin(admin.ModelAdmin):
             /* ✨ 商品一覧タイトルを非表示 */
             #content h1 {{ display: none !important; }}
 
-            /* ✨ 元の検索・ツールボックス・操作行を非表示 */
+            /* ✨ 元の検索・ツールボックス・操作行・ページネーターを非表示 */
             #changelist-search {{ display: none !important; }}
             .object-tools {{ display: none !important; }}
             #changelist .actions {{ display: none !important; }}
-
-            /* ✨ スマートトップバー（検索窓 + ページネーター） */
-            .smart-top-bar {{ display: flex; align-items: center; gap: 12px; background: #1a1a1a; padding: 10px 15px; border-radius: 10px; margin-bottom: 8px; flex-wrap: wrap; }}
-            .smart-top-bar .paginator {{ margin: 0 !important; border: none !important; background: none !important; color: #fff !important; }}
-            .smart-top-bar .paginator a {{ color: #00ffcc !important; }}
-            .smart-search-form {{ display: flex; align-items: center; gap: 6px; }}
-            .smart-search-form input[type=text] {{ background: #2a2a2a; border: 1px solid #555; color: #fff; border-radius: 8px; padding: 5px 12px; font-size: 13px; font-weight: 700; width: 180px; }}
-            .smart-search-form input[type=submit] {{ background: #333; border: 1px solid #555; color: #fff; border-radius: 8px; padding: 5px 14px; font-size: 12px; font-weight: 900; cursor: pointer; }}
-
-            /* ✨ スマートアクションバー（操作 + ボタン群） */
-            .smart-action-bar {{ display: flex; align-items: center; gap: 10px; background: #1a1a1a; padding: 8px 15px; border-radius: 10px; margin-bottom: 15px; flex-wrap: wrap; }}
-            .smart-action-bar select {{ background: #2a2a2a; border: 1px solid #555; color: #fff; border-radius: 8px; padding: 5px 10px; font-size: 13px; font-weight: 700; }}
-            .smart-action-bar input[type=submit] {{ background: #333; border: 1px solid #555; color: #fff; border-radius: 8px; padding: 5px 14px; font-size: 12px; font-weight: 900; cursor: pointer; }}
-            .smart-action-bar span.action-counter {{ color: #aaa; font-size: 12px; font-weight: 700; }}
-
             .top-paginator {{ display: none !important; }}
+            #changelist .paginator {{ display: none !important; }}
+
+            /* ✨ 行1：検索窓 + ページネーター + 右詰めボタン群 */
+            .smart-top-bar {{
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                background: #1a1a1a;
+                padding: 10px 15px;
+                border-radius: 10px;
+                margin-bottom: 8px;
+                flex-wrap: wrap;
+            }}
+            .smart-search-form {{ display: flex; align-items: center; gap: 6px; }}
+            .smart-search-form input[type=text] {{
+                background: #2a2a2a; border: 1px solid #555; color: #fff;
+                border-radius: 8px; padding: 5px 12px; font-size: 13px; font-weight: 700; width: 160px;
+            }}
+            .smart-search-form input[type=submit] {{
+                background: #333; border: 1px solid #555; color: #fff;
+                border-radius: 8px; padding: 5px 14px; font-size: 12px; font-weight: 900; cursor: pointer;
+            }}
+            .smart-paginator {{ color: #fff; font-weight: 700; font-size: 13px; }}
+            .smart-paginator a {{ color: #00ffcc !important; text-decoration: none; }}
+            .smart-top-bar-spacer {{ flex: 1; }}
+            .smart-btn-group {{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }}
+
+            /* ✨ 行2：操作セレクト + Run + 選択数 */
+            .smart-action-bar {{
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                background: #1a1a1a;
+                padding: 8px 15px;
+                border-radius: 10px;
+                margin-bottom: 15px;
+                flex-wrap: wrap;
+            }}
+            .smart-action-bar select {{
+                background: #2a2a2a; border: 1px solid #555; color: #fff;
+                border-radius: 8px; padding: 5px 10px; font-size: 13px; font-weight: 700;
+            }}
+            .smart-action-bar .run-btn {{
+                background: #333; border: 1px solid #555; color: #fff;
+                border-radius: 8px; padding: 5px 14px; font-size: 12px; font-weight: 900; cursor: pointer;
+            }}
+            .smart-action-bar .counter-label {{
+                color: #aaa; font-size: 12px; font-weight: 700;
+            }}
 
             #pos-modal {{ background-color: rgba(0, 0, 0, 0.98) !important; display: none; position: fixed !important; z-index: 20000 !important; top: 0; left: 0; width: 100vw; height: 100vh; }}
             .modal-nav {{ position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; cursor: pointer; padding: 20px; }}
@@ -206,21 +240,16 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var changelist = document.querySelector('#changelist');
                 if (!changelist) return;
 
-                // ✨ 検索フォームの入力要素を取得
+                // 元の要素を取得
                 var origSearchInput = document.querySelector('#searchbar');
-                var origSearchForm = document.querySelector('#changelist-search');
-
-                // ✨ ページネーターを取得
                 var origPaginator = document.querySelector('#changelist .paginator');
-
-                // ✨ 操作(actions)を取得
                 var origActions = document.querySelector('#changelist .actions');
 
-                // ── スマートトップバー（検索窓 ＋ ページネーター）──
+                // ── 行1：スマートトップバー（検索 + ページネーター + 右詰めボタン）──
                 var topBar = document.createElement('div');
                 topBar.className = 'smart-top-bar';
 
-                // 検索フォームを再構築
+                // 検索フォーム
                 var searchForm = document.createElement('form');
                 searchForm.method = 'GET';
                 searchForm.className = 'smart-search-form';
@@ -236,58 +265,84 @@ class BaseProductAdmin(admin.ModelAdmin):
                 searchForm.appendChild(sSubmit);
                 topBar.appendChild(searchForm);
 
-                // ページネーターをコピー
+                // ページネーター
                 if (origPaginator) {{
-                    var pagClone = origPaginator.cloneNode(true);
-                    topBar.appendChild(pagClone);
-                    origPaginator.style.display = 'none';
+                    var pagWrap = document.createElement('div');
+                    pagWrap.className = 'smart-paginator';
+                    pagWrap.innerHTML = origPaginator.innerHTML;
+                    topBar.appendChild(pagWrap);
                 }}
 
-                // ── スマートアクションバー（操作 ＋ ボタン群）──
-                var actionBar = document.createElement('div');
-                actionBar.className = 'smart-action-bar';
+                // スペーサー（右詰め用）
+                var spacer = document.createElement('div');
+                spacer.className = 'smart-top-bar-spacer';
+                topBar.appendChild(spacer);
 
-                // 操作セレクトとRunボタンをコピー
-                if (origActions) {{
-                    var sel = origActions.querySelector('select');
-                    var run = origActions.querySelector('input[type=submit]');
-                    var counter = origActions.querySelector('.action-counter');
-                    if (sel) actionBar.appendChild(sel.cloneNode(true));
-                    if (run) actionBar.appendChild(run.cloneNode(true));
-                    if (counter) {{
-                        var c = counter.cloneNode(true);
-                        c.className = 'action-counter';
-                        c.style.cssText = 'color:#aaa; font-size:12px; font-weight:700;';
-                        actionBar.appendChild(c);
-                    }}
-                }}
+                // 右詰めボタン群
+                var btnGroup = document.createElement('div');
+                btnGroup.className = 'smart-btn-group';
 
-                // スライド確認ボタン
                 var btnSlide = document.createElement('a');
                 btnSlide.href = 'javascript:void(0)';
                 btnSlide.setAttribute('onclick', 'bulkCarousel()');
                 btnSlide.innerHTML = '🎥 スライド拡大確認';
                 btnSlide.style.cssText = 'background:#007bff; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px; cursor:pointer;';
-                actionBar.appendChild(btnSlide);
+                btnGroup.appendChild(btnSlide);
 
-                // カートへ追加ボタン
                 var btnCart = document.createElement('a');
                 btnCart.href = 'javascript:void(0)';
                 btnCart.setAttribute('onclick', 'bulkAddToCart()');
                 btnCart.innerHTML = '🛒 カートへ追加';
                 btnCart.style.cssText = 'background:#28a745; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px; cursor:pointer;';
-                actionBar.appendChild(btnCart);
+                btnGroup.appendChild(btnCart);
 
-                // 一括アップロードボタン（管理者のみ）
                 if ({is_admin_flag} === true) {{
                     var btnUpload = document.createElement('a');
                     btnUpload.href = 'bulk-upload/';
                     btnUpload.innerHTML = '📂 一括アップロード ＋';
                     btnUpload.style.cssText = 'background:#f0ad4e; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px;';
-                    actionBar.appendChild(btnUpload);
+                    btnGroup.appendChild(btnUpload);
                 }}
 
-                // ✨ changelist の直前に挿入
+                topBar.appendChild(btnGroup);
+
+                // ── 行2：スマートアクションバー（操作 + Run + 選択数）──
+                var actionBar = document.createElement('div');
+                actionBar.className = 'smart-action-bar';
+
+                if (origActions) {{
+                    // 操作セレクト
+                    var sel = origActions.querySelector('select');
+                    if (sel) {{
+                        var newSel = sel.cloneNode(true);
+                        actionBar.appendChild(newSel);
+                    }}
+                    // Runボタン
+                    var run = origActions.querySelector('input[type=submit]');
+                    if (run) {{
+                        var newRun = run.cloneNode(true);
+                        newRun.className = 'run-btn';
+                        // submitはformが必要なのでformで包む
+                        var actionForm = origActions.closest('form');
+                        if (actionForm) {{
+                            newRun.addEventListener('click', function() {{
+                                // 元のRunボタンをクリック
+                                if (run) run.click();
+                            }});
+                        }}
+                        actionBar.appendChild(newRun);
+                    }}
+                    // 選択数ラベル
+                    var counter = origActions.querySelector('.action-counter');
+                    if (counter) {{
+                        var newCounter = document.createElement('span');
+                        newCounter.className = 'counter-label';
+                        newCounter.textContent = counter.textContent;
+                        actionBar.appendChild(newCounter);
+                    }}
+                }}
+
+                // changelist の直前に挿入
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
             }});
