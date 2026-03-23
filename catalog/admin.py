@@ -44,6 +44,9 @@ COMMON_STYLE = """
     }
     .home-tile-bg img { width: 100%; height: 160px; object-fit: cover; border-radius: 0px; }
     #content { position: relative; z-index: 1; background: rgba(18, 18, 18, 0.85) !important; margin: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+    #content-main { padding: 0 !important; }
+    #changelist-form { padding: 0 10px !important; }
+    #changelist { margin: 0 !important; }
     .dashboard #content { background: rgba(18, 18, 18, 0.7) !important; }
 </style>
 """
@@ -192,6 +195,8 @@ class BaseProductAdmin(admin.ModelAdmin):
                 border-radius: 10px;
                 margin-bottom: 4px;
                 flex-wrap: nowrap;
+                width: 100%;
+                box-sizing: border-box;
             }}
             .smart-search-form {{ display: flex; align-items: center; gap: 6px; flex-shrink: 0; }}
             .smart-search-form input[type=text] {{
@@ -231,6 +236,8 @@ class BaseProductAdmin(admin.ModelAdmin):
                 border-radius: 10px;
                 margin-bottom: 15px;
                 flex-wrap: wrap;
+                width: 100%;
+                box-sizing: border-box;
             }}
             .smart-action-bar select {{
                 background: #2a2a2a; border: 1px solid #555; color: #fff;
