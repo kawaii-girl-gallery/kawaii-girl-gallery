@@ -594,6 +594,34 @@ function closePanel(id) {{
                         actionBar.style.width = topBarW + "px";
                         actionBar.style.zIndex = "599";
                         actionBar.style.background = "#1a1a1a";
+                        // 商品名行も固定
+                        var thead = document.querySelector("#result_list thead");
+                        if (thead) {{
+                            var ths = thead.querySelectorAll("th");
+                            ths.forEach(function(th) {{ th.style.width = th.offsetWidth + "px"; }});
+                            thead.style.position = "fixed";
+                            thead.style.top = (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px";
+                            thead.style.left = topBarLeft + "px";
+                            thead.style.width = topBarW + "px";
+                            thead.style.zIndex = "598";
+                            thead.style.background = "#1a1a1a";
+                        }}
+                        // 商品名行も固定
+                        var thead = document.querySelector("#result_list thead");
+                        var resultList = document.querySelector("#result_list");
+                        if (thead && resultList) {{
+                            if (!thead._widthSet) {{
+                                var ths = thead.querySelectorAll("th");
+                                ths.forEach(function(th) {{ th.style.width = th.offsetWidth + "px"; }});
+                                thead._widthSet = true;
+                            }}
+                            thead.style.position = "fixed";
+                            thead.style.top = (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px";
+                            thead.style.left = resultList.getBoundingClientRect().left + "px";
+                            thead.style.width = resultList.offsetWidth + "px";
+                            thead.style.zIndex = "598";
+                            thead.style.background = "#1a1a1a";
+                        }}
                     }} else {{
                         topBar.style.position = "";
                         topBar.style.top = "";
@@ -605,6 +633,15 @@ function closePanel(id) {{
                         actionBar.style.left = "";
                         actionBar.style.width = "";
                         actionBar.style.background = "";
+                        var thead = document.querySelector("#result_list thead");
+                        if (thead) {{
+                            thead.style.position = "";
+                            thead.style.top = "";
+                            thead.style.left = "";
+                            thead.style.width = "";
+                            thead.style.background = "";
+                            thead._widthSet = false;
+                        }}
                     }}
                 }});
             }});
