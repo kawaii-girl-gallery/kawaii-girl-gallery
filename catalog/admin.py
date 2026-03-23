@@ -169,7 +169,6 @@ class BaseProductAdmin(admin.ModelAdmin):
         is_admin_flag = 'true' if self.has_change_permission(request) else 'false'
         custom_css = f"""<style>
             #result_list thead th, #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
-            #result_list thead {{ position: sticky !important; top: 110px !important; z-index: 98 !important; }}
             #result_list thead th {{ background: #1a1a1a !important; }}
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
 
@@ -202,9 +201,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                 padding: 10px 15px;
                 border-radius: 10px;
                 margin-bottom: 4px;
-                position: sticky !important;
-                top: 0 !important;
-                z-index: 100 !important;
+                z-index: 10 !important;
                 flex-wrap: nowrap;
                 width: 100%;
                 box-sizing: border-box;
@@ -239,9 +236,7 @@ class BaseProductAdmin(admin.ModelAdmin):
 
             /* ✨ 行2：操作セレクト + Run + 選択数 */
             .smart-action-bar {{
-                position: sticky !important;
-                top: 55px !important;
-                z-index: 99 !important;
+                z-index: 9 !important;
                 display: flex;
                 align-items: center;
                 gap: 10px;
@@ -497,15 +492,15 @@ class BaseProductAdmin(admin.ModelAdmin):
 
                     if (scrollY > threshold) {{
                         // クイック検索
-                        if (msgList) {{ applyFixed(msgList, headerH + breadcrumbsH); msgList.style.background = "#121212"; msgList.style.zIndex = "610"; }}
+                        if (msgList) {{ applyFixed(msgList, headerH + breadcrumbsH); msgList.style.background = "#121212"; msgList.style.zIndex = "500"; }}
                         // 検索窓行
                         var qH = msgListH;
-                        applyFixed(topBar, headerH + breadcrumbsH + qH); topBar.style.zIndex = "609";
+                        applyFixed(topBar, headerH + breadcrumbsH + qH); topBar.style.zIndex = "501";
                         // 操作行
-                        applyFixed(actionBar, headerH + breadcrumbsH + qH + topBarH); actionBar.style.zIndex = "608";
+                        applyFixed(actionBar, headerH + breadcrumbsH + qH + topBarH); actionBar.style.zIndex = "502";
                         // 商品名行
                         var thead = document.querySelector("#result_list thead");
-                        if (thead) applyFixed(thead, headerH + breadcrumbsH + qH + topBarH + actionBarH);
+                        if (thead) {{ applyFixed(thead, headerH + breadcrumbsH + qH + topBarH + actionBarH); thead.style.zIndex = "503"; }}
                     }} else {{
                         if (msgList) clearFixed(msgList);
                         clearFixed(topBar);
