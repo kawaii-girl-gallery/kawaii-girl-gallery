@@ -488,6 +488,10 @@ class BaseProductAdmin(admin.ModelAdmin):
                     navSidebar.style.height = "calc(100vh - " + (headerH + breadcrumbsH) + "px)";
                     navSidebar.style.overflowY = "auto";
                     navSidebar.style.zIndex = "1500";
+                    // コンテンツエリアにmargin-leftを追加
+                    var contentMain = document.querySelector("#content-main");
+                    var contentWrapper = document.querySelector("#content");
+                    if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
                 }}
                 // ✨ ヘッダー分のpaddingをbodyに追加（左メニュー対策）
                 
