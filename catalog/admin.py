@@ -270,8 +270,8 @@ class BaseProductAdmin(admin.ModelAdmin):
 
 <!-- キャラクタータブ -->
 <div class="qs-tab-wrap">
-    <div class="qs-tab qs-tab-char" onclick="togglePanel('char-panel')">👤 キャラクター</div>
-    <div class="qs-tab qs-tab-work" onclick="togglePanel('work-panel')">🎬 原作作品</div>
+    <div class="qs-tab qs-tab-char" onclick="togglePanel('char-panel')">👤 キャラクター検索</div>
+    <div class="qs-tab qs-tab-work" onclick="togglePanel('work-panel')">🎬 原作作品検索</div>
 </div>
 
 <!-- キャラクター検索パネル -->
