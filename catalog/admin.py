@@ -475,12 +475,12 @@ class BaseProductAdmin(admin.ModelAdmin):
 
                     if (scrollY > threshold) {{
                         // クイック検索
-                        if (msgList) applyFixed(msgList, headerH + breadcrumbsH);
+                        if (msgList) {{ applyFixed(msgList, headerH + breadcrumbsH); msgList.style.background = "#121212"; msgList.style.zIndex = "610"; }}
                         // 検索窓行
                         var qH = msgListH;
-                        applyFixed(topBar, headerH + breadcrumbsH + qH);
+                        applyFixed(topBar, headerH + breadcrumbsH + qH); topBar.style.zIndex = "609";
                         // 操作行
-                        applyFixed(actionBar, headerH + breadcrumbsH + qH + topBarH);
+                        applyFixed(actionBar, headerH + breadcrumbsH + qH + topBarH); actionBar.style.zIndex = "608";
                         // 商品名行
                         var thead = document.querySelector("#result_list thead");
                         if (thead) applyFixed(thead, headerH + breadcrumbsH + qH + topBarH + actionBarH);
