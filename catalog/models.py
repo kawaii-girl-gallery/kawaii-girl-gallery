@@ -40,14 +40,11 @@ def process_product_image(img_path):
 
         # 日本語フォント（スタンプに使用）
         def load_font_ja(size):
-            # リポジトリに含めたフォントを優先
             import django.conf
             base_dir = django.conf.settings.BASE_DIR
             font_paths = [
-                os.path.join(base_dir, "catalog", "static", "fonts", "NotoSansJP-Bold.ttf"),
-                os.path.join(base_dir, "catalog", "static", "fonts", "NotoSansCJK-Bold.ttc"),
-                "/usr/share/fonts/truetype/noto/NotoSansCJK-Bold.ttc",
-                "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+                os.path.join(base_dir, "catalog", "static", "catalog", "fonts", "NotoSansJP-VariableFont_wght.ttf"),
+                os.path.join(base_dir, "staticfiles", "catalog", "fonts", "NotoSansJP-VariableFont_wght.ttf"),
                 "meiryo.ttc",
                 "msgothic.ttc",
             ]
