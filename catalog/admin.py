@@ -478,7 +478,17 @@ class BaseProductAdmin(admin.ModelAdmin):
                     msgList.parentNode.insertBefore(spacerDiv, msgList);
                 // 左メニューにmargin-topを追加
                 var navSidebar = document.querySelector("#nav-sidebar");
-                if (navSidebar) navSidebar.style.marginTop = (headerH + breadcrumbsH) + "px";
+                if (navSidebar) {{
+                    var sidebarW = navSidebar.offsetWidth;
+                    var sidebarTop = navSidebar.getBoundingClientRect().top;
+                    navSidebar.style.position = "fixed";
+                    navSidebar.style.top = (headerH + breadcrumbsH) + "px";
+                    navSidebar.style.left = "0";
+                    navSidebar.style.width = sidebarW + "px";
+                    navSidebar.style.height = "calc(100vh - " + (headerH + breadcrumbsH) + "px)";
+                    navSidebar.style.overflowY = "auto";
+                    navSidebar.style.zIndex = "1500";
+                }}
                 // ✨ ヘッダー分のpaddingをbodyに追加（左メニュー対策）
                 
                 // 左メニューのpadding
