@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import dj_database_url
 
 # プロジェクトのルートディレクトリ
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -17,12 +18,14 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'cloudinary_storage',
+    'cloudinary',
     'catalog', 
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # デザイン表示用
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -51,12 +54,12 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'config.wsgi.application'
 
-# --- データベース設定 ---
+# --- データベース設定（PostgreSQL） ---
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    'default': dj_database_url.config(
+        default=os.environ.get('DATABASE_URL'),
+        conn_max_age=600,
+    )
 }
 
 # --- 言語・時刻設定 ---
@@ -65,19 +68,20 @@ TIME_ZONE = 'Asia/Tokyo'
 USE_I18N = True
 USE_TZ = True
 
-# --- ✨ 静的ファイル (CSS/JS) の設定 ---
+# --- 静的ファイル設定 ---
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# 💡 修正点：WhiteNoiseを最もシンプルな設定（圧縮・キャッシュなし）に変更
-# これにより、CSSが読み込まれないトラブルを防ぎます
 STATICFILES_STORAGE = 'whitenoise.storage.StaticFilesStorage'
-
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
 
-# --- ✨ メディアファイルの設定 ---
+# --- Cloudinary設定（画像の永続化） ---
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.environ.get('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
+}
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -85,7 +89,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/admin/'
 
-# --- 🚀 パフォーマンス設定 ---
+# --- パフォーマンス設定 ---
 DATA_UPLOAD_MAX_NUMBER_FILES = 1000 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
 FILE_UPLOAD_MAX_MEMORY_SIZE = 104857600
