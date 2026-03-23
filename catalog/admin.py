@@ -354,7 +354,7 @@ function closePanel(id) {{
                 background: #333; border: 1px solid #555; color: #fff;
                 border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 900; cursor: pointer;
             }}
-            .smart-paginator {{ display: flex; align-items: center; gap: 4px; flex-shrink: 0; }}
+            .smart-paginator {{ display: flex; align-items: center; gap: 4px; flex-shrink: 1; flex-wrap: wrap; }}
             .smart-paginator a, .smart-paginator span.this-page {{
                 display: inline-flex !important; align-items: center; justify-content: center;
                 min-width: 28px; height: 28px; padding: 0 6px;
