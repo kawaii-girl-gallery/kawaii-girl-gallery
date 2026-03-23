@@ -128,7 +128,7 @@ class BaseProductAdmin(admin.ModelAdmin):
     display_name_jp.short_description = '商品名'
     def display_image_jp(self, obj):
         if not obj.image: return "なし"
-        return format_html('<div class="cell-center"><img src="{}" style="max-height:150px;max-width:150px;border:3px solid #444; border-radius:10px; user-select:none; -webkit-user-drag:none;" oncontextmenu="return false;" draggable="false" onmousedown="if(event.button===2)return false;"></div>', obj.image.url)
+        return format_html('<div class="cell-center" oncontextmenu="return false;"><img src="{}" style="max-height:150px;max-width:150px;border:3px solid #444; border-radius:10px; user-select:none; -webkit-user-drag:none; pointer-events:none;" draggable="false"></div>', obj.image.url)
     display_image_jp.short_description = '画像'
     def display_price_jp(self, obj): return format_html('<div class="cell-center" style="font-weight: 900; color: #00ffcc;">¥{}</div>', obj.price)
     display_price_jp.short_description = '価格'
@@ -325,6 +325,7 @@ function closePanel(id) {{
             #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
             #result_list thead {{ display: none !important; }}
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
+            .cell-center img {{ pointer-events: none !important; user-select: none !important; -webkit-user-drag: none !important; }}
             .cell-center img {{ -webkit-user-drag: none; user-select: none; -moz-user-select: none; }}
 
             /* 商品一覧タイトルを非表示 */
