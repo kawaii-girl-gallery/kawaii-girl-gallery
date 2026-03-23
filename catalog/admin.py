@@ -1,3 +1,4 @@
+
 import os
 import json
 import random
@@ -215,9 +216,17 @@ class BaseProductAdmin(admin.ModelAdmin):
     @admin.action(description="⏪ 選択した商品を商品一覧に戻す")
     def restore_from_archive(self, request, queryset): queryset.update(is_archived=False)
 
+# ✨ 修正済み：「すべて表示」ボタンをタイトルの右上に移動
 def create_panel(pid, icon, title, color, btns, is_active, back_btn_html):
     chk = 'checked' if is_active else ''
-    return mark_safe(f'<div style="margin-bottom: 15px; padding: 15px; background: #1a1a1a; border-radius: 12px; border: 2px solid {color}44;"><h3 style="margin-top:0; font-size:15px; margin-bottom:12px; display:flex; align-items:center; gap:10px; color:{color}; font-weight:900;">{icon} {title} {back_btn_html}</h3><input type="checkbox" id="{pid}-toggle" class="expand-toggle" style="display: none;" {chk}><div id="{pid}-container" class="expand-container">{btns}</div><label for="{pid}-toggle" class="expand-label" style="display:block; margin-top:10px; color:#aaa; font-size:12px; cursor:pointer; text-align:center; border-top:1px solid #222; padding-top:8px; font-weight:800;"></label></div>')
+    return mark_safe(f'''<div style="margin-bottom: 15px; padding: 15px; background: #1a1a1a; border-radius: 12px; border: 2px solid {color}44;">
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+  <h3 style="margin:0; font-size:15px; display:flex; align-items:center; gap:10px; color:{color}; font-weight:900;">{icon} {title} {back_btn_html}</h3>
+  <input type="checkbox" id="{pid}-toggle" class="expand-toggle" style="display: none;" {chk}>
+  <label for="{pid}-toggle" class="expand-label" style="color:#aaa; font-size:12px; cursor:pointer; font-weight:800; white-space:nowrap; padding:4px 12px; border:1px solid #444; border-radius:20px;"></label>
+</div>
+<div id="{pid}-container" class="expand-container">{btns}</div>
+</div>''')
 
 @admin.register(Show_ProductList_A4)
 class A4PosterAdmin(BaseProductAdmin):
