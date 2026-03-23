@@ -37,6 +37,10 @@
 
     /* 左メニューの大カテゴリリンク無効化 */
     #nav-sidebar .module caption a { pointer-events: none !important; cursor: default !important; text-decoration: none !important; color: inherit !important; }
+    #header #user-tools a:not([href*="logout"]) { display: none !important; }
+    #header #user-tools .divider { display: none !important; }
+    #header #user-tools { font-size: 0 !important; }
+    #header #user-tools strong, #header #user-tools form, #header #user-tools a[href*="logout"] { font-size: 13px !important; }
 
     #content h1 { display: none !important; }
     .app-catalog_pedia caption, .app-catalog_pedia h2 { background: #6f42c1 !important; color: #fff !important; }
