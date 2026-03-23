@@ -22,15 +22,31 @@ def process_product_image(img_path):
         sample_size = int(img.width / 4.5) 
         stamp_size = int(img.width / 18)
 
-        # Linuxで使えるフォントを順番に試す
-        def load_font(size):
+        # 英語フォント（SAMPLEに使用）
+        def load_font_en(size):
             font_paths = [
                 "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
                 "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
                 "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf",
-                "/usr/share/fonts/truetype/noto/NotoSans-Bold.ttf",
                 "/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf",
                 "ariblk.ttf",
+            ]
+            for path in font_paths:
+                try:
+                    return ImageFont.truetype(path, size)
+                except:
+                    continue
+            return ImageFont.load_default(size=max(size, 20))
+
+        # 日本語フォント（スタンプに使用）
+        def load_font_ja(size):
+            font_paths = [
+                "/usr/share/fonts/truetype/noto/NotoSansCJK-Bold.ttc",
+                "/usr/share/fonts/opentype/noto/NotoSansCJK-Bold.ttc",
+                "/usr/share/fonts/noto-cjk/NotoSansCJK-Bold.ttc",
+                "/usr/share/fonts/truetype/noto/NotoSansJP-Bold.ttf",
+                "/usr/share/fonts/truetype/vlgothic/VL-Gothic-Regular.ttf",
+                "/usr/share/fonts/truetype/ipafont/ipagp.ttf",
                 "meiryo.ttc",
                 "msgothic.ttc",
             ]
@@ -39,11 +55,10 @@ def process_product_image(img_path):
                     return ImageFont.truetype(path, size)
                 except:
                     continue
-            # どれも使えない場合はデフォルトを大きく
             return ImageFont.load_default(size=max(size, 20))
 
-        font_sample = load_font(sample_size)
-        font_stamp = load_font(stamp_size)
+        font_sample = load_font_en(sample_size)
+        font_stamp = load_font_ja(stamp_size)
 
         # SAMPLE（中央）
         text_s = "SAMPLE"
