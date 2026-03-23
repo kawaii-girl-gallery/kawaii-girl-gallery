@@ -163,17 +163,17 @@ class BaseProductAdmin(admin.ModelAdmin):
             #result_list thead th, #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
 
-            /* ✨ 商品一覧タイトルを非表示 */
+            /* 商品一覧タイトルを非表示 */
             #content h1 {{ display: none !important; }}
 
-            /* ✨ 元の検索・ツールボックス・操作行・ページネーターを非表示 */
+            /* 元の検索・ツールボックス・操作行・ページネーターを非表示 */
             #changelist-search {{ display: none !important; }}
             .object-tools {{ display: none !important; }}
             #changelist .actions {{ display: none !important; }}
             .top-paginator {{ display: none !important; }}
             #changelist .paginator {{ display: none !important; }}
 
-            /* ✨ 行1：検索窓 + ページネーター + 右詰めボタン群 */
+            /* ✨ 行1：検索窓 + ページネーター（横並び） + 右詰めボタン群 */
             .smart-top-bar {{
                 display: flex;
                 align-items: center;
@@ -182,21 +182,35 @@ class BaseProductAdmin(admin.ModelAdmin):
                 padding: 10px 15px;
                 border-radius: 10px;
                 margin-bottom: 8px;
-                flex-wrap: wrap;
+                flex-wrap: nowrap;
             }}
-            .smart-search-form {{ display: flex; align-items: center; gap: 6px; }}
+            .smart-search-form {{ display: flex; align-items: center; gap: 6px; flex-shrink: 0; }}
             .smart-search-form input[type=text] {{
                 background: #2a2a2a; border: 1px solid #555; color: #fff;
-                border-radius: 8px; padding: 5px 12px; font-size: 13px; font-weight: 700; width: 160px;
+                border-radius: 8px; padding: 5px 12px; font-size: 13px; font-weight: 700; width: 140px;
             }}
             .smart-search-form input[type=submit] {{
                 background: #333; border: 1px solid #555; color: #fff;
-                border-radius: 8px; padding: 5px 14px; font-size: 12px; font-weight: 900; cursor: pointer;
+                border-radius: 8px; padding: 5px 12px; font-size: 12px; font-weight: 900; cursor: pointer;
             }}
-            .smart-paginator {{ color: #fff; font-weight: 700; font-size: 13px; }}
-            .smart-paginator a {{ color: #00ffcc !important; text-decoration: none; }}
+
+            /* ✨ ページネーターを横並びに強制 */
+            .smart-paginator {{ display: flex; align-items: center; gap: 4px; flex-shrink: 0; }}
+            .smart-paginator a, .smart-paginator span.this-page {{
+                display: inline-flex !important; align-items: center; justify-content: center;
+                min-width: 28px; height: 28px; padding: 0 6px;
+                background: #2a2a2a; border: 1px solid #444; border-radius: 6px;
+                color: #00ffcc !important; font-weight: 900; font-size: 13px; text-decoration: none;
+            }}
+            .smart-paginator span.this-page {{
+                background: #007bff; border-color: #007bff; color: #fff !important;
+            }}
+            .smart-paginator .total-count {{
+                color: #aaa; font-size: 12px; font-weight: 700; white-space: nowrap; margin-left: 4px;
+            }}
+
             .smart-top-bar-spacer {{ flex: 1; }}
-            .smart-btn-group {{ display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }}
+            .smart-btn-group {{ display: flex; align-items: center; gap: 8px; flex-shrink: 0; }}
 
             /* ✨ 行2：操作セレクト + Run + 選択数 */
             .smart-action-bar {{
@@ -240,12 +254,11 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var changelist = document.querySelector('#changelist');
                 if (!changelist) return;
 
-                // 元の要素を取得
                 var origSearchInput = document.querySelector('#searchbar');
                 var origPaginator = document.querySelector('#changelist .paginator');
                 var origActions = document.querySelector('#changelist .actions');
 
-                // ── 行1：スマートトップバー（検索 + ページネーター + 右詰めボタン）──
+                // ── 行1：スマートトップバー ──
                 var topBar = document.createElement('div');
                 topBar.className = 'smart-top-bar';
 
@@ -265,15 +278,64 @@ class BaseProductAdmin(admin.ModelAdmin):
                 searchForm.appendChild(sSubmit);
                 topBar.appendChild(searchForm);
 
-                // ページネーター
+                // ✨ ページネーターを横並びに再構築
                 if (origPaginator) {{
-                    var pagWrap = document.createElement('div');
-                    pagWrap.className = 'smart-paginator';
-                    pagWrap.innerHTML = origPaginator.innerHTML;
-                    topBar.appendChild(pagWrap);
+                    var pagDiv = document.createElement('div');
+                    pagDiv.className = 'smart-paginator';
+
+                    // aタグ（ページ番号リンク）を取得
+                    var allLinks = origPaginator.querySelectorAll('a');
+                    var currentSpan = origPaginator.querySelector('span.this-page');
+                    var totalText = origPaginator.textContent.match(/\d+\s*商品一覧/);
+
+                    // ページネーターのliやaを横に並べる
+                    var items = origPaginator.querySelectorAll('li, a, span.this-page');
+                    // liベースで処理
+                    var lis = origPaginator.querySelectorAll('li');
+                    if (lis.length > 0) {{
+                        lis.forEach(function(li) {{
+                            var a = li.querySelector('a');
+                            var s = li.querySelector('span.this-page');
+                            if (a) {{
+                                var newA = document.createElement('a');
+                                newA.href = a.href;
+                                newA.textContent = a.textContent.trim();
+                                pagDiv.appendChild(newA);
+                            }} else if (s) {{
+                                var newS = document.createElement('span');
+                                newS.className = 'this-page';
+                                newS.textContent = s.textContent.trim();
+                                pagDiv.appendChild(newS);
+                            }}
+                        }});
+                    }} else {{
+                        // liがない場合はaタグだけ処理
+                        allLinks.forEach(function(a) {{
+                            var newA = document.createElement('a');
+                            newA.href = a.href;
+                            newA.textContent = a.textContent.trim();
+                            pagDiv.appendChild(newA);
+                        }});
+                        if (currentSpan) {{
+                            var newS = document.createElement('span');
+                            newS.className = 'this-page';
+                            newS.textContent = currentSpan.textContent.trim();
+                            pagDiv.appendChild(newS);
+                        }}
+                    }}
+
+                    // 合計数テキスト
+                    if (totalText) {{
+                        var countSpan = document.createElement('span');
+                        countSpan.className = 'total-count';
+                        countSpan.textContent = totalText[0];
+                        pagDiv.appendChild(countSpan);
+                    }}
+
+                    topBar.appendChild(pagDiv);
                 }}
 
-                // スペーサー（右詰め用）
+                // スペーサー
                 var spacer = document.createElement('div');
                 spacer.className = 'smart-top-bar-spacer';
                 topBar.appendChild(spacer);
@@ -306,32 +368,34 @@ class BaseProductAdmin(admin.ModelAdmin):
 
                 topBar.appendChild(btnGroup);
 
-                // ── 行2：スマートアクションバー（操作 + Run + 選択数）──
+                // ── 行2：スマートアクションバー（操作 + Run + 選択数） ──
                 var actionBar = document.createElement('div');
                 actionBar.className = 'smart-action-bar';
 
                 if (origActions) {{
-                    // 操作セレクト
+                    var actionForm = origActions.closest('form');
+
+                    // セレクト
                     var sel = origActions.querySelector('select');
                     if (sel) {{
                         var newSel = sel.cloneNode(true);
+                        // 値変更時に元のセレクトにも反映
+                        newSel.addEventListener('change', function() {{ sel.value = this.value; }});
                         actionBar.appendChild(newSel);
                     }}
-                    // Runボタン
-                    var run = origActions.querySelector('input[type=submit]');
-                    if (run) {{
-                        var newRun = run.cloneNode(true);
-                        newRun.className = 'run-btn';
-                        // submitはformが必要なのでformで包む
-                        var actionForm = origActions.closest('form');
-                        if (actionForm) {{
-                            newRun.addEventListener('click', function() {{
-                                // 元のRunボタンをクリック
-                                if (run) run.click();
-                            }});
-                        }}
-                        actionBar.appendChild(newRun);
-                    }}
+
+                    // ✨ Runボタン：元のフォームをsubmitする
+                    var runBtn = document.createElement('button');
+                    runBtn.type = 'button';
+                    runBtn.className = 'run-btn';
+                    runBtn.textContent = 'Run';
+                    runBtn.addEventListener('click', function() {{
+                        if (sel) sel.value = actionBar.querySelector('select').value;
+                        var origRun = origActions.querySelector('input[type=submit]');
+                        if (origRun) origRun.click();
+                    }});
+                    actionBar.appendChild(runBtn);
+
                     // 選択数ラベル
                     var counter = origActions.querySelector('.action-counter');
                     if (counter) {{
