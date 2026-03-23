@@ -546,6 +546,29 @@ function closePanel(id) {{
 
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 // ✨ タブとパネルをbodyに移動（fixed positionを効かせるため）
+                // ✨ ヘッダー・パンくず・サイドバーをfixedで固定
+                var header = document.querySelector("#header");
+                var breadcrumbsNav = document.querySelector(".breadcrumbs") ? document.querySelector(".breadcrumbs").parentElement : null;
+                var breadcrumbs = document.querySelector(".breadcrumbs");
+                var navSidebar = document.querySelector("#nav-sidebar");
+                var headerH = header ? header.offsetHeight : 75;
+                var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
+                var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
+
+                if (header) {{
+                    header.style.cssText += "; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;";
+                }}
+                if (breadcrumbs) {{
+                    document.body.appendChild(breadcrumbs);
+                    breadcrumbs.style.cssText = "position: fixed !important; top: " + headerH + "px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1999 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important;";
+                }}
+                if (navSidebar) {{
+                    navSidebar.style.cssText += "; position: fixed !important; top: " + (headerH + breadcrumbsH) + "px !important; left: 0 !important; width: " + sidebarW + "px !important; height: calc(100vh - " + (headerH + breadcrumbsH) + "px) !important; overflow-y: auto !important; z-index: 1500 !important;";
+                    var contentWrapper = document.querySelector("#content");
+                    if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
+                }}
+                // bodyにpaddingTopを追加してコンテンツが隠れないように
+                document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
                 var tabWrap = document.querySelector(".qs-tab-wrap");
                 var charPanel = document.querySelector("#char-panel");
                 var workPanel = document.querySelector("#work-panel");
