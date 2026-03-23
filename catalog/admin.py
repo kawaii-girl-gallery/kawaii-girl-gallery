@@ -60,6 +60,13 @@ COMMON_STYLE = """
     .breadcrumbs { background: #1a1c23 !important; color: #ccc !important; }
     .breadcrumbs a { color: #aaa !important; }
 </style>
+<script>
+    if (location.pathname.includes('character-pedia')) {{
+        document.body.classList.add('app-catalog_pedia');
+    }}
+</script>
+<style>
+</style>
 """
 
 class MultipleFileInput(forms.FileInput):
