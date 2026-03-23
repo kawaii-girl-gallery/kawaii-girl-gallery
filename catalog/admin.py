@@ -421,6 +421,9 @@ function closePanel(id) {{
                 var origActions = document.querySelector('#changelist .actions');
 
                 // 検索窓行
+                // すでに挿入済みの場合はスキップ
+                if (document.querySelector('.smart-top-bar')) return;
+
                 var topBar = document.createElement('div');
                 topBar.className = 'smart-top-bar';
 
