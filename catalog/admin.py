@@ -1,4 +1,3 @@
-
 import os
 import json
 import random
@@ -136,19 +135,15 @@ class BaseProductAdmin(admin.ModelAdmin):
         full_qs = Product.objects.filter(category=cat_filter, is_archived=is_archive)
         
         for p in full_qs:
-            # 💡 名前解析ロジックの強化
-            # パターン: [キャラ名] [作品名] [同人...] を想定
             parts = re.split(r'[ _　]', p.name)
             char_name = parts[0] if parts else "不明"
             char_counts[char_name] = char_counts.get(char_name, 0) + 1
             
-            # ✨ 作品名抽出：キャラ名の後から「同人」という文字が出るまでを結合
             if len(parts) > 1:
                 work_parts = []
                 for part in parts[1:]:
                     if "同人" in part: break
                     work_parts.append(part)
-                
                 work_name = " ".join(work_parts).strip() if work_parts else "単体作品"
                 if work_name:
                     work_counts[work_name] = work_counts.get(work_name, 0) + 1
@@ -167,8 +162,31 @@ class BaseProductAdmin(admin.ModelAdmin):
         custom_css = f"""<style>
             #result_list thead th, #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
-            .top-paginator {{ background: #1a1a1a; padding: 10px; border-bottom: 2px solid #333; margin-bottom: 15px; border-radius: 10px; font-weight: 900; color: #fff; }}
-            .top-paginator .paginator {{ margin: 0 !important; border: none !important; }}
+
+            /* ✨ 商品一覧タイトルを非表示 */
+            #content h1 {{ display: none !important; }}
+
+            /* ✨ 元の検索・ツールボックス・操作行を非表示 */
+            #changelist-search {{ display: none !important; }}
+            .object-tools {{ display: none !important; }}
+            #changelist .actions {{ display: none !important; }}
+
+            /* ✨ スマートトップバー（検索窓 + ページネーター） */
+            .smart-top-bar {{ display: flex; align-items: center; gap: 12px; background: #1a1a1a; padding: 10px 15px; border-radius: 10px; margin-bottom: 8px; flex-wrap: wrap; }}
+            .smart-top-bar .paginator {{ margin: 0 !important; border: none !important; background: none !important; color: #fff !important; }}
+            .smart-top-bar .paginator a {{ color: #00ffcc !important; }}
+            .smart-search-form {{ display: flex; align-items: center; gap: 6px; }}
+            .smart-search-form input[type=text] {{ background: #2a2a2a; border: 1px solid #555; color: #fff; border-radius: 8px; padding: 5px 12px; font-size: 13px; font-weight: 700; width: 180px; }}
+            .smart-search-form input[type=submit] {{ background: #333; border: 1px solid #555; color: #fff; border-radius: 8px; padding: 5px 14px; font-size: 12px; font-weight: 900; cursor: pointer; }}
+
+            /* ✨ スマートアクションバー（操作 + ボタン群） */
+            .smart-action-bar {{ display: flex; align-items: center; gap: 10px; background: #1a1a1a; padding: 8px 15px; border-radius: 10px; margin-bottom: 15px; flex-wrap: wrap; }}
+            .smart-action-bar select {{ background: #2a2a2a; border: 1px solid #555; color: #fff; border-radius: 8px; padding: 5px 10px; font-size: 13px; font-weight: 700; }}
+            .smart-action-bar input[type=submit] {{ background: #333; border: 1px solid #555; color: #fff; border-radius: 8px; padding: 5px 14px; font-size: 12px; font-weight: 900; cursor: pointer; }}
+            .smart-action-bar span.action-counter {{ color: #aaa; font-size: 12px; font-weight: 700; }}
+
+            .top-paginator {{ display: none !important; }}
+
             #pos-modal {{ background-color: rgba(0, 0, 0, 0.98) !important; display: none; position: fixed !important; z-index: 20000 !important; top: 0; left: 0; width: 100vw; height: 100vh; }}
             .modal-nav {{ position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; cursor: pointer; padding: 20px; }}
             .nav-prev {{ left: 2vw !important; }} .nav-next {{ right: 2vw !important; }}
@@ -184,19 +202,94 @@ class BaseProductAdmin(admin.ModelAdmin):
         </style>
         <script>
             document.addEventListener('DOMContentLoaded', function() {{
-                var toolBox = document.querySelector('.object-tools');
-                if (toolBox) {{
-                    if (!document.querySelector('.custom-slide-btn')) {{
-                        var liSlide = document.createElement('li'); liSlide.innerHTML = '<a href="javascript:void(0)" onclick="bulkCarousel()" class="custom-tool-btn custom-slide-btn" style="background:#007bff; color:#fff; padding:10px 18px; border-radius:30px; font-weight:900; text-decoration:none; margin-right:10px;">🎥 スライド拡大確認</a>';
-                        var liCart = document.createElement('li'); liCart.innerHTML = '<a href="javascript:void(0)" onclick="bulkAddToCart()" class="custom-tool-btn" style="background:#28a745; color:#fff; padding:10px 18px; border-radius:30px; font-weight:900; text-decoration:none; margin-right:10px;">🛒 カートへ追加</a>';
-                        toolBox.prepend(liCart); toolBox.prepend(liSlide);
-                    }}
-                    if ({is_admin_flag} === true && !document.querySelector('.custom-upload-btn')) {{
-                        var liUpload = document.createElement('li'); liUpload.innerHTML = '<a href="bulk-upload/" class="addlink custom-upload-btn">📂 一括アップロード</a>';
-                        var addBtn = toolBox.querySelector('.addlink:not(.custom-upload-btn)');
-                        if (addBtn) {{ addBtn.parentNode.style.display = 'none'; toolBox.appendChild(liUpload); }}
+
+                var changelist = document.querySelector('#changelist');
+                if (!changelist) return;
+
+                // ✨ 検索フォームの入力要素を取得
+                var origSearchInput = document.querySelector('#searchbar');
+                var origSearchForm = document.querySelector('#changelist-search');
+
+                // ✨ ページネーターを取得
+                var origPaginator = document.querySelector('#changelist .paginator');
+
+                // ✨ 操作(actions)を取得
+                var origActions = document.querySelector('#changelist .actions');
+
+                // ── スマートトップバー（検索窓 ＋ ページネーター）──
+                var topBar = document.createElement('div');
+                topBar.className = 'smart-top-bar';
+
+                // 検索フォームを再構築
+                var searchForm = document.createElement('form');
+                searchForm.method = 'GET';
+                searchForm.className = 'smart-search-form';
+                var sInput = document.createElement('input');
+                sInput.type = 'text';
+                sInput.name = 'q';
+                sInput.placeholder = '🔍 検索...';
+                sInput.value = origSearchInput ? origSearchInput.value : '';
+                var sSubmit = document.createElement('input');
+                sSubmit.type = 'submit';
+                sSubmit.value = '検索';
+                searchForm.appendChild(sInput);
+                searchForm.appendChild(sSubmit);
+                topBar.appendChild(searchForm);
+
+                // ページネーターをコピー
+                if (origPaginator) {{
+                    var pagClone = origPaginator.cloneNode(true);
+                    topBar.appendChild(pagClone);
+                    origPaginator.style.display = 'none';
+                }}
+
+                // ── スマートアクションバー（操作 ＋ ボタン群）──
+                var actionBar = document.createElement('div');
+                actionBar.className = 'smart-action-bar';
+
+                // 操作セレクトとRunボタンをコピー
+                if (origActions) {{
+                    var sel = origActions.querySelector('select');
+                    var run = origActions.querySelector('input[type=submit]');
+                    var counter = origActions.querySelector('.action-counter');
+                    if (sel) actionBar.appendChild(sel.cloneNode(true));
+                    if (run) actionBar.appendChild(run.cloneNode(true));
+                    if (counter) {{
+                        var c = counter.cloneNode(true);
+                        c.className = 'action-counter';
+                        c.style.cssText = 'color:#aaa; font-size:12px; font-weight:700;';
+                        actionBar.appendChild(c);
                     }}
                 }}
+
+                // スライド確認ボタン
+                var btnSlide = document.createElement('a');
+                btnSlide.href = 'javascript:void(0)';
+                btnSlide.setAttribute('onclick', 'bulkCarousel()');
+                btnSlide.innerHTML = '🎥 スライド拡大確認';
+                btnSlide.style.cssText = 'background:#007bff; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px; cursor:pointer;';
+                actionBar.appendChild(btnSlide);
+
+                // カートへ追加ボタン
+                var btnCart = document.createElement('a');
+                btnCart.href = 'javascript:void(0)';
+                btnCart.setAttribute('onclick', 'bulkAddToCart()');
+                btnCart.innerHTML = '🛒 カートへ追加';
+                btnCart.style.cssText = 'background:#28a745; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px; cursor:pointer;';
+                actionBar.appendChild(btnCart);
+
+                // 一括アップロードボタン（管理者のみ）
+                if ({is_admin_flag} === true) {{
+                    var btnUpload = document.createElement('a');
+                    btnUpload.href = 'bulk-upload/';
+                    btnUpload.innerHTML = '📂 一括アップロード ＋';
+                    btnUpload.style.cssText = 'background:#f0ad4e; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px;';
+                    actionBar.appendChild(btnUpload);
+                }}
+
+                // ✨ changelist の直前に挿入
+                changelist.parentNode.insertBefore(actionBar, changelist);
+                changelist.parentNode.insertBefore(topBar, actionBar);
             }});
         </script>"""
         
@@ -216,7 +309,7 @@ class BaseProductAdmin(admin.ModelAdmin):
     @admin.action(description="⏪ 選択した商品を商品一覧に戻す")
     def restore_from_archive(self, request, queryset): queryset.update(is_archived=False)
 
-# ✨ 修正済み：「すべて表示」ボタンをタイトルの右上に移動
+# ✨ 「すべて表示」ボタンをタイトルの右上に配置
 def create_panel(pid, icon, title, color, btns, is_active, back_btn_html):
     chk = 'checked' if is_active else ''
     return mark_safe(f'''<div style="margin-bottom: 15px; padding: 15px; background: #1a1a1a; border-radius: 12px; border: 2px solid {color}44;">
@@ -254,7 +347,6 @@ def character_pedia_view(request):
     qs = Product.objects.filter(is_archived=False)
     data = {}
     for p in qs:
-        # ✨ こちらの一覧表ロジックも同様に強化
         parts = re.split(r'[ _　]', p.name)
         if mode == 'work':
             work_parts = []
@@ -307,7 +399,6 @@ def analysis_sheet_view(request):
     char_s, work_s = {}, {}
     weekday_list = [{"name": n, "revenue": 0, "count": 0} for n in ["月", "火", "水", "木", "金", "土", "日"]]
     for s in sales:
-        # ✨ 売上分析側のロジックも同様に強化
         parts = re.split(r'[ _　]', s.product_name)
         c = parts[0] if parts else "不明"
         
