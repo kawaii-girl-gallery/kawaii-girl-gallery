@@ -44,10 +44,6 @@ COMMON_STYLE = """
     }
     .home-tile-bg img { width: 100%; height: 160px; object-fit: cover; border-radius: 0px; }
     #container { height: auto !important; overflow: visible !important; }
-    nav, nav.breadcrumbs, #nav-sidebar, div > nav { height: auto !important; max-height: none !important; overflow: visible !important; }
-    #header { position: sticky !important; top: 0 !important; z-index: 2000 !important; }
-    .breadcrumbs { position: sticky !important; top: 75px !important; z-index: 1900 !important; background: #1a1c23 !important; }
-    .quick-search-sticky { background: #121212 !important; }
     .results { overflow: visible !important; }
     #content { position: relative; z-index: 1; background: rgba(18, 18, 18, 0.85) !important; margin: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
     #content-main { padding: 0 !important; }
@@ -176,9 +172,6 @@ class BaseProductAdmin(admin.ModelAdmin):
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
 
             /* ✨ 固定ヘッダーラッパー */
-            .sticky-wrapper {{ position: fixed !important; top: 0 !important; left: 276px !important; right: 0 !important; z-index: 1000 !important; background: #121212 !important; padding: 10px 15px !important; box-shadow: 0 2px 10px rgba(0,0,0,0.8) !important; }}
-            .sticky-wrapper .messagelist {{ margin: 0 !important; }}
-            .sticky-spacer {{ display: block; }}
             /* 商品一覧タイトルを非表示 */
             #content h1 {{ display: none !important; }}
 
@@ -439,36 +432,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
 
-                // ✨ 全固定要素をfixedラッパーにまとめる
-                // クイック検索（全メッセージリスト）をfixedラッパーに移動
-                var fixedWrap = document.createElement("div");
-                fixedWrap.className = "sticky-wrapper";
-                document.body.appendChild(fixedWrap);
-
-                var allMsgLists = document.querySelectorAll(".messagelist");
-                allMsgLists.forEach(function(msgList) {{
-                    fixedWrap.appendChild(msgList);
-                }});
-                // 検索窓行と操作行を移動
-                fixedWrap.appendChild(topBar);
-                fixedWrap.appendChild(actionBar);
-
-                // 固定ラッパーの高さ分だけスペーサーを挿入
-                setTimeout(function() {{
-                    var spacerDiv = document.createElement("div");
-                    spacerDiv.className = "sticky-spacer";
-                    spacerDiv.style.height = fixedWrap.offsetHeight + "px";
-                    changelist.parentNode.insertBefore(spacerDiv, changelist);
-
-                    // テーブルヘッダーを固定
-                    var ths = document.querySelectorAll("#result_list thead th");
-                    ths.forEach(function(th) {{
-                        th.style.position = "sticky";
-                        th.style.top = fixedWrap.offsetHeight + "px";
-                        th.style.zIndex = "450";
-                        th.style.background = "#1a1a1a";
-                    }});
-                }}, 300);
+            }});
             }});
         </script>"""
         storage = messages.get_messages(request)
