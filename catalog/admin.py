@@ -55,6 +55,9 @@ COMMON_STYLE = """
     .dashboard #content { background: rgba(18, 18, 18, 0.7) !important; }
     .breadcrumbs { position: sticky !important; top: 75px !important; z-index: 999 !important; background: #1a1c23 !important; }
     nav { height: auto !important; overflow: visible !important; }
+
+    /* ズレ防止のためのテーブル設定 */
+    #result_list, #fixed-thead-clone { border-collapse: collapse !important; table-layout: fixed !important; width: 100% !important; }
 </style>
 """
 
@@ -260,23 +263,19 @@ class BaseProductAdmin(admin.ModelAdmin):
         gap: 6px;
         align-content: flex-start;
     }}
-    /* スクロールバー */
     .qs-panel-body::-webkit-scrollbar {{ width: 6px; }}
     .qs-panel-body::-webkit-scrollbar-track {{ background: #1a1a1a; }}
     .qs-panel-body::-webkit-scrollbar-thumb {{ background: #444; border-radius: 3px; }}
 
-    /* 元のクイック検索パネルを非表示 */
     .messagelist {{ display: none !important; }}
     .top-paginator {{ display: none !important; }}
 </style>
 
-<!-- キャラクタータブ -->
 <div class="qs-tab-wrap">
     <div class="qs-tab qs-tab-char" onclick="togglePanel('char-panel')">👤 キャラクター検索</div>
     <div class="qs-tab qs-tab-work" onclick="togglePanel('work-panel')">🎬 原作作品検索</div>
 </div>
 
-<!-- キャラクター検索パネル -->
 <div id="char-panel" class="qs-panel" style="border-left: 3px solid #ff69b4;">
     <div class="qs-panel-header">
         <div class="qs-panel-title" style="color: #ff69b4;">👤 キャラクター検索 {back_btn_html}</div>
@@ -285,7 +284,6 @@ class BaseProductAdmin(admin.ModelAdmin):
     <div class="qs-panel-body">{char_btns}</div>
 </div>
 
-<!-- 原作作品検索パネル -->
 <div id="work-panel" class="qs-panel" style="border-left: 3px solid #007bff;">
     <div class="qs-panel-header">
         <div class="qs-panel-title" style="color: #007bff;">🎬 原作作品検索</div>
@@ -300,6 +298,7 @@ function togglePanel(id) {{
     if (panel.classList.contains('open')) {{
         panel.classList.remove('open');
     }} else {{
+        document.querySelectorAll('.qs-panel').forEach(p => p.classList.remove('open'));
         panel.classList.add('open');
     }}
 }}
@@ -315,10 +314,8 @@ function closePanel(id) {{
             #result_list thead th {{ background: #1a1a1a !important; }}
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
 
-            /* 商品一覧タイトルを非表示 */
             #content h1 {{ display: none !important; }}
 
-            /* 元の検索・ツールボックス・操作行・ページネーターを非表示 */
             #changelist-search {{ display: none !important; }}
             .object-tools {{ display: none !important; }}
             #changelist .actions {{ display: none !important; }}
@@ -333,17 +330,10 @@ function closePanel(id) {{
             .top-paginator {{ display: none !important; }}
             #changelist .paginator {{ display: none !important; }}
 
-            /* 検索窓行 */
             .smart-top-bar {{
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                background: #1a1a1a;
-                padding: 10px 15px;
-                border-radius: 10px;
-                margin-bottom: 4px;
-                flex-wrap: nowrap;
-                box-sizing: border-box;
+                display: flex; align-items: center; gap: 10px; background: #1a1a1a;
+                padding: 10px 15px; border-radius: 10px; margin-bottom: 4px;
+                flex-wrap: nowrap; box-sizing: border-box;
             }}
             .smart-search-form {{ display: flex; align-items: center; gap: 6px; flex-shrink: 0; }}
             .smart-search-form input[type=text] {{
@@ -370,17 +360,10 @@ function closePanel(id) {{
             .smart-top-bar-spacer {{ flex: 1; }}
             .smart-btn-group {{ display: flex; align-items: center; gap: 8px; flex-shrink: 0; }}
 
-            /* 操作行 */
             .smart-action-bar {{
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                background: #1a1a1a;
-                padding: 8px 15px;
-                border-radius: 10px;
-                margin-bottom: 15px;
-                flex-wrap: wrap;
-                box-sizing: border-box;
+                display: flex; align-items: center; gap: 10px; background: #1a1a1a;
+                padding: 8px 15px; border-radius: 10px; margin-bottom: 15px;
+                flex-wrap: wrap; box-sizing: border-box;
             }}
             .smart-action-bar select {{
                 background: #2a2a2a; border: 1px solid #555; color: #fff;
@@ -405,7 +388,6 @@ function closePanel(id) {{
         </style>
         <script>
             document.addEventListener('DOMContentLoaded', function() {{
-                // ✨ アコーディオンパネルとタブをbodyに移動（messagelistから脱出）
                 var tabWrap = document.querySelector(".qs-tab-wrap");
                 var charPanel = document.getElementById("char-panel");
                 var workPanel = document.getElementById("work-panel");
@@ -420,7 +402,6 @@ function closePanel(id) {{
                 var origPaginator = document.querySelector('#changelist .paginator');
                 var origActions = document.querySelector('#changelist .actions');
 
-                // 検索窓行
                 var topBar = document.createElement('div');
                 topBar.className = 'smart-top-bar';
 
@@ -507,7 +488,6 @@ function closePanel(id) {{
                 }}
                 topBar.appendChild(btnGroup);
 
-                // 操作行
                 var actionBar = document.createElement('div');
                 actionBar.className = 'smart-action-bar';
 
@@ -537,20 +517,14 @@ function closePanel(id) {{
                     }}
                 }}
 
-                changelist.parentNode.insertBefore(actionBar, changelist);
-                // ✨ タブとパネルをbodyに移動（fixed positionを効かせるため）
-                // ✨ ヘッダー・パンくず・サイドバーをfixedで固定
                 var header = document.querySelector("#header");
-                var breadcrumbsNav = document.querySelector(".breadcrumbs") ? document.querySelector(".breadcrumbs").parentElement : null;
                 var breadcrumbs = document.querySelector(".breadcrumbs");
                 var navSidebar = document.querySelector("#nav-sidebar");
                 var headerH = header ? header.offsetHeight : 75;
                 var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
                 var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
 
-                if (header) {{
-                    header.style.cssText += "; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;";
-                }}
+                if (header) {{ header.style.cssText += "; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;"; }}
                 if (breadcrumbs) {{
                     document.body.appendChild(breadcrumbs);
                     breadcrumbs.style.cssText = "position: fixed !important; top: " + headerH + "px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1999 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important;";
@@ -560,78 +534,69 @@ function closePanel(id) {{
                     var contentWrapper = document.querySelector("#content");
                     if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
                 }}
-                // bodyにpaddingTopを追加してコンテンツが隠れないように
                 document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
-                var tabWrap = document.querySelector(".qs-tab-wrap");
-                var charPanel = document.querySelector("#char-panel");
-                var workPanel = document.querySelector("#work-panel");
-                if (tabWrap) document.body.appendChild(tabWrap);
-                if (charPanel) document.body.appendChild(charPanel);
-                if (workPanel) document.body.appendChild(workPanel);
+
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
-                // DOMに挿入後に位置を計算
-                var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
+
                 var fixedTopVal = header ? header.offsetHeight : 75;
                 fixedTopVal += breadcrumbs ? breadcrumbs.offsetHeight : 37;
-                var topBarW = topBar.offsetWidth;
-                var topBarLeft = topBar.getBoundingClientRect().left;
-                // ✨ スクロールで検索窓行・操作行を固定
 
+                // ✨ スクロール処理：カラムズレ修正版
                 window.addEventListener("scroll", function() {{
                     var scrollY = window.scrollY;
+                    var topBarLeft = topBar.parentNode.getBoundingClientRect().left + 15;
+                    var topBarW = topBar.parentNode.offsetWidth - 30;
+
                     if (scrollY > 44) {{
                         topBar.style.position = "fixed";
                         topBar.style.top = fixedTopVal + "px";
                         topBar.style.left = topBarLeft + "px";
                         topBar.style.width = topBarW + "px";
                         topBar.style.zIndex = "600";
-                        topBar.style.background = "#1a1a1a";
+                        topBar.style.margin = "0";
+
                         actionBar.style.position = "fixed";
                         actionBar.style.top = (fixedTopVal + topBar.offsetHeight) + "px";
                         actionBar.style.left = topBarLeft + "px";
                         actionBar.style.width = topBarW + "px";
                         actionBar.style.zIndex = "599";
-                        actionBar.style.background = "#1a1a1a";
-                        // 商品名行をコピーして固定表示
+                        actionBar.style.margin = "0";
+
+                        // カラムヘッダーのクローン作成と精密な幅設定
                         var thead = document.querySelector("#result_list thead");
                         var resultTable = document.querySelector("#result_list");
                         if (thead && resultTable && !document.getElementById("fixed-thead-clone")) {{
                             var cloneTable = document.createElement("table");
                             cloneTable.id = "fixed-thead-clone";
-                            cloneTable.style.cssText = "position:fixed; top:" + (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px; left:" + topBarLeft + "px; width:" + topBarW + "px; z-index:598; background:#1a1a1a; table-layout:fixed; border-collapse:collapse;";
+                            cloneTable.className = resultTable.className;
+                            cloneTable.style.cssText = "position:fixed; top:" + (fixedTopVal + topBar.offsetHeight + actionBar.offsetHeight) + "px; left:" + topBarLeft + "px; width:" + topBarW + "px; z-index:598; background:#1a1a1a; table-layout:fixed; border-collapse:collapse; border:none; margin:0;";
+                            
                             var cloneThead = thead.cloneNode(true);
                             var origThs = thead.querySelectorAll("th");
                             var cloneThs = cloneThead.querySelectorAll("th");
+
                             origThs.forEach(function(th, i) {{
-                                if (cloneThs[i]) {{ cloneThs[i].style.width = th.getBoundingClientRect().width + "px"; cloneThs[i].style.boxSizing = "border-box"; }}
+                                if (cloneThs[i]) {{
+                                    var preciseWidth = th.getBoundingClientRect().width + "px";
+                                    cloneThs[i].style.width = preciseWidth;
+                                    cloneThs[i].style.minWidth = preciseWidth;
+                                    cloneThs[i].style.maxWidth = preciseWidth;
+                                    cloneThs[i].style.boxSizing = "border-box";
+                                }}
                             }});
                             cloneTable.appendChild(cloneThead);
                             document.body.appendChild(cloneTable);
+                        }} else if (document.getElementById("fixed-thead-clone")) {{
+                            var clone = document.getElementById("fixed-thead-clone");
+                            clone.style.left = topBarLeft + "px";
+                            clone.style.width = topBarW + "px";
                         }}
                     }} else {{
-                        topBar.style.position = "";
-                        topBar.style.top = "";
-                        topBar.style.left = "";
-                        topBar.style.width = "";
-                        topBar.style.background = "";
-                        actionBar.style.position = "";
-                        actionBar.style.top = "";
-                        actionBar.style.left = "";
-                        actionBar.style.width = "";
-                        actionBar.style.background = "";
-                        var thead = document.querySelector("#result_list thead");
-                        if (thead) {{
-                            thead.style.position = "";
-                            thead.style.top = "";
-                            thead.style.left = "";
-                            thead.style.width = "";
-                            thead.style.background = "";
-                            var clone = document.getElementById("fixed-thead-clone");
-                            if (clone) clone.parentNode.removeChild(clone);
-                            var tbody = document.querySelector("#result_list tbody");
-                            if (tbody) tbody.style.marginTop = "";
-                        }}
+                        topBar.style.position = ""; topBar.style.top = ""; topBar.style.left = ""; topBar.style.width = "";
+                        actionBar.style.position = ""; actionBar.style.top = ""; actionBar.style.left = ""; actionBar.style.width = "";
+                        var clone = document.getElementById("fixed-thead-clone");
+                        if (clone) clone.parentNode.removeChild(clone);
                     }}
                 }});
             }});
