@@ -477,7 +477,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                         // クイック検索
                         if (msgList) applyFixed(msgList, headerH + breadcrumbsH);
                         // 検索窓行
-                        var qH = msgList ? msgList.offsetHeight : 0;
+                        var qH = msgListH;
                         applyFixed(topBar, headerH + breadcrumbsH + qH);
                         // 操作行
                         applyFixed(actionBar, headerH + breadcrumbsH + qH + topBarH);
