@@ -447,8 +447,8 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var topBarH = topBar.offsetHeight;
                 var actionBarH = actionBar.offsetHeight;
                 var contentLeft = sidebarW + 20;
-                    contentWidth = topBar.offsetWidth;
-                var contentWidth = topBar.offsetWidth; // スクロール前の実際の幅を記録
+                    contentWidth = document.documentElement.clientWidth - contentLeft;
+                var contentWidth = document.documentElement.clientWidth - contentLeft;
                 var msgListOrigTop = msgList ? msgList.getBoundingClientRect().top + window.scrollY : 0;
 
                 // ✨ ヘッダー・パンくずを固定
@@ -502,7 +502,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                     if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
                     // contentLeftとcontentWidthをサイドバー固定後に再計算
                     contentLeft = sidebarW + 20;
-                    contentWidth = topBar.offsetWidth;
+                    contentWidth = document.documentElement.clientWidth - contentLeft;
                     contentWidth = window.innerWidth - contentLeft;
                 }}
                 // ✨ ヘッダー分のpaddingをbodyに追加（左メニュー対策）
@@ -516,7 +516,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                     msgList.style.top = (headerH + breadcrumbsH) + "px";
                     var msgLeft = sidebarW + 10;
                     msgList.style.left = msgLeft + "px";
-                    msgList.style.width = (window.innerWidth - msgLeft) + "px";
+                    msgList.style.width = (document.documentElement.clientWidth - msgLeft) + "px";
                     msgList.style.zIndex = "500";
                     msgList.style.background = "#121212";
                     msgList.style.padding = "0";
@@ -536,7 +536,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                     el.style.position = "fixed";
                     el.style.top = top + "px";
                     el.style.left = contentLeft + "px";
-                    el.style.width = (window.innerWidth - contentLeft) + "px";
+                    el.style.width = (document.documentElement.clientWidth - contentLeft) + "px";
                     el.style.zIndex = "600";
                     el.style.background = "#121212";
                     el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
