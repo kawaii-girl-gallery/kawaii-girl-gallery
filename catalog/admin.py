@@ -501,13 +501,6 @@ function closePanel(id) {{
                 btnCart.style.cssText = 'background:#28a745; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px; cursor:pointer;';
                 btnGroup.appendChild(btnCart);
 
-                if ({is_admin_flag} === true) {{
-                    var btnUpload = document.createElement('a');
-                    btnUpload.href = 'bulk-upload/';
-                    btnUpload.innerHTML = '📂 一括アップロード ＋';
-                    btnUpload.style.cssText = 'background:#f0ad4e; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px;';
-                    btnGroup.appendChild(btnUpload);
-                }}
                 topBar.appendChild(btnGroup);
 
                 // 操作行
@@ -539,6 +532,17 @@ function closePanel(id) {{
                         newCounter.textContent = counter.textContent;
                         actionBar.appendChild(newCounter);
                     }}
+                }}
+                // 一括アップロードをactionBar右端に
+                var actionSpacer = document.createElement('div');
+                actionSpacer.style.flex = '1';
+                actionBar.appendChild(actionSpacer);
+                if ({is_admin_flag} === true) {{
+                    var btnUpload2 = document.createElement('a');
+                    btnUpload2.href = 'bulk-upload/';
+                    btnUpload2.innerHTML = '📂 一括アップロード ＋';
+                    btnUpload2.style.cssText = 'background:#f0ad4e; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px;';
+                    actionBar.appendChild(btnUpload2);
                 }}
 
                 changelist.parentNode.insertBefore(actionBar, changelist);
