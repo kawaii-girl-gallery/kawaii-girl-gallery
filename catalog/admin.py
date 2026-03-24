@@ -837,8 +837,12 @@ def analysis_sheet_view(request):
         weekday_list = [{"name": n, "revenue": 0, "count": 0} for n in ["月", "火", "水", "木", "金", "土", "日"]]
         for s in sales:
             parts = re.split(r'[ _　]', s.product_name)
-            c = parts[0] if parts else "不明"
-            c = re.sub(r'【.*?】', '', c).strip() or "不明"
+            # キャラクター名：【】除去、空なら次のパーツを使う
+            c = re.sub(r'【.*?】', '', parts[0] if parts else '').strip()
+            if not c and len(parts) > 1:
+                c = re.sub(r'【.*?】', '', parts[1]).strip()
+            c = c or "不明"
+            # 作品名：同人・G数字で終了
             work_parts = []
             if len(parts) > 1:
                 for part in parts[1:]:
