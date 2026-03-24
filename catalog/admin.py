@@ -125,37 +125,49 @@ class BaseProductAdmin(admin.ModelAdmin):
         return actions
 
     def get_urls(self):
-        return [path('bulk-upload/', self.admin_site.admin_view(self.bulk_upload), name='bulk_upload')] + super().get_urls()
+        return [
+            path('bulk-upload/', self.admin_site.admin_view(self.bulk_upload), name='bulk_upload'),
+            path('bulk-upload-single/', self.admin_site.admin_view(self.bulk_upload_single), name='bulk_upload_single'),
+        ] + super().get_urls()
+
+    def bulk_upload_single(self, request):
+        """1枚ずつAjaxでアップロードするエンドポイント"""
+        if not (request.user.is_superuser or request.user.username == 'kawaii-girlgallery'):
+            return JsonResponse({'status': 'error', 'message': '権限がありません'}, status=403)
+        if request.method != 'POST':
+            return JsonResponse({'status': 'error'}, status=405)
+        try:
+            import re as re_mod
+            cat = request.POST.get('category', 'A4')
+            pr = int(request.POST.get('price', 88))
+            add_watermark = request.POST.get('add_watermark', 'true') == 'true'
+            f = request.FILES.get('image')
+            if not f:
+                return JsonResponse({'status': 'error', 'message': 'ファイルがありません'}, status=400)
+            raw_name = os.path.splitext(f.name)[0]
+            g_match = re_mod.search(r'(G\d+)$', raw_name, re_mod.IGNORECASE)
+            g_number = g_match.group(1) if g_match else None
+            base_name = raw_name[:g_match.start()] if g_match else raw_name
+            parts = re_mod.split(r'[ _　]', base_name)
+            name_parts = []
+            for part in parts:
+                if '同人' in part: break
+                if part: name_parts.append(part)
+            if g_number: name_parts.append(g_number)
+            product_name = ' '.join(name_parts)
+            product = Product(name=product_name, category=cat, price=pr, image=f)
+            product.save(add_watermark=add_watermark)
+            return JsonResponse({'status': 'success', 'name': product_name})
+        except Exception as e:
+            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
     def bulk_upload(self, request):
-        if not self.has_change_permission(request): return redirect('..')
-        if request.method == 'POST':
-            form = BulkUploadForm(request.POST, request.FILES)
-            if form.is_valid():
-                cat, pr = form.cleaned_data['category'], form.cleaned_data['price']
-                add_watermark = form.cleaned_data['add_watermark']
-                for f in request.FILES.getlist('images'):
-                    raw_name = os.path.splitext(f.name)[0]
-                    import re as re_mod
-                    # Gで始まる管理番号を抽出（スペースなしでくっついている場合も対応）
-                    g_match = re_mod.search(r'(G\d+)$', raw_name, re_mod.IGNORECASE)
-                    g_number = g_match.group(1) if g_match else None
-                    # G数字を除いた部分でパーツ分割
-                    base_name = raw_name[:g_match.start()] if g_match else raw_name
-                    parts = re_mod.split(r'[ _　]', base_name)
-                    name_parts = []
-                    for part in parts:
-                        if '同人' in part:
-                            break
-                        if part:
-                            name_parts.append(part)
-                    if g_number:
-                        name_parts.append(g_number)
-                    product_name = ' '.join(name_parts)
-                    product = Product(name=product_name, category=cat, price=pr, image=f)
-                    product.save(add_watermark=add_watermark)
-                return redirect('..')
-        return render(request, 'admin/catalog/bulk_upload.html', {**self.admin_site.each_context(request), 'form': BulkUploadForm(initial={'category': 'A4' if 'a4' in request.path else 'TCG', 'add_watermark': True}), 'title': '一括アップロード'})
+        if not (request.user.is_superuser or request.user.username == 'kawaii-girlgallery'): return redirect('..')
+        return render(request, 'admin/catalog/bulk_upload.html', {
+            **self.admin_site.each_context(request),
+            'form': BulkUploadForm(initial={'category': 'A4' if 'a4' in request.path else 'TCG', 'add_watermark': True}),
+            'title': '一括アップロード'
+        })
 
     def display_name_jp(self, obj):
         import re as re_mod
