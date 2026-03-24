@@ -67,6 +67,7 @@
         const files = document.getElementById('id_images').files;
         const category = document.getElementById('id_category').value;
         const price = document.getElementById('id_price').value;
+        const durationDays = document.getElementById('id_duration_days').value;
         const addWatermark = document.getElementById('id_add_watermark').checked;
         if (!files.length) { alert('ファイルを選択してください'); return; }
         const total = files.length;
@@ -88,6 +89,7 @@
             fd.append('image', file);
             fd.append('category', category);
             fd.append('price', price);
+            fd.append('duration_days', durationDays);
             fd.append('add_watermark', addWatermark ? 'true' : 'false');
             fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
             try {
@@ -131,6 +133,9 @@
             </div>
             <div class="form-row">
                 {{ form.price.label_tag }} {{ form.price }}
+            </div>
+            <div class="form-row">
+                {{ form.duration_days.label_tag }} {{ form.duration_days }}
             </div>
             <div class="form-row" style="display:flex; align-items:center; gap:10px;">
                 {{ form.add_watermark }} <label for="id_add_watermark" style="width:auto; font-weight:900; color:#00ffcc;">SAMPLEの透かしを追加する</label>
