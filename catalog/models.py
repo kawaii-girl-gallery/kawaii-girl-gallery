@@ -5,17 +5,14 @@ import os
 import io
 
 # --- 画像加工関数（リサイズ ＋ ウォーターマーク） ---
-def process_product_image(img_path):
+def process_product_image(img_path, add_watermark=True):
     try:
-        # 1. 画像を開いてRGBAに変換
         img = Image.open(img_path).convert("RGBA")
         
-        # 2. リサイズ処理
         max_size = 1200
         if img.width > max_size or img.height > max_size:
             img.thumbnail((max_size, max_size), Image.LANCZOS)
 
-        # 3. ウォーターマーク用レイヤー作成
         txt_layer = Image.new("RGBA", img.size, (255, 255, 255, 0))
         draw = ImageDraw.Draw(txt_layer)
         
@@ -58,12 +55,13 @@ def process_product_image(img_path):
         font_sample = load_font_en(sample_size)
         font_stamp = load_font_ja(stamp_size)
 
-        # SAMPLE（中央）
-        text_s = "SAMPLE"
-        s_l, s_t, s_r, s_b = draw.textbbox((0, 0), text_s, font=font_sample)
-        sx = (img.width - (s_r - s_l)) / 2 - s_l
-        sy = (img.height - (s_b - s_t)) / 2 - s_t
-        draw.text((sx, sy), text_s, fill=(255, 255, 255, 160), font=font_sample)
+        # SAMPLE（中央）- add_watermarkがTrueの時のみ
+        if add_watermark:
+            text_s = "SAMPLE"
+            s_l, s_t, s_r, s_b = draw.textbbox((0, 0), text_s, font=font_sample)
+            sx = (img.width - (s_r - s_l)) / 2 - s_l
+            sy = (img.height - (s_b - s_t)) / 2 - s_t
+            draw.text((sx, sy), text_s, fill=(255, 255, 255, 160), font=font_sample)
 
         # スタンプ（右下）
         text_k = "kawaii女の子図鑑"
@@ -102,12 +100,13 @@ class Product(models.Model):
         return self.name
 
     def save(self, *args, **kwargs):
+        add_watermark = kwargs.pop('add_watermark', True)
         super().save(*args, **kwargs)
         if self.image:
             try:
-                process_product_image(self.image.path)
-            except Exception:
-                pass
+                process_product_image(self.image.path, add_watermark=add_watermark)
+            except Exception as e:
+                print(f"Image processing error: {e}")
 
     def delete(self, *args, **kwargs):
         # Cloudinaryから画像を削除
