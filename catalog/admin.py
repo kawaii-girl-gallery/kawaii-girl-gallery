@@ -189,13 +189,19 @@ class BaseProductAdmin(admin.ModelAdmin):
         
         for p in full_qs:
             parts = re.split(r'[ _　]', p.name)
+            # 【】を含むものは除去、G数字も除去
             char_name = parts[0] if parts else "不明"
-            char_counts[char_name] = char_counts.get(char_name, 0) + 1
+            char_name = re.sub(r'【.*?】', '', char_name).strip()
+            if not char_name:
+                char_name = re.sub(r'【.*?】', '', parts[1]).strip() if len(parts) > 1 else "不明"
+            if char_name:
+                char_counts[char_name] = char_counts.get(char_name, 0) + 1
             
             if len(parts) > 1:
                 work_parts = []
                 for part in parts[1:]:
                     if "同人" in part: break
+                    if re.match(r'^G\d+$', part, re.IGNORECASE): break  # G数字除去
                     work_parts.append(part)
                 work_name = " ".join(work_parts).strip() if work_parts else "単体作品"
                 if work_name:
@@ -735,10 +741,15 @@ def character_pedia_view(request):
             if len(parts) > 1:
                 for part in parts[1:]:
                     if "同人" in part: break
+                    if re.match(r'^G\d+$', part, re.IGNORECASE): break  # G数字除去
                     work_parts.append(part)
             key = " ".join(work_parts).strip() if work_parts else "単体作品"
         else:
-            key = parts[0] if parts else "不明"
+            char_name = parts[0] if parts else "不明"
+            char_name = re.sub(r'【.*?】', '', char_name).strip()
+            if not char_name and len(parts) > 1:
+                char_name = re.sub(r'【.*?】', '', parts[1]).strip()
+            key = char_name if char_name else "不明"
             
         if key not in data: 
             data[key] = {'A4': 0, 'TCG': 0, 'total': 0, 'images': [], 'a4_url': f"/admin/catalog/show_productlist_a4/?q={key}", 'tcg_url': f"/admin/catalog/show_productlist_tcg/?q={key}"}
