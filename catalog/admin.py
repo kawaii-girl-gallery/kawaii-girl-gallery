@@ -91,6 +91,11 @@ class MultipleFileField(forms.ImageField):
 class BulkUploadForm(forms.Form):
     category = forms.ChoiceField(choices=[('A4', 'A4サイズポスター'), ('TCG', 'トレーディングカード')], label='種別')
     price = forms.IntegerField(label='一括設定金額', initial=88)
+    duration_days = forms.ChoiceField(
+        choices=[(str(i), f'{i}日間') for i in range(1, 15)],
+        label='掲載日数',
+        initial='6'
+    )
     add_watermark = forms.BooleanField(label='SAMPLEの透かしを追加', required=False, initial=True)
     images = MultipleFileField(label='画像ファイル選択')
 
@@ -141,6 +146,7 @@ class BaseProductAdmin(admin.ModelAdmin):
             cat = request.POST.get('category', 'A4')
             pr = int(request.POST.get('price', 88))
             add_watermark = request.POST.get('add_watermark', 'true') == 'true'
+            duration_days = int(request.POST.get('duration_days', 6))
             f = request.FILES.get('image')
             if not f:
                 return JsonResponse({'status': 'error', 'message': 'ファイルがありません'}, status=400)
@@ -155,7 +161,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                 if part: name_parts.append(part)
             if g_number: name_parts.append(g_number)
             product_name = ' '.join(name_parts)
-            product = Product(name=product_name, category=cat, price=pr, image=f)
+            product = Product(name=product_name, category=cat, price=pr, image=f, duration_days=duration_days)
             product.save(add_watermark=add_watermark)
             return JsonResponse({'status': 'success', 'name': product_name})
         except Exception as e:
@@ -188,7 +194,7 @@ class BaseProductAdmin(admin.ModelAdmin):
     display_image_jp.short_description = '画像'
     def display_price_jp(self, obj): return format_html('<div class="cell-center" style="font-weight: 900; color: #00ffcc;">¥{}</div>', obj.price)
     display_price_jp.short_description = '価格'
-    def display_timer_jp(self, obj): return format_html('<div class="cell-center"><div class="timer-display" data-date="{}" style="font-weight: 800;">⏳ ...</div></div>', obj.created_at.isoformat())
+    def display_timer_jp(self, obj): return format_html('<div class="cell-center"><div class="timer-display" data-date="{}" data-duration="{}" style="font-weight: 800;">⏳ ...</div></div>', obj.created_at.isoformat(), obj.duration_days)
     display_timer_jp.short_description = '掲載期限'
 
     def changelist_view(self, request, extra_context=None):
