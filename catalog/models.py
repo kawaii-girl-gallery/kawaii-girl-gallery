@@ -90,6 +90,7 @@ class Product(models.Model):
     price = models.IntegerField('金額', default=88)
     image = models.ImageField('画像', upload_to='products/')
     is_archived = models.BooleanField('保管庫送り', default=False)
+    duration_days = models.IntegerField('掲載日数', default=6)
     created_at = models.DateTimeField('登録日時', auto_now_add=True)
 
     class Meta:
