@@ -90,6 +90,10 @@
                 <div class="form-row">
                     {{ form.price.label_tag }} {{ form.price }}
                 </div>
+                <div class="form-row" style="display:flex; align-items:center; gap:10px;">
+                    {{ form.add_watermark }} <label for="id_add_watermark" style="width:auto; font-weight:900; color:#00ffcc;">SAMPLEの透かしを追加する</label>
+                    <span style="color:#888; font-size:12px;">（スタンプは常に追加されます）</span>
+                </div>
                 <div class="form-row">
                     {{ form.images.label_tag }} {{ form.images }}
                     <p class="help">{{ form.images.help_text }}</p>
