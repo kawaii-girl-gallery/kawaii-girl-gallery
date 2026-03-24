@@ -113,7 +113,10 @@ function getRowData(row) {
     const nameCell = row.querySelector('.column-display_name_jp div') || row.querySelector('.column-display_name div') || row.cells[1];
     const imgCell = row.querySelector('.column-display_image_jp img') || row.querySelector('.column-display_image img') || row.cells[2].querySelector('img');
     const priceCell = row.querySelector('.column-display_price_jp div') || row.querySelector('.column-display_price div') || row.cells[3];
-    return { url: imgCell ? imgCell.src : '', name: nameCell ? nameCell.innerText.trim() : '不明', price: priceCell ? priceCell.innerText.trim() : '0' };
+    // 改行をスペースに変換して1行にする
+    const rawName = nameCell ? nameCell.innerText.trim() : '不明';
+    const name = rawName.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
+    return { url: imgCell ? imgCell.src : '', name: name, price: priceCell ? priceCell.innerText.trim() : '0' };
 }
 
 function bulkCarousel() {
