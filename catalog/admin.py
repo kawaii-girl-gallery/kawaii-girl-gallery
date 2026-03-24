@@ -101,6 +101,12 @@ class BaseProductAdmin(admin.ModelAdmin):
     actions = ['move_to_archive', 'restore_from_archive']
 
     def has_change_permission(self, request, obj=None):
+        return request.user.is_staff
+
+    def has_add_permission(self, request):
+        return request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
+
+    def has_delete_permission(self, request, obj=None):
         return request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
 
     def has_view_permission(self, request, obj=None):
@@ -226,7 +232,7 @@ class BaseProductAdmin(admin.ModelAdmin):
         char_btns = make_btns(char_counts, "#ff69b4", "char-panel")
         work_btns = make_btns(work_counts, "#007bff", "work-panel")
 
-        is_admin_flag = 'true' if self.has_change_permission(request) else 'false'
+        is_admin_flag = 'true' if (request.user.is_superuser or request.user.username == 'kawaii-girlgallery') else 'false'
 
         # アコーディオンパネルHTML + CSS + JS
         accordion_html = mark_safe(f'''
