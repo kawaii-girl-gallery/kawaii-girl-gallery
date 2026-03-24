@@ -5,51 +5,36 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Rounded+Mplus+1c:wght@700;900&display=swap');
     body, #header, #content, #nav-sidebar, h1, h2, h3, .module caption { font-family: 'Rounded Mplus 1c', sans-serif !important; }
-
-    /* ヘッダー */
-    #header {
-        background: #1a1c23 !important;
-        padding: 15px 25px !important;
-        border-bottom: 4px solid transparent !important;
-        border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important;
-    }
-    #branding h1 {
-        font-size: 28px !important;
-        font-weight: 900 !important;
-        display: flex !important;
-        align-items: center !important;
-        gap: 12px !important;
-        background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important;
-        -webkit-background-clip: text !important;
-        -webkit-text-fill-color: transparent !important;
-    }
+    #header { background: #1a1c23 !important; padding: 15px 25px !important; border-bottom: 4px solid transparent !important; border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important; }
+    #branding h1 { font-size: 28px !important; font-weight: 900 !important; display: flex !important; align-items: center !important; gap: 12px !important; background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; }
     #branding h1::before { content: '💕'; -webkit-text-fill-color: initial !important; font-size: 26px; }
     #branding h1 a { color: inherit !important; text-decoration: none !important; }
-
-    /* パンくず */
     .breadcrumbs { background: #1a1c23 !important; color: #ccc !important; }
     .breadcrumbs a { color: #aaa !important; }
-
-    /* 左メニューの大カテゴリリンク無効化 */
-    #nav-sidebar .module caption a { pointer-events: none !important; cursor: default !important; text-decoration: none !important; color: inherit !important; }
+    #nav-sidebar .module caption a, #content-main .module caption a.section { pointer-events: none !important; cursor: default !important; text-decoration: none !important; color: inherit !important; }
     #header #user-tools a:not([href*="logout"]) { display: none !important; }
     #header #user-tools .divider { display: none !important; }
-
-    /* カテゴリ色 */
+    #header #user-tools { font-size: 0 !important; }
+    #header #user-tools strong, #header #user-tools form, #header #user-tools a[href*="logout"] { font-size: 13px !important; }
     .app-catalog_pedia caption, .app-catalog_pedia h2 { background: #6f42c1 !important; color: #fff !important; }
     .app-catalog_a4 caption, .app-catalog_a4 h2 { background: #ff4d94 !important; color: #fff !important; }
     .app-catalog_tcg caption, .app-catalog_tcg h2 { background: #2684ff !important; color: #fff !important; }
     .app-catalog_admin_custom caption, .app-catalog_admin_custom h2 { background: #f0ad4e !important; color: #fff !important; }
-
-    /* コンテンツ */
     #content { background: rgba(18, 18, 18, 0.85) !important; margin: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: #eee; }
     .module { background: #222; border: 1px solid #444; padding: 20px; border-radius: 8px; }
     h2 { color: #ffcc00 !important; }
     .form-row { padding: 15px 0; border-bottom: 1px solid #333; }
     label { font-weight: bold; width: 120px; display: inline-block; }
-    input[type="number"], select { background: #333; color: white; border: 1px solid #555; padding: 5px; }
-    .help { color: #888; font-size: 0.9em; margin-top: 5px; }
-    .submit-row { background: #222; border: 1px solid #444; margin-top: 20px; }
+    input[type="number"], select { background: #333; color: white; border: 1px solid #555; padding: 5px; border-radius: 4px; }
+    .submit-row { background: #222; border: 1px solid #444; margin-top: 20px; padding: 10px 20px; border-radius: 8px; }
+    #progress-area { display: none; margin-top: 20px; background: #1a1a1a; padding: 20px; border-radius: 12px; border: 1px solid #333; }
+    #progress-bar-wrap { background: #333; border-radius: 20px; height: 24px; overflow: hidden; margin: 12px 0; }
+    #progress-bar { height: 100%; background: linear-gradient(to right, #ff4d94, #2684ff); border-radius: 20px; width: 0%; transition: width 0.3s; }
+    #progress-text { color: #00ffcc; font-weight: 900; font-size: 16px; }
+    #progress-detail { color: #aaa; font-size: 12px; margin-top: 8px; max-height: 150px; overflow-y: auto; }
+    #progress-detail div { padding: 2px 0; border-bottom: 1px solid #222; }
+    .success-item { color: #28a745; }
+    .error-item { color: #ff4444; }
 </style>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -59,10 +44,7 @@
         var headerH = header ? header.offsetHeight : 75;
         var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 37;
         var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
-
-        if (header) {
-            header.style.cssText += 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;';
-        }
+        if (header) header.style.cssText += 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;';
         if (breadcrumbs) {
             document.body.appendChild(breadcrumbs);
             breadcrumbs.style.cssText = 'position: fixed !important; top: ' + headerH + 'px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1999 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important;';
@@ -74,37 +56,103 @@
         }
         document.body.style.paddingTop = (headerH + breadcrumbsH) + 'px';
     });
+
+    function getCookie(name) {
+        let v = null;
+        if (document.cookie) document.cookie.split(';').forEach(c => { c = c.trim(); if (c.startsWith(name + '=')) v = decodeURIComponent(c.slice(name.length + 1)); });
+        return v;
+    }
+
+    async function startUpload() {
+        const files = document.getElementById('id_images').files;
+        const category = document.getElementById('id_category').value;
+        const price = document.getElementById('id_price').value;
+        const addWatermark = document.getElementById('id_add_watermark').checked;
+        if (!files.length) { alert('ファイルを選択してください'); return; }
+        const total = files.length;
+        let done = 0, errors = 0;
+        const PARALLEL = 5;
+        document.getElementById('progress-area').style.display = 'block';
+        document.getElementById('upload-btn').disabled = true;
+        document.getElementById('upload-btn').textContent = 'アップロード中...';
+        const uploadUrl = window.location.href.replace('bulk-upload/', 'bulk-upload-single/');
+
+        function updateProgress() {
+            const pct = Math.round((done / total) * 100);
+            document.getElementById('progress-bar').style.width = pct + '%';
+            document.getElementById('progress-text').textContent = done + ' / ' + total + ' 枚完了 (' + pct + '%)';
+        }
+
+        async function uploadOne(file) {
+            const fd = new FormData();
+            fd.append('image', file);
+            fd.append('category', category);
+            fd.append('price', price);
+            fd.append('add_watermark', addWatermark ? 'true' : 'false');
+            fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
+            try {
+                const res = await fetch(uploadUrl, { method: 'POST', body: fd });
+                const data = await res.json();
+                done++;
+                updateProgress();
+                const detail = document.getElementById('progress-detail');
+                if (data.status === 'success') {
+                    detail.innerHTML = '<div class="success-item">✅ ' + data.name + '</div>' + detail.innerHTML;
+                } else {
+                    errors++;
+                    detail.innerHTML = '<div class="error-item">❌ ' + file.name + ': ' + (data.message || 'エラー') + '</div>' + detail.innerHTML;
+                }
+            } catch (e) {
+                done++; errors++;
+                updateProgress();
+            }
+        }
+
+        const fileArr = Array.from(files);
+        for (let i = 0; i < fileArr.length; i += PARALLEL) {
+            await Promise.all(fileArr.slice(i, i + PARALLEL).map(uploadOne));
+        }
+
+        document.getElementById('progress-text').textContent = '完了！ ' + (done - errors) + '枚成功 / ' + errors + '枚エラー';
+        document.getElementById('upload-btn').textContent = '一覧に戻る';
+        document.getElementById('upload-btn').disabled = false;
+        document.getElementById('upload-btn').onclick = function() { window.location.href = '..'; };
+    }
 </script>
 {% endblock %}
 
 {% block content %}
 <div id="content-main">
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <div>
-            <fieldset class="module aligned">
-                <h2>📂 商品一括アップロード</h2>
-                <div class="form-row">
-                    {{ form.category.label_tag }} {{ form.category }}
-                </div>
-                <div class="form-row">
-                    {{ form.price.label_tag }} {{ form.price }}
-                </div>
-                <div class="form-row" style="display:flex; align-items:center; gap:10px;">
-                    {{ form.add_watermark }} <label for="id_add_watermark" style="width:auto; font-weight:900; color:#00ffcc;">SAMPLEの透かしを追加する</label>
-                    <span style="color:#888; font-size:12px;">（スタンプは常に追加されます）</span>
-                </div>
-                <div class="form-row">
-                    {{ form.images.label_tag }} {{ form.images }}
-                    <p class="help">{{ form.images.help_text }}</p>
-                </div>
-            </fieldset>
-            
-            <div class="submit-row">
-                <input type="submit" value="🚀 アップロードを開始する" class="default" style="background: #28a745; height: 40px; padding: 0 30px; font-weight: bold;">
-                <a href=".." class="closelink" style="color: #ccc; margin-left: 20px;">キャンセル</a>
+    <div>
+        <fieldset class="module aligned">
+            <h2>📂 商品一括アップロード</h2>
+            <div class="form-row">
+                {{ form.category.label_tag }} {{ form.category }}
             </div>
+            <div class="form-row">
+                {{ form.price.label_tag }} {{ form.price }}
+            </div>
+            <div class="form-row" style="display:flex; align-items:center; gap:10px;">
+                {{ form.add_watermark }} <label for="id_add_watermark" style="width:auto; font-weight:900; color:#00ffcc;">SAMPLEの透かしを追加する</label>
+                <span style="color:#888; font-size:12px;">（スタンプは常に追加されます）</span>
+            </div>
+            <div class="form-row">
+                {{ form.images.label_tag }} {{ form.images }}
+            </div>
+        </fieldset>
+
+        <div id="progress-area">
+            <div id="progress-text">0 / 0 枚完了</div>
+            <div id="progress-bar-wrap"><div id="progress-bar"></div></div>
+            <div id="progress-detail"></div>
         </div>
-    </form>
+
+        <div class="submit-row">
+            <button type="button" id="upload-btn" onclick="startUpload()" style="background:#28a745; color:#fff; height:40px; padding:0 30px; font-weight:bold; border:none; border-radius:4px; cursor:pointer; font-size:15px;">
+                🚀 アップロードを開始する
+            </button>
+            <a href=".." class="closelink" style="color:#ccc; margin-left:20px;">キャンセル</a>
+        </div>
+    </div>
 </div>
 {% endblock %}
