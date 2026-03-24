@@ -21,6 +21,13 @@ function updateTimers() {
 }
 setInterval(updateTimers, 1000);
 
+// 現在のページのカテゴリを判別
+function getCurrentCategory() {
+    if (window.location.href.includes('show_productlist_a4') || window.location.href.includes('z_archive_a4')) return 'A4';
+    if (window.location.href.includes('show_productlist_tcg') || window.location.href.includes('z_archive_tcg')) return 'TCG';
+    return '';
+}
+
 let currentImages = []; 
 let currentIndex = 0;
 
@@ -55,7 +62,6 @@ function openCarousel(imgUrl, name, price) {
     modal.style.display = "block";
     modalImg.src = imgUrl;
 
-    // 💡 重要：位置指定（style.width 等）をすべて消去
     modalImg.onload = function() {
         modalImg.oncontextmenu = () => false;
     };
@@ -73,7 +79,8 @@ function addCurrentToCart(e) {
     const priceText = modal.getAttribute('data-current-price');
     const url = modal.getAttribute('data-current-url');
     const price = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
-    cart.push({name: name, price: price, url: url});
+    const category = getCurrentCategory();
+    cart.push({name: name, price: price, url: url, category: category});
     localStorage.setItem('pos_cart_data', JSON.stringify(cart));
     renderCart();
     const btn = document.getElementById('modal-add-btn');
@@ -120,9 +127,10 @@ function bulkCarousel() {
 function bulkAddToCart() {
     const selected = document.querySelectorAll('#result_list tbody input.action-select:checked');
     if (selected.length === 0) return;
+    const category = getCurrentCategory();
     selected.forEach(cb => {
         const data = getRowData(cb.closest('tr'));
-        cart.push({name: data.name, price: parseInt(data.price.replace(/[^0-9]/g, '')) || 0, url: data.url});
+        cart.push({name: data.name, price: parseInt(data.price.replace(/[^0-9]/g, '')) || 0, url: data.url, category: category});
         cb.checked = false;
     });
     localStorage.setItem('pos_cart_data', JSON.stringify(cart));
@@ -139,7 +147,7 @@ function renderCart() {
         document.body.appendChild(cartPopup);
     }
     const total = cart.reduce((sum, item) => sum + item.price, 0);
-    cartPopup.innerHTML = `<h3>🛒 カート合計</h3><ul id="cart-list" style="margin:0; padding:0; list-style:none; max-height:220px; overflow-y:auto;">${cart.map((item, index) => `<li style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:12px; border-bottom:1px solid #222; padding-bottom:5px;"><div style="display:flex; align-items:center; gap:8px; flex:1; overflow:hidden;"><img src="${item.url}" style="width:35px; height:35px; object-fit:cover; border-radius:3px;"><div style="display:flex; flex-direction:column; overflow:hidden;"><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:bold;">${item.name}</span><span style="color:#ffcc00;">¥${item.price.toLocaleString()}</span></div></div><button onclick="removeFromCart(${index})" style="background:transparent; color:#ff4444; border:none; cursor:pointer; font-size:16px; padding:0 5px; font-weight:bold;">×</button></li>`).join('')}</ul><div style="margin-top:10px; border-top:1px solid #333; padding-top:8px; display:flex; justify-content:space-between; font-weight:bold;"><span>合計:</span><span>¥${total.toLocaleString()}</span></div><button onclick="checkout()" style="width:100%; margin-top:10px; background:#28a745; color:white; border:none; padding:12px; cursor:pointer; border-radius:4px; font-weight:bold; font-size:16px;">✨ 会計確定</button><button onclick="clearCart()" style="width:100%; margin-top:10px; background:#333; color:white; border:none; padding:8px; cursor:pointer; border-radius:4px; font-size:12px;">リセット</button>`;
+    cartPopup.innerHTML = `<h3>🛒 カート合計</h3><ul id="cart-list" style="margin:0; padding:0; list-style:none; max-height:220px; overflow-y:auto;">${cart.map((item, index) => `<li style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:12px; border-bottom:1px solid #222; padding-bottom:5px;"><div style="display:flex; align-items:center; gap:8px; flex:1; overflow:hidden;"><img src="${item.url}" style="width:35px; height:35px; object-fit:cover; border-radius:3px;"><div style="display:flex; flex-direction:column; overflow:hidden;"><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:bold;">${item.name}</span><span style="color:#ffcc00;">¥${item.price.toLocaleString()}</span>${item.category ? `<span style="color:#aaa; font-size:10px;">${item.category}</span>` : ''}</div></div><button onclick="removeFromCart(${index})" style="background:transparent; color:#ff4444; border:none; cursor:pointer; font-size:16px; padding:0 5px; font-weight:bold;">×</button></li>`).join('')}</ul><div style="margin-top:10px; border-top:1px solid #333; padding-top:8px; display:flex; justify-content:space-between; font-weight:bold;"><span>合計:</span><span>¥${total.toLocaleString()}</span></div><button onclick="checkout()" style="width:100%; margin-top:10px; background:#28a745; color:white; border:none; padding:12px; cursor:pointer; border-radius:4px; font-weight:bold; font-size:16px;">✨ 会計確定</button><button onclick="clearCart()" style="width:100%; margin-top:10px; background:#333; color:white; border:none; padding:8px; cursor:pointer; border-radius:4px; font-size:12px;">リセット</button>`;
     cartPopup.style.display = cart.length > 0 ? 'block' : 'none';
 }
 async function checkout() {
