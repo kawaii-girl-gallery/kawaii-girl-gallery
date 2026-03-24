@@ -3,8 +3,9 @@ function updateTimers() {
     document.querySelectorAll('.timer-display').forEach(elem => {
         const dataDate = elem.getAttribute('data-date');
         if (!dataDate) return;
+        const duration = parseInt(elem.getAttribute('data-duration') || '6');
         const deadline = new Date(dataDate);
-        deadline.setDate(deadline.getDate() + 6);
+        deadline.setDate(deadline.getDate() + duration);
         deadline.setHours(23, 59, 59, 999);
         const diff = deadline - now;
         if (diff <= 0) {
