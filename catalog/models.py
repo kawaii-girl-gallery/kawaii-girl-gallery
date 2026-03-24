@@ -101,12 +101,78 @@ class Product(models.Model):
 
     def save(self, *args, **kwargs):
         add_watermark = kwargs.pop('add_watermark', True)
-        super().save(*args, **kwargs)
-        if self.image:
+        # 新規作成時は画像をメモリで処理してからCloudinaryにアップロード
+        if self.pk is None and self.image:
             try:
-                process_product_image(self.image.path, add_watermark=add_watermark)
+                from io import BytesIO
+                import requests
+                # 画像データをメモリに読み込む
+                img_file = self.image
+                img_data = img_file.read()
+                img_file.seek(0)
+                
+                # Pillowで処理
+                img = Image.open(BytesIO(img_data)).convert("RGBA")
+                max_size = 1200
+                if img.width > max_size or img.height > max_size:
+                    img.thumbnail((max_size, max_size), Image.LANCZOS)
+                
+                txt_layer = Image.new("RGBA", img.size, (255, 255, 255, 0))
+                draw = ImageDraw.Draw(txt_layer)
+                sample_size = int(img.width / 4.5)
+                stamp_size = int(img.width / 18)
+
+                def load_font_en(size):
+                    for path in ["/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf"]:
+                        try: return ImageFont.truetype(path, size)
+                        except: continue
+                    return ImageFont.load_default(size=max(size, 20))
+
+                def load_font_ja(size):
+                    import django.conf
+                    base_dir = django.conf.settings.BASE_DIR
+                    for path in [
+                        os.path.join(base_dir, "catalog", "static", "catalog", "fonts", "NotoSansJP-VariableFont_wght.ttf"),
+                        os.path.join(base_dir, "staticfiles", "catalog", "fonts", "NotoSansJP-VariableFont_wght.ttf"),
+                    ]:
+                        try: return ImageFont.truetype(path, size)
+                        except: continue
+                    return ImageFont.load_default(size=max(size, 20))
+
+                font_sample = load_font_en(sample_size)
+                font_stamp = load_font_ja(stamp_size)
+
+                # SAMPLE透かし
+                if add_watermark:
+                    text_s = "SAMPLE"
+                    s_l, s_t, s_r, s_b = draw.textbbox((0, 0), text_s, font=font_sample)
+                    sx = (img.width - (s_r - s_l)) / 2 - s_l
+                    sy = (img.height - (s_b - s_t)) / 2 - s_t
+                    draw.text((sx, sy), text_s, fill=(255, 255, 255, 160), font=font_sample)
+
+                # スタンプ（常に追加）
+                text_k = "kawaii女の子図鑑"
+                k_l, k_t, k_r, k_b = draw.textbbox((0, 0), text_k, font=font_stamp)
+                w_k, h_k = k_r - k_l, k_b - k_t
+                padding, inner = int(img.width * 0.05), int(stamp_size * 0.4)
+                r_x1, r_y1 = img.width - padding, img.height - padding
+                r_x0, r_y0 = r_x1 - (w_k + inner * 2), r_y1 - (h_k + inner * 2)
+                draw.rectangle([r_x0, r_y0, r_x1, r_y1], outline=(200, 0, 0, 200), width=6)
+                draw.text((r_x0 + inner - k_l, r_y0 + inner - k_t), text_k, fill=(200, 0, 0, 200), font=font_stamp)
+
+                # 合成してメモリに保存
+                out = Image.alpha_composite(img, txt_layer)
+                output = BytesIO()
+                out.convert("RGB").save(output, "JPEG", quality=90, optimize=True)
+                output.seek(0)
+
+                # 処理済み画像をDjangoのFileオブジェクトに置き換え
+                from django.core.files.base import ContentFile
+                self.image = ContentFile(output.read(), name=os.path.splitext(img_file.name)[0] + '.jpg')
+                print(f"Image processed successfully in memory")
             except Exception as e:
                 print(f"Image processing error: {e}")
+        super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
         # Cloudinaryから画像を削除
