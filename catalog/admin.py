@@ -795,14 +795,31 @@ def sales_dashboard_view(request):
 
     s_dt, e_dt, period = get_date_range(request)
     sales_qs = Sale.objects.filter(sold_at__range=(s_dt, e_dt))
-    total_customers = sales_qs.values('user').distinct().count()
-    stats = {'total_revenue': sales_qs.aggregate(Sum('price'))['price__sum'] or 0, 'total_items': sales_qs.count(), 'total_customers': total_customers, 'avg_items': round(sales_qs.count() / total_customers, 1) if total_customers > 0 else 0}
-    
+
+    def calc_stats(qs):
+        total_customers = qs.values('user').distinct().count()
+        total_items = qs.count()
+        return {
+            'total_revenue': qs.aggregate(Sum('price'))['price__sum'] or 0,
+            'total_items': total_items,
+            'total_customers': total_customers,
+            'avg_items': round(total_items / total_customers, 1) if total_customers > 0 else 0
+        }
+
+    stats_all = calc_stats(sales_qs)
+    stats_a4 = calc_stats(sales_qs.filter(category='A4'))
+    stats_tcg = calc_stats(sales_qs.filter(category='TCG'))
+
     return render(request, 'admin/catalog/sales_dashboard.html', {
-        **admin.site.each_context(request), 
-        'stats': stats, 'period_title': period, 'start_date': s_dt.strftime('%Y-%m-%d'), 'end_date': e_dt.strftime('%Y-%m-%d'),
+        **admin.site.each_context(request),
+        'stats': stats_all,
+        'stats_a4': stats_a4,
+        'stats_tcg': stats_tcg,
+        'period_title': period,
+        'start_date': s_dt.strftime('%Y-%m-%d'),
+        'end_date': e_dt.strftime('%Y-%m-%d'),
         'is_admin': request.user.is_superuser or request.user.username == 'kawaii-girlgallery',
-        'cl_class': 'admin-custom-mode' 
+        'cl_class': 'admin-custom-mode'
     })
 
 def analysis_sheet_view(request):
@@ -813,40 +830,66 @@ def analysis_sheet_view(request):
             return redirect(request.path)
 
     s_dt, e_dt, period = get_date_range(request)
-    sales = Sale.objects.filter(sold_at__range=(s_dt, e_dt))
-    char_s, work_s = {}, {}
-    weekday_list = [{"name": n, "revenue": 0, "count": 0} for n in ["月", "火", "水", "木", "金", "土", "日"]]
-    for s in sales:
-        parts = re.split(r'[ _　]', s.product_name)
-        c = parts[0] if parts else "不明"
-        
-        work_parts = []
-        if len(parts) > 1:
-            for part in parts[1:]:
-                if "同人" in part: break
-                work_parts.append(part)
-        w = " ".join(work_parts).strip() if work_parts else "単体作品"
+    sales_all = Sale.objects.filter(sold_at__range=(s_dt, e_dt))
 
-        if c not in char_s: char_s[c] = {'count': 0, 'revenue': 0}
-        char_s[c]['count'] += 1; char_s[c]['revenue'] += s.price
-        if w not in work_s: work_s[w] = {'count': 0, 'revenue': 0}
-        work_s[w]['count'] += 1; work_s[w]['revenue'] += s.price
-        idx = timezone.localtime(s.sold_at).weekday()
-        weekday_list[idx]['revenue'] += s.price; weekday_list[idx]['count'] += 1
-    
+    def calc_analysis(sales):
+        char_s, work_s = {}, {}
+        weekday_list = [{"name": n, "revenue": 0, "count": 0} for n in ["月", "火", "水", "木", "金", "土", "日"]]
+        for s in sales:
+            parts = re.split(r'[ _　]', s.product_name)
+            c = parts[0] if parts else "不明"
+            c = re.sub(r'【.*?】', '', c).strip() or "不明"
+            work_parts = []
+            if len(parts) > 1:
+                for part in parts[1:]:
+                    if "同人" in part: break
+                    if re.match(r'^G\d+$', part, re.IGNORECASE): break
+                    work_parts.append(part)
+            w = " ".join(work_parts).strip() if work_parts else "単体作品"
+            if c not in char_s: char_s[c] = {'count': 0, 'revenue': 0}
+            char_s[c]['count'] += 1; char_s[c]['revenue'] += s.price
+            if w not in work_s: work_s[w] = {'count': 0, 'revenue': 0}
+            work_s[w]['count'] += 1; work_s[w]['revenue'] += s.price
+            idx = timezone.localtime(s.sold_at).weekday()
+            weekday_list[idx]['revenue'] += s.price; weekday_list[idx]['count'] += 1
+        return {
+            'char_sales': sorted(char_s.items(), key=lambda x: x[1]['revenue'], reverse=True),
+            'work_sales': sorted(work_s.items(), key=lambda x: x[1]['revenue'], reverse=True),
+            'weekday_sales': weekday_list,
+        }
+
+    data_all = calc_analysis(sales_all)
+    data_a4 = calc_analysis(sales_all.filter(category='A4'))
+    data_tcg = calc_analysis(sales_all.filter(category='TCG'))
+
     return render(request, 'admin/catalog/analysis_sheet.html', {
-        **admin.site.each_context(request), 
-        'char_sales': sorted(char_s.items(), key=lambda x: x[1]['revenue'], reverse=True), 
-        'work_sales': sorted(work_s.items(), key=lambda x: x[1]['revenue'], reverse=True), 
-        'weekday_sales': weekday_list, 'period_title': period, 'start_date': s_dt.strftime('%Y-%m-%d'), 'end_date': e_dt.strftime('%Y-%m-%d'),
+        **admin.site.each_context(request),
+        'char_sales': data_all['char_sales'],
+        'work_sales': data_all['work_sales'],
+        'weekday_sales': data_all['weekday_sales'],
+        'char_sales_a4': data_a4['char_sales'],
+        'work_sales_a4': data_a4['work_sales'],
+        'char_sales_tcg': data_tcg['char_sales'],
+        'work_sales_tcg': data_tcg['work_sales'],
+        'weekday_sales_a4': data_a4['weekday_sales'],
+        'weekday_sales_tcg': data_tcg['weekday_sales'],
+        'period_title': period,
+        'start_date': s_dt.strftime('%Y-%m-%d'),
+        'end_date': e_dt.strftime('%Y-%m-%d'),
         'is_admin': request.user.is_superuser or request.user.username == 'kawaii-girlgallery',
-        'cl_class': 'admin-custom-mode' 
+        'cl_class': 'admin-custom-mode'
     })
 
 def record_sale_view(request):
     if request.method == 'POST':
         items = json.loads(request.body).get('items', [])
-        for i in items: Sale.objects.create(product_name=i['name'], price=i['price'], user=request.user if request.user.is_authenticated else None)
+        for i in items:
+            Sale.objects.create(
+                product_name=i['name'],
+                price=i['price'],
+                category=i.get('category', ''),
+                user=request.user if request.user.is_authenticated else None
+            )
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'}, status=405)
 
