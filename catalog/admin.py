@@ -126,12 +126,38 @@ class BaseProductAdmin(admin.ModelAdmin):
                 cat, pr = form.cleaned_data['category'], form.cleaned_data['price']
                 add_watermark = form.cleaned_data['add_watermark']
                 for f in request.FILES.getlist('images'):
-                    product = Product(name=os.path.splitext(f.name)[0], category=cat, price=pr, image=f)
+                    raw_name = os.path.splitext(f.name)[0]
+                    # ファイル名からGで始まる管理番号を抽出して商品名に含める
+                    import re as re_mod
+                    parts = re_mod.split(r'[ _　]', raw_name)
+                    # 「同人」より前の部分 + G数字部分を取得
+                    name_parts = []
+                    g_number = None
+                    for part in parts:
+                        if re_mod.match(r'^G\d+$', part, re_mod.IGNORECASE):
+                            g_number = part
+                        elif '同人' in part:
+                            break
+                        else:
+                            name_parts.append(part)
+                    if g_number:
+                        name_parts.append(g_number)
+                    product_name = ' '.join(name_parts)
+                    product = Product(name=product_name, category=cat, price=pr, image=f)
                     product.save(add_watermark=add_watermark)
                 return redirect('..')
         return render(request, 'admin/catalog/bulk_upload.html', {**self.admin_site.each_context(request), 'form': BulkUploadForm(initial={'category': 'A4' if 'a4' in request.path else 'TCG', 'add_watermark': True}), 'title': '一括アップロード'})
 
-    def display_name_jp(self, obj): return format_html('<div class="cell-center" style="font-weight: 800;">{}</div>', obj.name)
+    def display_name_jp(self, obj):
+        import re as re_mod
+        parts = obj.name.split(' ')
+        if len(parts) >= 2:
+            # 最後がG数字なら別行に
+            last = parts[-1]
+            if re_mod.match(r'^G\d+$', last, re_mod.IGNORECASE):
+                main = '<br>'.join(parts[:-1])
+                return format_html('<div class="cell-center" style="font-weight: 800; text-align:center;">{}<br><span style="color:#aaa;font-size:12px;">{}</span></div>', mark_safe(main), last)
+        return format_html('<div class="cell-center" style="font-weight: 800;">{}</div>', obj.name)
     display_name_jp.short_description = '商品名'
     def display_image_jp(self, obj):
         if not obj.image: return "なし"
