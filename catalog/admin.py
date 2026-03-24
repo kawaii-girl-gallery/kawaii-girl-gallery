@@ -91,6 +91,7 @@ class MultipleFileField(forms.ImageField):
 class BulkUploadForm(forms.Form):
     category = forms.ChoiceField(choices=[('A4', 'A4サイズポスター'), ('TCG', 'トレーディングカード')], label='種別')
     price = forms.IntegerField(label='一括設定金額', initial=88)
+    add_watermark = forms.BooleanField(label='SAMPLEの透かしを追加', required=False, initial=True)
     images = MultipleFileField(label='画像ファイル選択')
 
 class BaseProductAdmin(admin.ModelAdmin):
@@ -123,10 +124,12 @@ class BaseProductAdmin(admin.ModelAdmin):
             form = BulkUploadForm(request.POST, request.FILES)
             if form.is_valid():
                 cat, pr = form.cleaned_data['category'], form.cleaned_data['price']
+                add_watermark = form.cleaned_data['add_watermark']
                 for f in request.FILES.getlist('images'):
-                    Product.objects.create(name=os.path.splitext(f.name)[0], category=cat, price=pr, image=f)
+                    product = Product(name=os.path.splitext(f.name)[0], category=cat, price=pr, image=f)
+                    product.save(add_watermark=add_watermark)
                 return redirect('..')
-        return render(request, 'admin/catalog/bulk_upload.html', {**self.admin_site.each_context(request), 'form': BulkUploadForm(initial={'category': 'A4' if 'a4' in request.path else 'TCG'}), 'title': '一括アップロード'})
+        return render(request, 'admin/catalog/bulk_upload.html', {**self.admin_site.each_context(request), 'form': BulkUploadForm(initial={'category': 'A4' if 'a4' in request.path else 'TCG', 'add_watermark': True}), 'title': '一括アップロード'})
 
     def display_name_jp(self, obj): return format_html('<div class="cell-center" style="font-weight: 800;">{}</div>', obj.name)
     display_name_jp.short_description = '商品名'
