@@ -549,6 +549,28 @@ function closePanel(id) {{
                 .sp-cart-tab.visible {{
                     display: block !important;
                 }}
+                /* カート追加トースト */
+                .sp-cart-toast {{
+                    position: fixed !important;
+                    bottom: 80px !important;
+                    left: 50% !important;
+                    transform: translateX(-50%) translateY(20px) !important;
+                    background: #28a745 !important;
+                    color: #fff !important;
+                    font-size: 13px !important;
+                    font-weight: 900 !important;
+                    padding: 10px 20px !important;
+                    border-radius: 20px !important;
+                    z-index: 9999 !important;
+                    opacity: 0 !important;
+                    transition: opacity 0.2s, transform 0.2s !important;
+                    pointer-events: none !important;
+                    white-space: nowrap !important;
+                }}
+                .sp-cart-toast.show {{
+                    opacity: 1 !important;
+                    transform: translateX(-50%) translateY(0) !important;
+                }}
             }}
         </style>
         <script>
@@ -772,7 +794,7 @@ function closePanel(id) {{
 
                         spCartTab = document.createElement('div');
                         spCartTab.className = 'sp-cart-tab';
-                        spCartTab.innerHTML = '🛒<br>カート';
+                        spCartTab.textContent = '🛒\nカート';
                         document.body.appendChild(spCartTab);
 
                         // qs-tab-wrap の直下に位置を合わせる
@@ -802,6 +824,25 @@ function closePanel(id) {{
                         }});
                     }}
 
+                    // トースト表示関数
+                    function showCartToast(msg) {{
+                        var existing = document.querySelector('.sp-cart-toast');
+                        if (existing) existing.remove();
+                        var toast = document.createElement('div');
+                        toast.className = 'sp-cart-toast';
+                        toast.textContent = msg;
+                        document.body.appendChild(toast);
+                        requestAnimationFrame(function() {{
+                            requestAnimationFrame(function() {{
+                                toast.classList.add('show');
+                                setTimeout(function() {{
+                                    toast.classList.remove('show');
+                                    setTimeout(function() {{ toast.remove(); }}, 250);
+                                }}, 1500);
+                            }});
+                        }});
+                    }}
+
                     // renderCart後にタブを表示・自動オープンする
                     // pos_system.jsのrenderCartをラップ
                     function watchCart() {{
@@ -818,13 +859,10 @@ function closePanel(id) {{
                             if (!popup) return;
                             var hasItems = popup.style.display !== 'none' && popup.innerHTML.includes('removeFromCart');
                             if (hasItems) {{
+                                var wasVisible = spCartTab.classList.contains('visible');
                                 spCartTab.classList.add('visible');
-                                // 商品追加時に自動オープン
-                                if (!spCartOpen) {{
-                                    spCartOpen = true;
-                                    popup.classList.add('sp-open');
-                                    spCartTab.style.background = '#1e7e34';
-                                }}
+                                // 商品が追加されたらトーストを表示
+                                showCartToast('🛒 カートに追加しました');
                             }} else {{
                                 spCartTab.classList.remove('visible');
                                 popup.classList.remove('sp-open');
