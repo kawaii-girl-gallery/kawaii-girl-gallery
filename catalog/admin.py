@@ -925,6 +925,13 @@ def order_management_view(request):
     from django.utils import timezone as tz
     from django.db.models import Q
 
+    if request.method == 'POST' and request.POST.get('reset_all') == 'true':
+        if request.user.is_superuser or request.user.username == 'kawaii-girlgallery':
+            Sale.objects.all().delete()
+            OrderManagement.objects.all().delete()
+            messages.success(request, "売上・注文データをすべてリセットしました。")
+            return redirect(request.path)
+
     # リセット処理
     if request.method == 'POST' and request.POST.get('reset_all') == 'true':
         if request.user.is_superuser or request.user.username == 'kawaii-girlgallery':
