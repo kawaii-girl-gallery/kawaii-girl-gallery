@@ -919,12 +919,7 @@ function closePanel(id) {{
             }});
         </script>"""
         
-        storage = messages.get_messages(request)
-        is_already_sent = any("qs-tab-wrap" in str(m) for m in storage)
-        storage.used = False 
-        
-        if not is_already_sent:
-            self.message_user(request, mark_safe(COMMON_STYLE + custom_css + accordion_html + pagination_html))
+        self.message_user(request, mark_safe(COMMON_STYLE + custom_css + accordion_html + pagination_html))
             
         return super().changelist_view(request, extra_context)
 
