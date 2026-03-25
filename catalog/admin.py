@@ -27,7 +27,7 @@ COMMON_STYLE = """
     .messagelist li > div { color: initial !important; }
 
     #header { background: #1a1c23 !important; padding: 15px 25px !important; border-bottom: 4px solid transparent !important; border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important; position: sticky !important; top: 0 !important; z-index: 1000 !important; }
-    #branding h1 { font-size: 28px !important; font-weight: 900 !important; display: flex !important; align-items: center !important; gap: 12px !important; background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; }
+    #branding h1 { font-size: 28px !important; font-weight: 900 !important; display: flex !important; align-items: center !important; justify-content: center !important; gap: 12px !important; background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; }
     #branding h1::before { content: none !important; display: none !important; }
     #branding h1 a { color: inherit !important; text-decoration: none !important; }
     
@@ -63,6 +63,11 @@ COMMON_STYLE = """
     .breadcrumbs { position: sticky !important; top: 75px !important; z-index: 999 !important; background: #1a1c23 !important; }
     .breadcrumbs { background: #1a1c23 !important; color: #ccc !important; }
     .breadcrumbs a { color: #aaa !important; }
+    @media (max-width: 768px) {
+        #header { padding: 10px 15px !important; text-align: center !important; }
+        #branding h1 { justify-content: center !important; font-size: 22px !important; }
+        #branding h1 a { justify-content: center !important; }
+    }
 </style>
 <script>
     if (location.pathname.includes('character-pedia')) {{
