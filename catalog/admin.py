@@ -796,7 +796,7 @@ function closePanel(id) {{
 
                         spCartTab = document.createElement('div');
                         spCartTab.className = "sp-cart-tab";
-                        spCartTab.textContent = "🛒\nカート";
+                        spCartTab.textContent = "🛒\u000aカート";
                         document.body.appendChild(spCartTab);
 
                         // qs-tab-wrap の直下に位置を合わせる
