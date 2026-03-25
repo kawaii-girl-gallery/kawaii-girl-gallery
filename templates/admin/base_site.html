@@ -7,16 +7,19 @@
     /* ヘッダー */
     #header {
         background: #1a1c23 !important;
-        padding: 15px 25px !important;
+        padding: 15px 0 !important; /* 横のパディングを0にして中央寄せを優先 */
         border-bottom: 4px solid transparent !important;
         border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important;
         display: flex !important;
         align-items: center !important;
+        position: relative !important;
     }
     
     #branding {
         width: 100% !important;
         margin: 0 !important;
+        padding: 0 100px !important; /* ★右側のユーザーツールとの衝突を防ぐ余白 */
+        box-sizing: border-box !important;
     }
 
     #branding h1 {
@@ -49,19 +52,37 @@
 
     #branding h1 a { color: inherit !important; text-decoration: none !important; }
 
+    /* ユーザーツール（ログアウト周り） */
+    #header #user-tools { 
+        position: absolute !important;
+        right: 20px !important;
+        top: 50% !important;
+        transform: translateY(-50%) !important;
+        display: flex !important;
+        align-items: center !important;
+        z-index: 2001 !important;
+        margin: 0 !important;
+    }
+    #header #user-tools a:not([href*="logout"]) { display: none !important; }
+    #header #user-tools .divider { display: none !important; }
+    
+    #header #user-tools strong { 
+        font-size: 13px !important; 
+        color: #fff !important; 
+        margin-right: 8px;
+    }
+    #header #user-tools a[href*="logout"] { 
+        font-size: 12px !important; 
+        background: #444 !important;
+        color: #fff !important;
+        padding: 4px 10px !important;
+        border-radius: 6px !important;
+        text-decoration: none !important;
+    }
+
     /* パンくず */
     .breadcrumbs { background: #1a1c23 !important; color: #ccc !important; }
     .breadcrumbs a { color: #aaa !important; }
-
-    /* ユーザーツール（ログアウト以外非表示） */
-    #header #user-tools a:not([href*="logout"]) { display: none !important; }
-    #header #user-tools .divider { display: none !important; }
-    #header #user-tools { 
-        position: absolute !important;
-        right: 25px !important;
-        font-size: 0 !important; 
-    }
-    #header #user-tools strong, #header #user-tools form, #header #user-tools a[href*="logout"] { font-size: 13px !important; }
 
     /* 左メニューの大カテゴリリンク無効化 */
     #nav-sidebar .module caption a, #content-main .module caption a.section { pointer-events: none !important; cursor: default !important; text-decoration: none !important; color: inherit !important; }
@@ -72,7 +93,7 @@
     .app-catalog_tcg caption, .app-catalog_tcg h2 { background: #2684ff !important; color: #fff !important; }
     .app-catalog_admin_custom caption, .app-catalog_admin_custom h2, .admin-custom-mode h2, .admin-custom-mode caption { background: #f0ad4e !important; color: #fff !important; }
 
-    /* 1. モーダル・基本設定 */
+    /* モーダル関連 */
     .modal-content {
         position: fixed !important;
         top: 45% !important;
@@ -83,54 +104,18 @@
         border: 3px solid #fff !important;
         border-radius: 0 !important;
         z-index: 20001 !important;
-        margin: 0 !important;
         display: block !important;
     }
 
-    #modal-counter, .modal-counter {
-        position: fixed !important;
-        top: calc(45% - (70vh / 2)) !important;
-        left: 50% !important;
-        transform: translate(-50%, -100%) !important;
-        background: rgba(0,0,0,0.8) !important;
-        padding: 5px 20px !important;
-        border: 2px solid #fff !important;
-        border-bottom: none !important;
-        border-radius: 10px 10px 0 0 !important;
-        z-index: 20010 !important;
-    }
-
-    #modal-cart-btn, .modal-cart-action, [onclick*="cart"], button[style*="top: 0"] {
-        position: fixed !important;
-        top: calc(45% + (70vh / 2)) !important;
-        left: 50% !important;
-        transform: translate(-50%, 0) !important;
-        width: calc(85vw + 6px) !important;
-        background: #28a745 !important;
-        color: white !important;
-        padding: 15px 0 !important;
-        font-size: 18px !important;
-        font-weight: 900 !important;
-        border: 3px solid #fff !important;
-        border-top: none !important;
-        border-radius: 0 0 15px 15px !important;
-        cursor: pointer !important;
-        text-align: center !important;
-        z-index: 20015 !important;
-    }
-
-    /* 2. サイドメニュー配色 */
-    #nav-sidebar .app-catalog_a4 caption { background: #ff4d94 !important; }
-    #nav-sidebar .app-catalog_tcg caption { background: #2684ff !important; }
-    #nav-sidebar .app-catalog_admin_custom caption { background: #f0ad4e !important; }
-
-    /* 3. ナビゲーション */
-    .modal-nav { position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; }
-    .close-btn { position: fixed !important; top: 20px !important; right: 40px !important; z-index: 20030 !important; }
-
-    /* 4. スマホ用：重ならない縦積みカードレイアウト */
+    /* スマホ用：重ならない縦積みカードレイアウト */
     @media (max-width: 768px) {
-        #branding h1 { font-size: 22px !important; } /* スマホでは少し文字を小さく */
+        #branding { padding: 0 60px !important; } /* スマホ時は右側の余白を少し縮小 */
+        #branding h1 { font-size: 20px !important; gap: 6px !important; }
+        #branding h1::before, #branding h1::after { font-size: 18px !important; }
+
+        /* ★スマホでは「TEST」を消して、ログアウトボタンのみにする */
+        #header #user-tools strong { display: none !important; }
+        #header #user-tools { right: 10px !important; }
         
         .results, .results table, .results tbody, .results tr { display: block !important; width: 100% !important; }
         .results thead { display: none !important; }
@@ -145,13 +130,12 @@
             border-radius: 15px !important;
             position: relative !important;
         }
-        .field-price, .field-product_price, td:nth-child(4) { display: block !important; order: 1 !important; color: #ffcc00 !important; font-size: 22px !important; font-weight: bold !important; margin-bottom: 15px !important; border: none !important; text-align: center !important; }
-        .field-image, .field-product_image, td:has(img), [class*="image"] { display: block !important; order: 2 !important; margin-bottom: 15px !important; border: none !important; text-align: center !important; }
+        .field-price, td:nth-child(4) { display: block !important; order: 1 !important; color: #ffcc00 !important; font-size: 22px !important; font-weight: bold !important; margin-bottom: 15px !important; border: none !important; text-align: center !important; }
+        .field-image, td:has(img) { display: block !important; order: 2 !important; margin-bottom: 15px !important; border: none !important; text-align: center !important; }
         .results img { max-width: 200px !important; height: auto !important; border: 2px solid #fff !important; display: block !important; margin: 0 auto !important; }
-        .field-name, .field-product_name, td:nth-child(2) { display: block !important; order: 3 !important; color: #fff !important; font-size: 16px !important; text-align: center !important; margin-bottom: 15px !important; border: none !important; line-height: 1.4 !important; }
-        td[class*="timer"], td[class*="time"], .field-timer_display, td:nth-child(5) { display: block !important; order: 4 !important; color: #00ffcc !important; font-weight: bold !important; padding: 8px 20px !important; border: 1px solid #00ffcc !important; border-radius: 20px !important; text-align: center !important; }
-        .action-checkbox, .action-checkbox-column, td:nth-child(1) { position: absolute !important; left: 15px !important; top: 15px !important; display: block !important; width: 40px !important; height: 40px !important; z-index: 10 !important; transform: scale(1.6) !important; border: none !important; }
-        .results td:empty, .results td:not([display="block"]) { border: none !important; }
+        .field-name, td:nth-child(2) { display: block !important; order: 3 !important; color: #fff !important; font-size: 16px !important; text-align: center !important; margin-bottom: 15px !important; border: none !important; line-height: 1.4 !important; }
+        td[class*="timer"] { display: block !important; order: 4 !important; color: #00ffcc !important; font-weight: bold !important; padding: 8px 20px !important; border: 1px solid #00ffcc !important; border-radius: 20px !important; text-align: center !important; }
+        .action-checkbox { position: absolute !important; left: 15px !important; top: 15px !important; transform: scale(1.6) !important; }
     }
 </style>
 
@@ -179,7 +163,6 @@
         document.body.style.paddingTop = (headerH + breadcrumbsH) + 'px';
     });
 
-    /* 商品名の整形（「同人」でカットし、空白で改行） */
     function formatMobileNames() {
         const names = document.querySelectorAll('.field-name, .field-product_name, td:nth-child(2)');
         names.forEach(cell => {
