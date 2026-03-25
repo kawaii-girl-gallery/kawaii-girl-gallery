@@ -597,13 +597,13 @@ class BaseProductAdmin(admin.ModelAdmin):
                         else msgList.parentNode.appendChild(spacerDiv);
 
                         // 右サイドアコーディオン生成
-                        var panelDivs = msgList.querySelectorAll("li > div");
+                        // char/workパネルはidで直接取得（messagelist内のdivは1つのliに連結されている）
                         var sideAcc = document.createElement("div");
                         sideAcc.id = "sp-side-acc";
                         sideAcc.style.cssText = "position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:1800;display:flex;flex-direction:column;gap:6px;align-items:flex-end;";
 
-                        [{{"id":"char","label":"👤\nキャラ\n検索","color":"#ff69b4"}},
-                         {{"id":"work","label":"🎬\n原作\n検索","color":"#007bff"}}
+                        [{{"id":"char","label":"👤\nキャラ\n検索","color":"#ff69b4","containerId":"char-container"}},
+                         {{"id":"work","label":"🎬\n原作\n検索","color":"#007bff","containerId":"work-container"}}
                         ].forEach(function(cfg) {{
                             var wrap = document.createElement("div");
                             wrap.style.cssText = "display:flex;align-items:stretch;";
@@ -615,34 +615,31 @@ class BaseProductAdmin(admin.ModelAdmin):
                             var inner = document.createElement("div");
                             inner.style.cssText = "padding:10px;width:240px;box-sizing:border-box;";
 
-                            var srcDiv = null;
-                            panelDivs.forEach(function(div) {{
-                                var h3 = div.querySelector("h3"); if (!h3) return;
-                                if (cfg.id === "char" && h3.textContent.indexOf("キャラクター") >= 0) srcDiv = div;
-                                if (cfg.id === "work" && h3.textContent.indexOf("原作") >= 0) srcDiv = div;
-                            }});
-                            if (srcDiv) {{
-                                var titleEl = document.createElement("div");
-                                titleEl.style.cssText = "color:" + cfg.color + ";font-weight:900;font-size:13px;margin-bottom:8px;";
-                                var h3 = srcDiv.querySelector("h3");
-                                titleEl.textContent = h3 ? h3.textContent.replace("⬅ 戻る","").trim() : "";
-                                var backA = srcDiv.querySelector("h3 a");
-                                if (backA) {{
-                                    var backBtn = backA.cloneNode(true);
-                                    backBtn.style.cssText = "background:#ff4444;border:2px solid #ff6666;padding:3px 10px;border-radius:20px;color:#fff;font-size:11px;font-weight:900;text-decoration:none;margin-left:6px;";
+                            // タイトル
+                            var titleEl = document.createElement("div");
+                            titleEl.style.cssText = "color:" + cfg.color + ";font-weight:900;font-size:13px;margin-bottom:8px;";
+                            titleEl.textContent = cfg.id === "char" ? "👤 キャラクタークイック検索" : "🎬 原作作品クイック検索";
+                            inner.appendChild(titleEl);
+
+                            // ボタン群：idで直接取得してクローン
+                            var srcContainer = document.getElementById(cfg.containerId);
+                            if (srcContainer) {{
+                                var btnWrap = document.createElement("div");
+                                btnWrap.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;";
+                                srcContainer.querySelectorAll("a").forEach(function(a) {{
+                                    var newA = a.cloneNode(true);
+                                    newA.style.textDecoration = "none"; newA.style.display = "inline-block";
+                                    btnWrap.appendChild(newA);
+                                }});
+                                inner.appendChild(btnWrap);
+
+                                // 「戻る」ボタンがあれば追加
+                                var backA = document.querySelector("#" + cfg.id + "-toggle ~ * a[href='.']") ||
+                                            (srcContainer.closest("[id$='-toggle']~div") ? srcContainer.closest("[id$='-toggle']~div").querySelector("a[href='.']") : null);
+                                var backCheck = document.querySelector("a[href='.'][style*='ff4444']");
+                                if (backCheck && cfg.id === "char") {{
+                                    var backBtn = backCheck.cloneNode(true);
                                     titleEl.appendChild(backBtn);
-                                }}
-                                inner.appendChild(titleEl);
-                                var container = srcDiv.querySelector(".expand-container");
-                                if (container) {{
-                                    var btnWrap = document.createElement("div");
-                                    btnWrap.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;";
-                                    container.querySelectorAll("a").forEach(function(a) {{
-                                        var newA = a.cloneNode(true);
-                                        newA.style.textDecoration = "none"; newA.style.display = "inline-block";
-                                        btnWrap.appendChild(newA);
-                                    }});
-                                    inner.appendChild(btnWrap);
                                 }}
                             }}
                             panel.appendChild(inner);
