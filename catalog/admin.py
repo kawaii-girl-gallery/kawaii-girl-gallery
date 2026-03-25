@@ -28,7 +28,7 @@ COMMON_STYLE = """
 
     #header { background: #1a1c23 !important; padding: 15px 25px !important; border-bottom: 4px solid transparent !important; border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important; position: sticky !important; top: 0 !important; z-index: 1000 !important; }
     #branding h1 { font-size: 28px !important; font-weight: 900 !important; display: flex !important; align-items: center !important; gap: 12px !important; background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; }
-    #branding h1::before { content: '💕'; -webkit-text-fill-color: initial !important; font-size: 26px; }
+    #branding h1::before { content: ''; -webkit-text-fill-color: initial !important; font-size: 26px; }
     #branding h1 a { color: inherit !important; text-decoration: none !important; }
     
     .app-catalog_pedia caption, .app-catalog_pedia h2, .pedia-mode h2, .pedia-mode caption { background: #6f42c1 !important; color: #fff !important; }
@@ -742,10 +742,15 @@ function closePanel(id) {{
                     }}
                     document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
                 }} else {{
-                    // スマホ：marginLeftをリセット
+                    // スマホ：marginLeftをリセット、topBar+actionBar分のpaddingを確保
                     var contentWrapper = document.querySelector("#content");
                     if (contentWrapper) contentWrapper.style.marginLeft = "0";
-                    document.body.style.paddingTop = "0";
+                    setTimeout(function() {{
+                        var tb = document.querySelector(".smart-top-bar");
+                        var ab = document.querySelector(".smart-action-bar");
+                        var pad = (tb ? tb.offsetHeight : 0) + (ab ? ab.offsetHeight : 0);
+                        document.body.style.paddingTop = pad + "px";
+                    }}, 50);
                 }}
 
                 var tabWrap2 = document.querySelector(".qs-tab-wrap");
