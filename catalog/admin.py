@@ -591,7 +591,7 @@ function closePanel(id) {{
 
                 // smart-top-barが既存なら挿入スキップ（アコーディオン・カートは毎回実行）
                 var skipTopBar = !!document.querySelector(".smart-top-bar");
-                var topBar = skipTopBar ? document.querySelector(".smart-top-bar") : document.createElement('div');
+                var topBar = skipTopBar ? document.querySelector(".smart-top-bar") : document.createElement("div");
                 if (!skipTopBar) topBar.className = 'smart-top-bar';
 
                 var searchForm = document.createElement('form');
@@ -610,7 +610,7 @@ function closePanel(id) {{
                 topBar.appendChild(searchForm);
 
                 if (origPaginator) {{
-                    var pagDiv = document.createElement('div');
+                    var pagDiv = document.createElement("div");
                     pagDiv.className = 'smart-paginator';
                     var lis = origPaginator.querySelectorAll('li');
                     if (lis.length > 0) {{
@@ -647,11 +647,11 @@ function closePanel(id) {{
                     topBar.appendChild(pagDiv);
                 }}
 
-                var spacer = document.createElement('div');
+                var spacer = document.createElement("div");
                 spacer.className = 'smart-top-bar-spacer';
                 topBar.appendChild(spacer);
 
-                var btnGroup = document.createElement('div');
+                var btnGroup = document.createElement("div");
                 btnGroup.className = 'smart-btn-group';
 
                 var btnSlide = document.createElement('a');
@@ -670,7 +670,7 @@ function closePanel(id) {{
 
                 topBar.appendChild(btnGroup);
 
-                var actionBar = document.createElement('div');
+                var actionBar = document.createElement("div");
                 actionBar.className = 'smart-action-bar';
 
                 if (origActions) {{
@@ -699,7 +699,7 @@ function closePanel(id) {{
                         actionBar.appendChild(newCounter);
                     }}
                 }}
-                var actionSpacer = document.createElement('div');
+                var actionSpacer = document.createElement("div");
                 actionSpacer.style.flex = '1';
                 actionBar.appendChild(actionSpacer);
                 if ({is_admin_flag} === true) {{
@@ -794,7 +794,7 @@ function closePanel(id) {{
                     function setupSpCart() {{
                         if (spCartTab) return; // 二重生成防止
 
-                        spCartTab = document.createElement('div');
+                        spCartTab = document.createElement("div");
                         spCartTab.className = "sp-cart-tab";
                         spCartTab.textContent = "🛒\u000aカート";
                         document.body.appendChild(spCartTab);
@@ -809,10 +809,10 @@ function closePanel(id) {{
                             }}
                         }}
                         positionCartTab();
-                        window.addEventListener('resize', positionCartTab);
-                        window.addEventListener('scroll', positionCartTab);
+                        window.addEventListener("resize", positionCartTab);
+                        window.addEventListener("scroll", positionCartTab);
 
-                        spCartTab.addEventListener('click', function() {{
+                        spCartTab.addEventListener("click", function() {{
                             var popup = document.getElementById("cart-popup");
                             if (!popup) return;
                             spCartOpen = !spCartOpen;
@@ -830,7 +830,7 @@ function closePanel(id) {{
                     function showCartToast(msg) {{
                         var existing = document.querySelector(".sp-cart-toast");
                         if (existing) existing.remove();
-                        var toast = document.createElement('div');
+                        var toast = document.createElement("div");
                         toast.className = "sp-cart-toast";
                         toast.textContent = msg;
                         document.body.appendChild(toast);
@@ -860,13 +860,13 @@ function closePanel(id) {{
                         var styleObserver = new MutationObserver(function() {{
                             var popup = document.getElementById("cart-popup");
                             if (!popup) return;
-                            var hasItems = popup.style.display !== 'none' && popup.innerHTML.includes('removeFromCart');
+                            var hasItems = popup.style.display !== "none" && popup.innerHTML.includes("removeFromCart");
                             if (hasItems) {{
                                 spCartTab.classList.add("visible");
                                 // カートの件数を数えて「増えた時だけ」トーストを表示
                                 var currentCount = (popup.innerHTML.match(/removeFromCart/g) || []).length;
                                 if (currentCount > prevCartCount) {{
-                                    showCartToast('🛒 カートに追加しました');
+                                    showCartToast("🛒 カートに追加しました");
                                 }}
                                 prevCartCount = currentCount;
                             }} else {{
@@ -877,10 +877,10 @@ function closePanel(id) {{
                                 prevCartCount = 0;
                             }}
                         }});
-                        styleObserver.observe(popup, {{ attributes: true, attributeFilter: ['style'], childList: true, subtree: true }});
+                        styleObserver.observe(popup, {{ attributes: true, attributeFilter: ["style"], childList: true, subtree: true }});
 
                         // 初期状態確認
-                        if (popup.style.display !== 'none' && popup.innerHTML.includes('removeFromCart')) {{
+                        if (popup.style.display !== "none" && popup.innerHTML.includes("removeFromCart")) {{
                             spCartTab.classList.add("visible");
                         }}
                     }}
