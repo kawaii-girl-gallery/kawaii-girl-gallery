@@ -590,8 +590,8 @@ function closePanel(id) {{
                 var origActions = document.querySelector('#changelist .actions');
 
                 // smart-top-barが既存なら挿入スキップ（アコーディオン・カートは毎回実行）
-                var skipTopBar = !!document.querySelector('.smart-top-bar');
-                var topBar = skipTopBar ? document.querySelector('.smart-top-bar') : document.createElement('div');
+                var skipTopBar = !!document.querySelector(".smart-top-bar");
+                var topBar = skipTopBar ? document.querySelector(".smart-top-bar") : document.createElement('div');
                 if (!skipTopBar) topBar.className = 'smart-top-bar';
 
                 var searchForm = document.createElement('form');
@@ -795,13 +795,13 @@ function closePanel(id) {{
                         if (spCartTab) return; // 二重生成防止
 
                         spCartTab = document.createElement('div');
-                        spCartTab.className = 'sp-cart-tab';
-                        spCartTab.textContent = '🛒\nカート';
+                        spCartTab.className = "sp-cart-tab";
+                        spCartTab.textContent = "🛒\nカート";
                         document.body.appendChild(spCartTab);
 
                         // qs-tab-wrap の直下に位置を合わせる
                         function positionCartTab() {{
-                            var tabWrap = document.querySelector('.qs-tab-wrap');
+                            var tabWrap = document.querySelector(".qs-tab-wrap");
                             if (tabWrap) {{
                                 var rect = tabWrap.getBoundingClientRect();
                                 var tabWrapBottom = rect.bottom + window.scrollY;
@@ -813,32 +813,32 @@ function closePanel(id) {{
                         window.addEventListener('scroll', positionCartTab);
 
                         spCartTab.addEventListener('click', function() {{
-                            var popup = document.getElementById('cart-popup');
+                            var popup = document.getElementById("cart-popup");
                             if (!popup) return;
                             spCartOpen = !spCartOpen;
                             if (spCartOpen) {{
-                                popup.classList.add('sp-open');
-                                spCartTab.style.background = '#1e7e34';
+                                popup.classList.add("sp-open");
+                                spCartTab.style.background = "#1e7e34";
                             }} else {{
-                                popup.classList.remove('sp-open');
-                                spCartTab.style.background = '#28a745';
+                                popup.classList.remove("sp-open");
+                                spCartTab.style.background = "#28a745";
                             }}
                         }});
                     }}
 
                     // トースト表示関数
                     function showCartToast(msg) {{
-                        var existing = document.querySelector('.sp-cart-toast');
+                        var existing = document.querySelector(".sp-cart-toast");
                         if (existing) existing.remove();
                         var toast = document.createElement('div');
-                        toast.className = 'sp-cart-toast';
+                        toast.className = "sp-cart-toast";
                         toast.textContent = msg;
                         document.body.appendChild(toast);
                         requestAnimationFrame(function() {{
                             requestAnimationFrame(function() {{
-                                toast.classList.add('show');
+                                toast.classList.add("show");
                                 setTimeout(function() {{
-                                    toast.classList.remove('show');
+                                    toast.classList.remove("show");
                                     setTimeout(function() {{ toast.remove(); }}, 250);
                                 }}, 1500);
                             }});
@@ -848,7 +848,7 @@ function closePanel(id) {{
                     // renderCart後にタブを表示・自動オープンする
                     // pos_system.jsのrenderCartをラップ
                     function watchCart() {{
-                        var popup = document.getElementById('cart-popup');
+                        var popup = document.getElementById("cart-popup");
                         if (!popup) {{
                             setTimeout(watchCart, 200);
                             return;
@@ -858,11 +858,11 @@ function closePanel(id) {{
                         // cart-popupのdisplay・中身の変化を監視
                         var prevCartCount = 0;
                         var styleObserver = new MutationObserver(function() {{
-                            var popup = document.getElementById('cart-popup');
+                            var popup = document.getElementById("cart-popup");
                             if (!popup) return;
                             var hasItems = popup.style.display !== 'none' && popup.innerHTML.includes('removeFromCart');
                             if (hasItems) {{
-                                spCartTab.classList.add('visible');
+                                spCartTab.classList.add("visible");
                                 // カートの件数を数えて「増えた時だけ」トーストを表示
                                 var currentCount = (popup.innerHTML.match(/removeFromCart/g) || []).length;
                                 if (currentCount > prevCartCount) {{
@@ -870,10 +870,10 @@ function closePanel(id) {{
                                 }}
                                 prevCartCount = currentCount;
                             }} else {{
-                                spCartTab.classList.remove('visible');
-                                popup.classList.remove('sp-open');
+                                spCartTab.classList.remove("visible");
+                                popup.classList.remove("sp-open");
                                 spCartOpen = false;
-                                spCartTab.style.background = '#28a745';
+                                spCartTab.style.background = "#28a745";
                                 prevCartCount = 0;
                             }}
                         }});
@@ -881,7 +881,7 @@ function closePanel(id) {{
 
                         // 初期状態確認
                         if (popup.style.display !== 'none' && popup.innerHTML.includes('removeFromCart')) {{
-                            spCartTab.classList.add('visible');
+                            spCartTab.classList.add("visible");
                         }}
                     }}
                     watchCart();
