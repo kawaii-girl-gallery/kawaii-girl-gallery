@@ -367,21 +367,21 @@ class BaseProductAdmin(admin.ModelAdmin):
                 /* theadを非表示（ラベルはdata-label属性で代替） */
                 #result_list thead {{ display: none !important; }}
 
-                /* tbodyの各trをカードとして表示 */
+                /* tbodyの各trをカードとして表示（相対位置でチェックボックスを絶対配置） */
                 #result_list tbody tr {{
-                    display: flex !important;
-                    flex-direction: column !important;
-                    align-items: center !important;
+                    display: block !important;
+                    position: relative !important;
                     background: #1e1e1e !important;
                     border: 1px solid #333 !important;
                     border-radius: 12px !important;
                     margin: 8px !important;
-                    padding: 12px 8px !important;
+                    padding: 12px 8px 12px 44px !important;
                     width: calc(100% - 16px) !important;
                     box-sizing: border-box !important;
+                    text-align: center !important;
                 }}
 
-                /* すべてのtdを横幅いっぱいに */
+                /* すべてのtdを縦積みブロックに */
                 #result_list tbody td {{
                     display: block !important;
                     width: 100% !important;
@@ -391,15 +391,23 @@ class BaseProductAdmin(admin.ModelAdmin):
                     height: auto !important;
                 }}
 
-                /* チェックボックスセル：左上に小さく */
+                /* チェックボックスセル：カード左端に絶対配置 */
                 #result_list tbody td.action-checkbox {{
-                    text-align: left !important;
-                    padding: 0 0 4px 4px !important;
-                    width: 100% !important;
+                    position: absolute !important;
+                    left: 10px !important;
+                    top: 50% !important;
+                    transform: translateY(-50%) !important;
+                    width: 28px !important;
+                    padding: 0 !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
                 }}
                 #result_list tbody td.action-checkbox input {{
-                    width: 20px !important;
-                    height: 20px !important;
+                    width: 22px !important;
+                    height: 22px !important;
+                    margin: 0 !important;
+                    cursor: pointer !important;
                 }}
 
                 /* cell-centerの固定高さを解除 */
@@ -699,10 +707,38 @@ class BaseProductAdmin(admin.ModelAdmin):
                     el.style.boxShadow = "";
                 }}
 
+                // ✨ スマホ判定
+                var isMobile = window.innerWidth <= 767;
+
+                // ✨ スマホ時：msgListHを0に（クイック検索固定なし→空白なくなる）
+                if (isMobile) {{
+                    msgListH = 0;
+                    spacerDiv.style.height = (headerH + breadcrumbsH) + "px";
+                }}
+
+                // ✨ スマホ時：カード内のtd順を 画像→名前→価格→タイマー に並び替え
+                if (isMobile) {{
+                    document.querySelectorAll("#result_list tbody tr").forEach(function(tr) {{
+                        var tdCheck = tr.querySelector("td.action-checkbox");
+                        var tdImg = null, tdName = null, tdPrice = null, tdTimer = null;
+                        tr.querySelectorAll("td:not(.action-checkbox)").forEach(function(td) {{
+                            var inner = td.querySelector(".cell-center");
+                            if (!inner) return;
+                            if (inner.querySelector("img"))                     tdImg   = td;
+                            else if (inner.querySelector(".timer-display"))     tdTimer = td;
+                            else if (inner.textContent.trim().startsWith("¥")) tdPrice = td;
+                            else                                                tdName  = td;
+                        }});
+                        // チェックボックスはCSSのposition:absoluteで左中央に固定するためDOM移動しない
+                        [tdImg, tdName, tdPrice, tdTimer].forEach(function(td) {{
+                            if (td) tr.appendChild(td);
+                        }});
+                    }});
+                }}
+
                 var threshold = msgListOrigTop - headerH - breadcrumbsH;
                 window.addEventListener("scroll", function() {{
                     var scrollY = window.scrollY;
-                    // スマホ（カードレイアウト時）はtheadが非表示なので固定thead処理をスキップ
                     var isMobile = window.innerWidth <= 767;
                     if (scrollY > threshold) {{
                         applyFixed(topBar, headerH + breadcrumbsH + msgListH); topBar.style.zIndex = "501";
