@@ -453,6 +453,9 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var changelist = document.querySelector('#changelist');
                 if (!changelist) return;
 
+                // ✨ 最初にスマホ判定（以降の処理全体で使う）
+                var isMobile = window.innerWidth <= 767;
+
                 var origSearchInput = document.querySelector('#searchbar');
                 var origPaginator = document.querySelector('#changelist .paginator');
                 var origActions = document.querySelector('#changelist .actions');
@@ -461,286 +464,168 @@ class BaseProductAdmin(admin.ModelAdmin):
                 var topBar = document.createElement('div');
                 topBar.className = 'smart-top-bar';
 
-                // 検索フォーム
                 var searchForm = document.createElement('form');
                 searchForm.method = 'GET';
                 searchForm.className = 'smart-search-form';
                 var sInput = document.createElement('input');
-                sInput.type = 'text';
-                sInput.name = 'q';
-                sInput.placeholder = '🔍 検索...';
+                sInput.type = 'text'; sInput.name = 'q'; sInput.placeholder = '🔍 検索...';
                 sInput.value = origSearchInput ? origSearchInput.value : '';
                 var sSubmit = document.createElement('input');
-                sSubmit.type = 'submit';
-                sSubmit.value = '検索';
-                searchForm.appendChild(sInput);
-                searchForm.appendChild(sSubmit);
+                sSubmit.type = 'submit'; sSubmit.value = '検索';
+                searchForm.appendChild(sInput); searchForm.appendChild(sSubmit);
                 topBar.appendChild(searchForm);
 
-                // ✨ ページネーターを横並びに再構築
                 if (origPaginator) {{
                     var pagDiv = document.createElement('div');
                     pagDiv.className = 'smart-paginator';
-
                     var allLinks = origPaginator.querySelectorAll('a');
                     var currentSpan = origPaginator.querySelector('span.this-page');
                     var totalText = origPaginator.textContent.match(/\d+\s*商品一覧/);
-
                     var lis = origPaginator.querySelectorAll('li');
                     if (lis.length > 0) {{
                         lis.forEach(function(li) {{
-                            var a = li.querySelector('a');
-                            var s = li.querySelector('span.this-page');
-                            if (a) {{
-                                var newA = document.createElement('a');
-                                newA.href = a.href;
-                                newA.textContent = a.textContent.trim();
-                                pagDiv.appendChild(newA);
-                            }} else if (s) {{
-                                var newS = document.createElement('span');
-                                newS.className = 'this-page';
-                                newS.textContent = s.textContent.trim();
-                                pagDiv.appendChild(newS);
-                            }}
+                            var a = li.querySelector('a'); var s = li.querySelector('span.this-page');
+                            if (a) {{ var newA = document.createElement('a'); newA.href = a.href; newA.textContent = a.textContent.trim(); pagDiv.appendChild(newA); }}
+                            else if (s) {{ var newS = document.createElement('span'); newS.className = 'this-page'; newS.textContent = s.textContent.trim(); pagDiv.appendChild(newS); }}
                         }});
                     }} else {{
-                        allLinks.forEach(function(a) {{
-                            var newA = document.createElement('a');
-                            newA.href = a.href;
-                            newA.textContent = a.textContent.trim();
-                            pagDiv.appendChild(newA);
-                        }});
-                        if (currentSpan) {{
-                            var newS = document.createElement('span');
-                            newS.className = 'this-page';
-                            newS.textContent = currentSpan.textContent.trim();
-                            pagDiv.appendChild(newS);
-                        }}
+                        allLinks.forEach(function(a) {{ var newA = document.createElement('a'); newA.href = a.href; newA.textContent = a.textContent.trim(); pagDiv.appendChild(newA); }});
+                        if (currentSpan) {{ var newS = document.createElement('span'); newS.className = 'this-page'; newS.textContent = currentSpan.textContent.trim(); pagDiv.appendChild(newS); }}
                     }}
-
-                    if (totalText) {{
-                        var countSpan = document.createElement('span');
-                        countSpan.className = 'total-count';
-                        countSpan.textContent = totalText[0];
-                        pagDiv.appendChild(countSpan);
-                    }}
-
+                    if (totalText) {{ var countSpan = document.createElement('span'); countSpan.className = 'total-count'; countSpan.textContent = totalText[0]; pagDiv.appendChild(countSpan); }}
                     topBar.appendChild(pagDiv);
                 }}
 
-                // スペーサー
-                var spacer = document.createElement('div');
-                spacer.className = 'smart-top-bar-spacer';
+                var spacer = document.createElement('div'); spacer.className = 'smart-top-bar-spacer';
                 topBar.appendChild(spacer);
 
-                // 右詰めボタン群
-                var btnGroup = document.createElement('div');
-                btnGroup.className = 'smart-btn-group';
-
-                var btnSlide = document.createElement('a');
-                btnSlide.href = 'javascript:void(0)';
-                btnSlide.setAttribute('onclick', 'bulkCarousel()');
-                btnSlide.innerHTML = '🎥 スライド拡大確認';
+                var btnGroup = document.createElement('div'); btnGroup.className = 'smart-btn-group';
+                var btnSlide = document.createElement('a'); btnSlide.href = 'javascript:void(0)';
+                btnSlide.setAttribute('onclick', 'bulkCarousel()'); btnSlide.innerHTML = '🎥 スライド拡大確認';
                 btnSlide.style.cssText = 'background:#007bff; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px; cursor:pointer;';
                 btnGroup.appendChild(btnSlide);
-
-                var btnCart = document.createElement('a');
-                btnCart.href = 'javascript:void(0)';
-                btnCart.setAttribute('onclick', 'bulkAddToCart()');
-                btnCart.innerHTML = '🛒 カートへ追加';
+                var btnCart = document.createElement('a'); btnCart.href = 'javascript:void(0)';
+                btnCart.setAttribute('onclick', 'bulkAddToCart()'); btnCart.innerHTML = '🛒 カートへ追加';
                 btnCart.style.cssText = 'background:#28a745; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px; cursor:pointer;';
                 btnGroup.appendChild(btnCart);
-
                 if ({is_admin_flag} === true) {{
-                    var btnUpload = document.createElement('a');
-                    btnUpload.href = 'bulk-upload/';
+                    var btnUpload = document.createElement('a'); btnUpload.href = 'bulk-upload/';
                     btnUpload.innerHTML = '📂 一括アップロード ＋';
                     btnUpload.style.cssText = 'background:#f0ad4e; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px;';
                     btnGroup.appendChild(btnUpload);
                 }}
-
                 topBar.appendChild(btnGroup);
 
-                // ── 行2：スマートアクションバー（操作 + Run + 選択数） ──
-                var actionBar = document.createElement('div');
-                actionBar.className = 'smart-action-bar';
-
+                // ── 行2：スマートアクションバー ──
+                var actionBar = document.createElement('div'); actionBar.className = 'smart-action-bar';
                 if (origActions) {{
-                    var actionForm = origActions.closest('form');
-
                     var sel = origActions.querySelector('select');
                     if (sel) {{
                         var newSel = sel.cloneNode(true);
                         newSel.addEventListener('change', function() {{ sel.value = this.value; }});
                         actionBar.appendChild(newSel);
                     }}
-
-                    var runBtn = document.createElement('button');
-                    runBtn.type = 'button';
-                    runBtn.className = 'run-btn';
-                    runBtn.textContent = 'Run';
+                    var runBtn = document.createElement('button'); runBtn.type = 'button';
+                    runBtn.className = 'run-btn'; runBtn.textContent = 'Run';
                     runBtn.addEventListener('click', function() {{
                         if (sel) sel.value = actionBar.querySelector('select').value;
                         var origRun = origActions.querySelector('input[type=submit]');
                         if (origRun) origRun.click();
                     }});
                     actionBar.appendChild(runBtn);
-
                     var counter = origActions.querySelector('.action-counter');
-                    if (counter) {{
-                        var newCounter = document.createElement('span');
-                        newCounter.className = 'counter-label';
-                        newCounter.textContent = counter.textContent;
-                        actionBar.appendChild(newCounter);
-                    }}
+                    if (counter) {{ var newCounter = document.createElement('span'); newCounter.className = 'counter-label'; newCounter.textContent = counter.textContent; actionBar.appendChild(newCounter); }}
                 }}
 
-                // changelist の直前に挿入
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
 
-                setTimeout(function() {{
-                    var w = document.documentElement.clientWidth - topBar.getBoundingClientRect().left;
-                    topBar.style.width = w + "px";
-                    actionBar.style.width = w + "px";
-                }}, 100);
-
-                var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
+                // ── ヘッダー・パンくず・サイドバーの固定 ──
                 var msgList = document.querySelector(".messagelist");
                 var header = document.querySelector("#header");
                 var breadcrumbs = document.querySelector(".breadcrumbs");
                 var headerH = header ? header.offsetHeight : 75;
                 var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
-                var msgListH = msgList ? msgList.offsetHeight : 0;
                 var topBarH = topBar.offsetHeight;
                 var actionBarH = actionBar.offsetHeight;
-                var contentLeft = topBar.getBoundingClientRect().left;
-                    contentWidth = document.documentElement.clientWidth - contentLeft;
-                var contentWidth = document.documentElement.clientWidth - contentLeft;
                 var msgListOrigTop = msgList ? msgList.getBoundingClientRect().top + window.scrollY : 0;
 
                 if (header) {{
-                    header.style.position = "fixed";
-                    header.style.top = "0";
-                    header.style.left = "0";
-                    header.style.right = "0";
-                    header.style.zIndex = "2000";
-                    header.style.width = "100%";
+                    header.style.position = "fixed"; header.style.top = "0"; header.style.left = "0";
+                    header.style.right = "0"; header.style.zIndex = "2000"; header.style.width = "100%";
                 }}
                 if (breadcrumbs) {{
-                    breadcrumbs.style.position = "fixed";
-                    breadcrumbs.style.top = headerH + "px";
-                    breadcrumbs.style.left = "0";
-                    breadcrumbs.style.right = "0";
-                    breadcrumbs.style.zIndex = "1999";
-                    breadcrumbs.style.width = "100%";
+                    breadcrumbs.style.position = "fixed"; breadcrumbs.style.top = headerH + "px";
+                    breadcrumbs.style.left = "0"; breadcrumbs.style.right = "0";
+                    breadcrumbs.style.zIndex = "1999"; breadcrumbs.style.width = "100%";
                     breadcrumbs.style.background = "#1a1c23";
                 }}
 
-                var totalFixedH = headerH + breadcrumbsH + msgListH;
-                var spacerDiv = document.createElement("div");
-                spacerDiv.style.height = totalFixedH + "px";
-                spacerDiv.style.display = "block";
-                if (msgList && msgList.parentNode) {{
-                    var nextSibling = msgList.nextSibling;
-                    if (nextSibling) {{
-                        msgList.parentNode.insertBefore(spacerDiv, nextSibling);
-                    }} else {{
-                        msgList.parentNode.appendChild(spacerDiv);
-                    }}
                 var navSidebar = document.querySelector("#nav-sidebar");
-                var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
-                if (navSidebar) {{
-                    var sidebarTop = navSidebar.getBoundingClientRect().top;
+                var sidebarW = 0;
+                if (navSidebar && !isMobile) {{
+                    sidebarW = navSidebar.offsetWidth || 277;
                     navSidebar.style.position = "fixed";
                     navSidebar.style.top = (headerH + breadcrumbsH) + "px";
-                    navSidebar.style.left = "0";
-                    navSidebar.style.width = sidebarW + "px";
+                    navSidebar.style.left = "0"; navSidebar.style.width = sidebarW + "px";
                     navSidebar.style.height = "calc(100vh - " + (headerH + breadcrumbsH) + "px)";
-                    navSidebar.style.overflowY = "auto";
-                    navSidebar.style.zIndex = "1500";
-                    var contentMain = document.querySelector("#content-main");
+                    navSidebar.style.overflowY = "auto"; navSidebar.style.zIndex = "1500";
                     var contentWrapper = document.querySelector("#content");
                     if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
-                    contentLeft = topBar.getBoundingClientRect().left;
-                    contentWidth = document.documentElement.clientWidth - contentLeft;
-                    contentWidth = window.innerWidth - contentLeft;
-                }}
                 }}
 
-                if (msgList) {{
+                var contentLeft = topBar.getBoundingClientRect().left;
+                var contentWidth = document.documentElement.clientWidth - contentLeft;
+
+                setTimeout(function() {{
+                    var w = document.documentElement.clientWidth - topBar.getBoundingClientRect().left;
+                    topBar.style.width = w + "px"; actionBar.style.width = w + "px";
+                }}, 100);
+
+                // ── msgList (クイック検索パネル) の処理 ──
+                if (msgList && msgList.parentNode) {{
                     if (isMobile) {{
-                        // ✨ スマホ：msgListを非表示にして右サイドアコーディオンを生成
+                        // スマホ：msgListを非表示 → 右サイドアコーディオンを生成
                         msgList.style.display = "none";
 
-                        // パネルのHTMLをmsgListのli>divから取得
-                        var panelDivs = msgList.querySelectorAll("li > div");
-                        var charPanelHtml = "", workPanelHtml = "";
-                        panelDivs.forEach(function(div) {{
-                            var h3 = div.querySelector("h3");
-                            if (!h3) return;
-                            if (h3.textContent.indexOf("キャラクター") >= 0) charPanelHtml = div.innerHTML;
-                            else if (h3.textContent.indexOf("原作") >= 0)    workPanelHtml = div.innerHTML;
-                        }});
+                        // スペーサー（header+breadcrumbs分）
+                        var spacerDiv = document.createElement("div");
+                        spacerDiv.style.height = (headerH + breadcrumbsH) + "px";
+                        spacerDiv.style.display = "block";
+                        var nextSib = msgList.nextSibling;
+                        if (nextSib) msgList.parentNode.insertBefore(spacerDiv, nextSib);
+                        else msgList.parentNode.appendChild(spacerDiv);
 
-                        // 右サイドアコーディオンを生成
+                        // 右サイドアコーディオン生成
+                        var panelDivs = msgList.querySelectorAll("li > div");
                         var sideAcc = document.createElement("div");
                         sideAcc.id = "sp-side-acc";
-                        sideAcc.style.cssText = [
-                            "position:fixed",
-                            "right:0",
-                            "top:50%",
-                            "transform:translateY(-50%)",
-                            "z-index:1800",
-                            "display:flex",
-                            "flex-direction:column",
-                            "gap:6px",
-                            "align-items:flex-end"
-                        ].join(";");
+                        sideAcc.style.cssText = "position:fixed;right:0;top:50%;transform:translateY(-50%);z-index:1800;display:flex;flex-direction:column;gap:6px;align-items:flex-end;";
 
                         [{{"id":"char","label":"👤\nキャラ\n検索","color":"#ff69b4"}},
                          {{"id":"work","label":"🎬\n原作\n検索","color":"#007bff"}}
                         ].forEach(function(cfg) {{
                             var wrap = document.createElement("div");
-                            wrap.style.cssText = "display:flex; align-items:stretch; position:relative;";
+                            wrap.style.cssText = "display:flex;align-items:stretch;";
 
-                            // パネル本体（左側に展開）
                             var panel = document.createElement("div");
-                            panel.id = "sp-panel-" + cfg.id;
-                            panel.style.cssText = [
-                                "max-width:0",
-                                "overflow:hidden",
-                                "transition:max-width 0.3s ease, opacity 0.3s ease",
-                                "opacity:0",
-                                "background:#1a1a1a",
-                                "border:2px solid " + cfg.color + "44",
-                                "border-right:none",
-                                "border-radius:12px 0 0 12px",
-                                "padding:0",
-                                "box-sizing:border-box",
-                                "max-height:70vh",
-                                "overflow-y:auto"
-                            ].join(";");
+                            panel.className = "sp-panel";
+                            panel.style.cssText = "max-width:0;overflow:hidden;transition:max-width 0.3s ease,opacity 0.3s ease;opacity:0;background:#1a1a1a;border:2px solid " + cfg.color + "44;border-right:none;border-radius:12px 0 0 12px;box-sizing:border-box;max-height:70vh;overflow-y:auto;";
 
-                            // パネル中身（msgListのhtmlを流用）
                             var inner = document.createElement("div");
-                            inner.style.cssText = "padding:10px; width:240px; box-sizing:border-box;";
+                            inner.style.cssText = "padding:10px;width:240px;box-sizing:border-box;";
 
-                            // ボタン群を取得
                             var srcDiv = null;
                             panelDivs.forEach(function(div) {{
-                                var h3 = div.querySelector("h3");
-                                if (!h3) return;
+                                var h3 = div.querySelector("h3"); if (!h3) return;
                                 if (cfg.id === "char" && h3.textContent.indexOf("キャラクター") >= 0) srcDiv = div;
                                 if (cfg.id === "work" && h3.textContent.indexOf("原作") >= 0) srcDiv = div;
                             }});
                             if (srcDiv) {{
-                                // タイトル
                                 var titleEl = document.createElement("div");
-                                titleEl.style.cssText = "color:" + cfg.color + "; font-weight:900; font-size:13px; margin-bottom:8px; display:flex; align-items:center; gap:6px;";
+                                titleEl.style.cssText = "color:" + cfg.color + ";font-weight:900;font-size:13px;margin-bottom:8px;";
                                 var h3 = srcDiv.querySelector("h3");
                                 titleEl.textContent = h3 ? h3.textContent.replace("⬅ 戻る","").trim() : "";
-                                // 戻るボタンがある場合
                                 var backA = srcDiv.querySelector("h3 a");
                                 if (backA) {{
                                     var backBtn = backA.cloneNode(true);
@@ -748,15 +633,13 @@ class BaseProductAdmin(admin.ModelAdmin):
                                     titleEl.appendChild(backBtn);
                                 }}
                                 inner.appendChild(titleEl);
-                                // ボタン群
                                 var container = srcDiv.querySelector(".expand-container");
                                 if (container) {{
                                     var btnWrap = document.createElement("div");
-                                    btnWrap.style.cssText = "display:flex; flex-wrap:wrap; gap:6px;";
+                                    btnWrap.style.cssText = "display:flex;flex-wrap:wrap;gap:6px;";
                                     container.querySelectorAll("a").forEach(function(a) {{
                                         var newA = a.cloneNode(true);
-                                        newA.style.textDecoration = "none";
-                                        newA.style.display = "inline-block";
+                                        newA.style.textDecoration = "none"; newA.style.display = "inline-block";
                                         btnWrap.appendChild(newA);
                                     }});
                                     inner.appendChild(btnWrap);
@@ -764,153 +647,104 @@ class BaseProductAdmin(admin.ModelAdmin):
                             }}
                             panel.appendChild(inner);
 
-                            // タブボタン（右端の縦タブ）
                             var tab = document.createElement("div");
-                            tab.style.cssText = [
-                                "background:" + cfg.color,
-                                "color:#fff",
-                                "font-size:11px",
-                                "font-weight:900",
-                                "writing-mode:vertical-rl",
-                                "padding:14px 7px",
-                                "border-radius:8px 0 0 8px",
-                                "cursor:pointer",
-                                "white-space:pre",
-                                "line-height:1.4",
-                                "min-width:28px",
-                                "text-align:center",
-                                "user-select:none",
-                                "box-shadow:-2px 0 8px rgba(0,0,0,0.4)"
-                            ].join(";");
+                            tab.style.cssText = "background:" + cfg.color + ";color:#fff;font-size:11px;font-weight:900;writing-mode:vertical-rl;padding:14px 7px;border-radius:8px 0 0 8px;cursor:pointer;white-space:pre;line-height:1.4;min-width:28px;text-align:center;user-select:none;box-shadow:-2px 0 8px rgba(0,0,0,0.4);";
                             tab.textContent = cfg.label;
 
                             var isOpen = false;
                             tab.addEventListener("click", function() {{
-                                // 他のパネルを閉じる
                                 document.querySelectorAll(".sp-panel").forEach(function(p) {{
-                                    if (p !== panel) {{
-                                        p.style.maxWidth = "0";
-                                        p.style.opacity = "0";
-                                        p.style.padding = "0";
-                                    }}
+                                    if (p !== panel) {{ p.style.maxWidth = "0"; p.style.opacity = "0"; }}
                                 }});
                                 isOpen = !isOpen;
-                                if (isOpen) {{
-                                    panel.style.maxWidth = "260px";
-                                    panel.style.opacity = "1";
-                                    panel.style.padding = ""; 
-                                }} else {{
-                                    panel.style.maxWidth = "0";
-                                    panel.style.opacity = "0";
-                                    panel.style.padding = "0";
-                                }}
+                                panel.style.maxWidth = isOpen ? "260px" : "0";
+                                panel.style.opacity  = isOpen ? "1"    : "0";
                             }});
 
-                            panel.className = "sp-panel";
-                            wrap.appendChild(panel);
-                            wrap.appendChild(tab);
+                            wrap.appendChild(panel); wrap.appendChild(tab);
                             sideAcc.appendChild(wrap);
                         }});
-
                         document.body.appendChild(sideAcc);
 
                     }} else {{
+                        // PC：msgListをfixed固定
+                        var msgListH = msgList.offsetHeight;
+                        var spacerDiv = document.createElement("div");
+                        spacerDiv.style.height = (headerH + breadcrumbsH + msgListH) + "px";
+                        spacerDiv.style.display = "block";
+                        var nextSib = msgList.nextSibling;
+                        if (nextSib) msgList.parentNode.insertBefore(spacerDiv, nextSib);
+                        else msgList.parentNode.appendChild(spacerDiv);
+
                         msgList.style.position = "fixed";
                         msgList.style.top = (headerH + breadcrumbsH) + "px";
                         var msgLeft = sidebarW + 10;
                         msgList.style.left = msgLeft + "px";
                         msgList.style.width = (document.documentElement.clientWidth - msgLeft) + "px";
-                        msgList.style.zIndex = "500";
-                        msgList.style.background = "#121212";
-                        msgList.style.padding = "0";
-                        var lis = msgList.querySelectorAll("li");
-                        lis.forEach(function(li) {{
-                            li.style.background = "#121212";
-                            li.style.marginBottom = "0px";
-                            li.style.paddingBottom = "0";
-                            var innerDiv = li.querySelector("div");
-                            if (innerDiv) innerDiv.style.background = "#121212";
+                        msgList.style.zIndex = "500"; msgList.style.background = "#121212"; msgList.style.padding = "0";
+                        msgList.querySelectorAll("li").forEach(function(li) {{
+                            li.style.background = "#121212"; li.style.marginBottom = "0px"; li.style.paddingBottom = "0";
+                            var d = li.querySelector("div"); if (d) d.style.background = "#121212";
                         }});
                         msgList.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
                     }}
                 }}
 
-                function applyFixed(el, top) {{
-                    el.style.position = "fixed";
-                    el.style.top = top + "px";
-                    el.style.left = contentLeft + "px";
-                    el.style.width = (document.documentElement.clientWidth - contentLeft) + "px";
-                    el.style.zIndex = "600";
-                    el.style.background = "#121212";
-                    el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
-                }}
-                function clearFixed(el) {{
-                    el.style.position = "";
-                    el.style.top = "";
-                    el.style.left = "";
-                    el.style.right = "";
-                    el.style.width = "";
-                    el.style.background = "";
-                    el.style.boxShadow = "";
-                }}
-
-                // ✨ スマホ判定
-                var isMobile = window.innerWidth <= 767;
-
-                // ✨ スマホ時：msgListHを0に（クイック検索固定なし→空白なくなる）
-                if (isMobile) {{
-                    msgListH = 0;
-                    spacerDiv.style.height = (headerH + breadcrumbsH) + "px";
-                }}
-
-                // ✨ スマホ時：カード内のtd順を 画像→名前→価格→タイマー に並び替え
+                // ── スマホ時：カード内のtd順を 画像→名前→価格→タイマー に並び替え ──
                 if (isMobile) {{
                     document.querySelectorAll("#result_list tbody tr").forEach(function(tr) {{
-                        var tdCheck = tr.querySelector("td.action-checkbox");
                         var tdImg = null, tdName = null, tdPrice = null, tdTimer = null;
                         tr.querySelectorAll("td:not(.action-checkbox)").forEach(function(td) {{
-                            var inner = td.querySelector(".cell-center");
-                            if (!inner) return;
-                            if (inner.querySelector("img"))                      tdImg   = td;
-                            else if (inner.querySelector(".timer-display"))      tdTimer = td;
+                            var inner = td.querySelector(".cell-center"); if (!inner) return;
+                            if (inner.querySelector("img"))                          tdImg   = td;
+                            else if (inner.querySelector(".timer-display"))          tdTimer = td;
                             else if (inner.querySelector("[style*='00ffcc']") ||
-                                     /[¥\\u00a5]/.test(inner.textContent))     tdPrice = td;
-                            else                                                 tdName  = td;
+                                     /[¥¥]/.test(inner.textContent))            tdPrice = td;
+                            else                                                     tdName  = td;
                         }});
-                        // チェックボックスはCSS position:absolute で左中央固定のためDOM移動しない
                         [tdImg, tdName, tdPrice, tdTimer].forEach(function(td) {{
                             if (td) tr.appendChild(td);
                         }});
                     }});
                 }}
 
+                // ── スクロール固定 ──
+                var msgListH_scroll = (msgList && !isMobile) ? msgList.offsetHeight : 0;
                 var threshold = msgListOrigTop - headerH - breadcrumbsH;
+
+                function applyFixed(el, top) {{
+                    el.style.position = "fixed"; el.style.top = top + "px";
+                    el.style.left = contentLeft + "px";
+                    el.style.width = (document.documentElement.clientWidth - contentLeft) + "px";
+                    el.style.zIndex = "600"; el.style.background = "#121212";
+                    el.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
+                }}
+                function clearFixed(el) {{
+                    el.style.position = ""; el.style.top = ""; el.style.left = "";
+                    el.style.right = ""; el.style.width = ""; el.style.background = ""; el.style.boxShadow = "";
+                }}
+
                 window.addEventListener("scroll", function() {{
                     var scrollY = window.scrollY;
-                    var isMobile = window.innerWidth <= 767;
                     if (scrollY > threshold) {{
-                        applyFixed(topBar, headerH + breadcrumbsH + msgListH); topBar.style.zIndex = "501";
-                        applyFixed(actionBar, headerH + breadcrumbsH + msgListH + topBarH); actionBar.style.zIndex = "502";
+                        applyFixed(topBar,   headerH + breadcrumbsH + msgListH_scroll); topBar.style.zIndex = "501";
+                        applyFixed(actionBar, headerH + breadcrumbsH + msgListH_scroll + topBarH); actionBar.style.zIndex = "502";
                         if (!isMobile) {{
                             var thead = document.querySelector("#result_list thead");
                             var resultList = document.querySelector("#result_list");
                             if (thead && resultList) {{
                                 var tableLeft = resultList.getBoundingClientRect().left;
                                 var tableWidth = resultList.offsetWidth;
-                                var ths = thead.querySelectorAll("th");
-                                ths.forEach(function(th) {{ th.style.width = th.offsetWidth + "px"; }});
+                                thead.querySelectorAll("th").forEach(function(th) {{ th.style.width = th.offsetWidth + "px"; }});
                                 thead.style.position = "fixed";
-                                thead.style.top = (headerH + breadcrumbsH + msgListH + topBarH + actionBarH) + "px";
-                                thead.style.left = tableLeft + "px";
-                                thead.style.width = tableWidth + "px";
-                                thead.style.zIndex = "503";
-                                thead.style.background = "#1a1a1a";
+                                thead.style.top = (headerH + breadcrumbsH + msgListH_scroll + topBarH + actionBarH) + "px";
+                                thead.style.left = tableLeft + "px"; thead.style.width = tableWidth + "px";
+                                thead.style.zIndex = "503"; thead.style.background = "#1a1a1a";
                                 thead.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
                             }}
                         }}
                     }} else {{
-                        clearFixed(topBar);
-                        clearFixed(actionBar);
+                        clearFixed(topBar); clearFixed(actionBar);
                         if (!isMobile) {{
                             var thead = document.querySelector("#result_list thead");
                             if (thead) clearFixed(thead);
