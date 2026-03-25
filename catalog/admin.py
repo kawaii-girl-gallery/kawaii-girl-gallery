@@ -961,25 +961,6 @@ def record_sale_view(request):
         return JsonResponse({'status': 'success', 'order_number': order_number, 'buyer_name': buyer_name})
     return JsonResponse({'status': 'error'}, status=405)
 
-def order_receipt_view(request):
-    """お迎え証明書ページ"""
-    order_number = request.GET.get('order_number', '')
-    buyer_name = request.GET.get('buyer_name', '')
-    items_json = request.GET.get('items', '[]')
-    try:
-        items = json.loads(items_json)
-    except:
-        items = []
-    total = sum(i.get('price', 0) for i in items)
-    from django.utils import timezone
-    now = timezone.localtime().strftime('%Y/%m/%d %H:%M')
-    return render(request, 'admin/catalog/order_receipt.html', {
-        'order_number': order_number,
-        'buyer_name': buyer_name,
-        'items': items,
-        'total': total,
-        'now': now,
-    })
 
 def get_custom_urls(self):
     return [
