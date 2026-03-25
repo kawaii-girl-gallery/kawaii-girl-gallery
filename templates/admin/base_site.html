@@ -10,28 +10,57 @@
         padding: 15px 25px !important;
         border-bottom: 4px solid transparent !important;
         border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important;
+        display: flex !important;
+        align-items: center !important;
     }
+    
+    #branding {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+
     #branding h1 {
         font-size: 28px !important;
         font-weight: 900 !important;
         display: flex !important;
         align-items: center !important;
+        justify-content: center !important; /* 中央寄せ */
         gap: 12px !important;
         background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important;
         -webkit-background-clip: text !important;
         -webkit-text-fill-color: transparent !important;
+        margin: 0 auto !important;
+        position: relative !important;
     }
-    #branding h1::before { content: '💕'; -webkit-text-fill-color: initial !important; font-size: 26px; }
+
+    /* 左の絵文字 */
+    #branding h1::before { 
+        content: '💕'; 
+        -webkit-text-fill-color: initial !important; 
+        font-size: 26px; 
+    }
+    
+    /* 右側にも透明な絵文字を置いて中央を維持 */
+    #branding h1::after { 
+        content: '💕'; 
+        visibility: hidden !important; 
+        font-size: 26px; 
+    }
+
     #branding h1 a { color: inherit !important; text-decoration: none !important; }
 
     /* パンくず */
     .breadcrumbs { background: #1a1c23 !important; color: #ccc !important; }
     .breadcrumbs a { color: #aaa !important; }
 
-    /* ユーザーツール（サイトを表示・パスワード変更を非表示） */
+    /* ユーザーツール（ログアウト以外非表示） */
     #header #user-tools a:not([href*="logout"]) { display: none !important; }
     #header #user-tools .divider { display: none !important; }
-    #header #user-tools { font-size: 0 !important; }
+    #header #user-tools { 
+        position: absolute !important;
+        right: 25px !important;
+        font-size: 0 !important; 
+    }
     #header #user-tools strong, #header #user-tools form, #header #user-tools a[href*="logout"] { font-size: 13px !important; }
 
     /* 左メニューの大カテゴリリンク無効化 */
@@ -43,7 +72,7 @@
     .app-catalog_tcg caption, .app-catalog_tcg h2 { background: #2684ff !important; color: #fff !important; }
     .app-catalog_admin_custom caption, .app-catalog_admin_custom h2, .admin-custom-mode h2, .admin-custom-mode caption { background: #f0ad4e !important; color: #fff !important; }
 
-    /* 1. モーダル・基本設定（維持） */
+    /* 1. モーダル・基本設定 */
     .modal-content {
         position: fixed !important;
         top: 45% !important;
@@ -90,17 +119,19 @@
         z-index: 20015 !important;
     }
 
-    /* 2. サイドメニュー配色（維持） */
+    /* 2. サイドメニュー配色 */
     #nav-sidebar .app-catalog_a4 caption { background: #ff4d94 !important; }
     #nav-sidebar .app-catalog_tcg caption { background: #2684ff !important; }
     #nav-sidebar .app-catalog_admin_custom caption { background: #f0ad4e !important; }
 
-    /* 3. ナビゲーション（維持） */
+    /* 3. ナビゲーション */
     .modal-nav { position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; }
     .close-btn { position: fixed !important; top: 20px !important; right: 40px !important; z-index: 20030 !important; }
 
     /* 4. スマホ用：重ならない縦積みカードレイアウト */
     @media (max-width: 768px) {
+        #branding h1 { font-size: 22px !important; } /* スマホでは少し文字を小さく */
+        
         .results, .results table, .results tbody, .results tr { display: block !important; width: 100% !important; }
         .results thead { display: none !important; }
         .results tr {
@@ -143,7 +174,7 @@
         if (navSidebar) {
             navSidebar.style.cssText += 'position: fixed !important; top: ' + (headerH + breadcrumbsH) + 'px !important; left: 0 !important; width: ' + sidebarW + 'px !important; height: calc(100vh - ' + (headerH + breadcrumbsH) + 'px) !important; overflow-y: auto !important; z-index: 1500 !important;';
             var content = document.querySelector('#content');
-            if (content) content.style.marginLeft = sidebarW + 'px';
+            if (content) content.style.marginLeft = (window.innerWidth > 768) ? sidebarW + 'px' : '0';
         }
         document.body.style.paddingTop = (headerH + breadcrumbsH) + 'px';
     });
