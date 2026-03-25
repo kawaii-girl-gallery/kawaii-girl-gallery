@@ -192,7 +192,6 @@ class Sale(models.Model):
     category = models.CharField('種別', max_length=50, blank=True)
     buyer_name = models.CharField('購入者名', max_length=100, blank=True, default='')
     order_number = models.CharField('注文番号', max_length=20, blank=True, default='')
-    buyer_name = models.CharField('購入者名', max_length=100, blank=True, default='')
     sold_at = models.DateTimeField('販売日時', auto_now_add=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
@@ -209,6 +208,30 @@ class Sale(models.Model):
     def __str__(self):
         u = self.user.username if self.user else "ゲスト"
         return f"{self.sold_at.strftime('%Y-%m-%d %H:%M')} - {self.product_name} ({u})"
+
+# --- 注文管理モデル ---
+class OrderManagement(models.Model):
+    order_number = models.CharField('注文番号', max_length=20, unique=True)
+    buyer_name = models.CharField('購入者名', max_length=100, blank=True, default='')
+    total_price = models.IntegerField('合計金額', default=0)
+    product_names = models.TextField('商品名リスト', blank=True, default='')
+    sold_at = models.DateTimeField('注文日時')
+    yahoo_url = models.URLField('ヤフオクURL', blank=True, default='')
+    check_listed = models.BooleanField('ヤフオク出品済み', default=False)
+    check_sold = models.BooleanField('落札確認', default=False)
+    check_shipped = models.BooleanField('発送済み', default=False)
+
+    class Meta:
+        verbose_name = '注文管理'
+        verbose_name_plural = '注文管理'
+        ordering = ['-sold_at']
+
+    def __str__(self):
+        return f"{self.order_number} - {self.buyer_name}"
+
+    @property
+    def is_completed(self):
+        return self.check_listed and self.check_sold and self.check_shipped
 
 # --- プロキシモデル ---
 class Show_ProductList_A4(Product):
