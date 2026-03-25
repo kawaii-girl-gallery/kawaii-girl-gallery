@@ -920,7 +920,7 @@ function closePanel(id) {{
         </script>"""
         
         storage = messages.get_messages(request)
-        is_already_sent = any("キャラクタークイック検索" in str(m) for m in storage)
+        is_already_sent = any("qs-tab-wrap" in str(m) for m in storage)
         storage.used = False 
         
         if not is_already_sent:
