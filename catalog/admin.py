@@ -535,16 +535,19 @@ function closePanel(id) {{
                     top: 72% !important;
                     z-index: 3100 !important;
                     writing-mode: vertical-rl !important;
-                    padding: 14px 8px !important;
+                    text-orientation: mixed !important;
+                    padding: 16px 8px !important;
                     background: #28a745 !important;
                     color: #fff !important;
-                    font-size: 11px !important;
+                    font-size: 12px !important;
                     font-weight: 900 !important;
                     border-radius: 10px 0 0 10px !important;
                     cursor: pointer !important;
                     user-select: none !important;
-                    box-shadow: -2px 0 8px rgba(0,0,0,0.4) !important;
-                    line-height: 1.4 !important;
+                    letter-spacing: 1px !important;
+                    border: 2px solid #28a745 !important;
+                    border-right: none !important;
+                    transition: opacity 0.2s !important;
                     display: none !important;
                 }}
                 .sp-cart-tab.visible {{
@@ -720,19 +723,21 @@ function closePanel(id) {{
                 var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
                 var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
 
-                if (header) {{
-                    header.style.cssText += "; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;";
+                if (window.innerWidth > 768) {{
+                    if (header) {{
+                        header.style.cssText += "; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;";
+                    }}
+                    if (breadcrumbs) {{
+                        document.body.appendChild(breadcrumbs);
+                        breadcrumbs.style.cssText = "position: fixed !important; top: " + headerH + "px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1999 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important;";
+                    }}
+                    if (navSidebar) {{
+                        navSidebar.style.cssText += "; position: fixed !important; top: " + (headerH + breadcrumbsH) + "px !important; left: 0 !important; width: " + sidebarW + "px !important; height: calc(100vh - " + (headerH + breadcrumbsH) + "px) !important; overflow-y: auto !important; z-index: 1500 !important;";
+                        var contentWrapper = document.querySelector("#content");
+                        if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
+                    }}
+                    document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
                 }}
-                if (breadcrumbs) {{
-                    document.body.appendChild(breadcrumbs);
-                    breadcrumbs.style.cssText = "position: fixed !important; top: " + headerH + "px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1999 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important;";
-                }}
-                if (navSidebar && window.innerWidth > 768) {{
-                    navSidebar.style.cssText += "; position: fixed !important; top: " + (headerH + breadcrumbsH) + "px !important; left: 0 !important; width: " + sidebarW + "px !important; height: calc(100vh - " + (headerH + breadcrumbsH) + "px) !important; overflow-y: auto !important; z-index: 1500 !important;";
-                    var contentWrapper = document.querySelector("#content");
-                    if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
-                }}
-                document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
 
                 var tabWrap2 = document.querySelector(".qs-tab-wrap");
                 var charPanel2 = document.querySelector("#char-panel");
