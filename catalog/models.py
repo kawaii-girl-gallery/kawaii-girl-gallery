@@ -190,6 +190,9 @@ class Sale(models.Model):
     product_name = models.CharField('商品名', max_length=255)
     price = models.IntegerField('売上金額')
     category = models.CharField('種別', max_length=50, blank=True)
+    buyer_name = models.CharField('購入者名', max_length=100, blank=True, default='')
+    order_number = models.CharField('注文番号', max_length=20, blank=True, default='')
+    buyer_name = models.CharField('購入者名', max_length=100, blank=True, default='')
     sold_at = models.DateTimeField('販売日時', auto_now_add=True)
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL, 
