@@ -537,6 +537,7 @@ function closePanel(id) {{
                     writing-mode: vertical-rl !important;
                     text-orientation: mixed !important;
                     padding: 16px 8px !important;
+                    min-height: 130px !important;
                     background: #28a745 !important;
                     color: #fff !important;
                     font-size: 12px !important;
@@ -549,9 +550,11 @@ function closePanel(id) {{
                     border-right: none !important;
                     transition: opacity 0.2s !important;
                     display: none !important;
+                    align-items: center !important;
+                    justify-content: center !important;
                 }}
                 .sp-cart-tab.visible {{
-                    display: block !important;
+                    display: flex !important;
                 }}
                 /* カート追加トースト */
                 .sp-cart-toast {{
@@ -723,7 +726,8 @@ function closePanel(id) {{
                 var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
                 var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
 
-                if (window.innerWidth > 768) {{
+                var isMobile = window.innerWidth <= 768;
+                if (!isMobile) {{
                     if (header) {{
                         header.style.cssText += "; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;";
                     }}
@@ -737,6 +741,11 @@ function closePanel(id) {{
                         if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
                     }}
                     document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
+                }} else {{
+                    // スマホ：marginLeftをリセット
+                    var contentWrapper = document.querySelector("#content");
+                    if (contentWrapper) contentWrapper.style.marginLeft = "0";
+                    document.body.style.paddingTop = "0";
                 }}
 
                 var tabWrap2 = document.querySelector(".qs-tab-wrap");
@@ -775,7 +784,7 @@ function closePanel(id) {{
                 var topBarLeft = topBar.getBoundingClientRect().left;
 
                 // ✨ スマホ時：カード内のtd順を 画像→名前→価格→タイマー に並び替え
-                if (window.innerWidth <= 768) {{
+                if (isMobile) {{
                     document.querySelectorAll("#result_list tbody tr").forEach(function(tr) {{
                         var tdImg = null, tdName = null, tdPrice = null, tdTimer = null;
                         tr.querySelectorAll("td:not(.action-checkbox)").forEach(function(td) {{
@@ -793,7 +802,7 @@ function closePanel(id) {{
                 }}
 
                 // ✨ スマホ時：#cart-popup をアコーディオンタブ化
-                if (window.innerWidth <= 768) {{
+                if (isMobile) {{
                     var spCartOpen = false;
                     var spCartTab = null;
 
