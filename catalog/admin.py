@@ -890,6 +890,23 @@ def analysis_sheet_view(request):
         'cl_class': 'admin-custom-mode'
     })
 
+def send_line_notification(message):
+    """LINE Messaging APIで管理者に通知を送る"""
+    try:
+        import requests as req
+        token = os.environ.get('LINE_CHANNEL_ACCESS_TOKEN')
+        user_id = os.environ.get('LINE_USER_ID')
+        if not token or not user_id:
+            print("LINE credentials not set")
+            return
+        req.post(
+            'https://api.line.me/v2/bot/message/push',
+            headers={'Authorization': f'Bearer {token}', 'Content-Type': 'application/json'},
+            json={'to': user_id, 'messages': [{'type': 'text', 'text': message}]}
+        )
+    except Exception as e:
+        print(f"LINE notification error: {e}")
+
 def record_sale_view(request):
     if request.method == 'POST':
         items = json.loads(request.body).get('items', [])
@@ -900,6 +917,11 @@ def record_sale_view(request):
                 category=i.get('category', ''),
                 user=request.user if request.user.is_authenticated else None
             )
+        # LINE通知
+        total = sum(i['price'] for i in items)
+        item_lines = '\n'.join([f"・{i['name']} ¥{i['price']}" for i in items])
+        message = f"💖 お迎え完了！\n{item_lines}\n合計: ¥{total:,}"
+        send_line_notification(message)
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'error'}, status=405)
 
