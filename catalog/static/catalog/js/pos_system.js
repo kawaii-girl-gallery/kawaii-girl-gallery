@@ -156,10 +156,59 @@ function renderCart() {
 }
 async function checkout() {
     if (cart.length === 0) return;
-    if (!confirm("お会計を確定してお迎えしますか？")) return;
+
+    // 名前入力ダイアログ
+    let dialog = document.getElementById('checkout-dialog');
+    if (!dialog) {
+        dialog = document.createElement('div');
+        dialog.id = 'checkout-dialog';
+        dialog.style = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:99999; display:flex; align-items:center; justify-content:center;';
+        dialog.innerHTML = `
+            <div style="background:#1a1a1a; border:2px solid #ff4d94; border-radius:15px; padding:30px; width:320px; text-align:center;">
+                <h3 style="color:#ff4d94; margin:0 0 10px 0;">💖 お名前を入力してください</h3>
+                <p style="color:#aaa; font-size:12px; margin:0 0 20px 0;">※ヤフオクと同じ名前でお願いします。</p>
+                <input id="buyer-name-input" type="text" placeholder="お名前" style="width:100%; padding:10px; background:#333; color:#fff; border:1px solid #555; border-radius:8px; font-size:16px; box-sizing:border-box;">
+                <div style="margin-top:15px; display:flex; gap:10px;">
+                    <button onclick="document.getElementById('checkout-dialog').remove()" style="flex:1; padding:10px; background:#333; color:#fff; border:none; border-radius:8px; cursor:pointer;">キャンセル</button>
+                    <button id="confirm-checkout-btn" onclick="confirmCheckout()" style="flex:1; padding:10px; background:#ff4d94; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:900;">会計確定</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(dialog);
+        // 名前入力でボタン制御
+        setTimeout(() => {
+            const input = document.getElementById('buyer-name-input');
+            const btn = document.getElementById('confirm-checkout-btn');
+            input.focus();
+            input.addEventListener('input', () => {
+                btn.style.opacity = input.value.trim() ? '1' : '0.4';
+                btn.style.pointerEvents = input.value.trim() ? 'auto' : 'none';
+            });
+            btn.style.opacity = '0.4';
+            btn.style.pointerEvents = 'none';
+            input.addEventListener('keydown', e => { if (e.key === 'Enter' && input.value.trim()) confirmCheckout(); });
+        }, 100);
+    }
+}
+
+async function confirmCheckout() {
+    const buyerName = document.getElementById('buyer-name-input').value.trim();
+    if (!buyerName) return;
+    document.getElementById('checkout-dialog').remove();
     try {
-        const response = await fetch('/admin/record-sale/', { method: 'POST', headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') }, body: JSON.stringify({ items: cart }) });
-        if (response.ok) { alert("💖 お迎え完了しました！"); cart = []; localStorage.removeItem('pos_cart_data'); renderCart(); }
+        const response = await fetch('/admin/record-sale/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify({ items: cart, buyer_name: buyerName })
+        });
+        if (response.ok) {
+            const data = await response.json();
+            cart = [];
+            localStorage.removeItem('pos_cart_data');
+            renderCart();
+            // 新規タブでお迎え証明書を開く
+            window.open('/admin/order-receipt/' + data.order_number + '/', '_blank');
+        }
     } catch (error) { alert("通信エラー: " + error); }
 }
 function removeFromCart(index) { cart.splice(index, 1); localStorage.setItem('pos_cart_data', JSON.stringify(cart)); renderCart(); }
