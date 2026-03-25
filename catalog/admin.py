@@ -805,7 +805,7 @@ function closePanel(id) {{
                             if (tabWrap) {{
                                 var rect = tabWrap.getBoundingClientRect();
                                 var tabWrapBottom = rect.bottom + window.scrollY;
-                                spCartTab.style.top = (rect.bottom + 8) + 'px';
+                                spCartTab.style.top = (rect.bottom + 8) + "px";
                             }}
                         }}
                         positionCartTab();
