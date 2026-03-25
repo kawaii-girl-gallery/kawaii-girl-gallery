@@ -853,24 +853,29 @@ function closePanel(id) {{
                         }}
                         setupSpCart();
 
-                        // cart-popupのdisplay変化を監視
+                        // cart-popupのdisplay・中身の変化を監視
+                        var prevCartCount = 0;
                         var styleObserver = new MutationObserver(function() {{
                             var popup = document.getElementById('cart-popup');
                             if (!popup) return;
                             var hasItems = popup.style.display !== 'none' && popup.innerHTML.includes('removeFromCart');
                             if (hasItems) {{
-                                var wasVisible = spCartTab.classList.contains('visible');
                                 spCartTab.classList.add('visible');
-                                // 商品が追加されたらトーストを表示
-                                showCartToast('🛒 カートに追加しました');
+                                // カートの件数を数えて「増えた時だけ」トーストを表示
+                                var currentCount = (popup.innerHTML.match(/removeFromCart/g) || []).length;
+                                if (currentCount > prevCartCount) {{
+                                    showCartToast('🛒 カートに追加しました');
+                                }}
+                                prevCartCount = currentCount;
                             }} else {{
                                 spCartTab.classList.remove('visible');
                                 popup.classList.remove('sp-open');
                                 spCartOpen = false;
                                 spCartTab.style.background = '#28a745';
+                                prevCartCount = 0;
                             }}
                         }});
-                        styleObserver.observe(popup, {{ attributes: true, attributeFilter: ['style'], childList: true, subtree: false }});
+                        styleObserver.observe(popup, {{ attributes: true, attributeFilter: ['style'], childList: true, subtree: true }});
 
                         // 初期状態確認
                         if (popup.style.display !== 'none' && popup.innerHTML.includes('removeFromCart')) {{
