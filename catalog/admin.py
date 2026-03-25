@@ -670,10 +670,150 @@ class BaseProductAdmin(admin.ModelAdmin):
 
                 if (msgList) {{
                     if (isMobile) {{
-                        // ✨ スマホ：クイック検索はfixedにせず通常フロー（被り防止）
-                        msgList.style.position = "static";
-                        msgList.style.marginTop = (headerH + breadcrumbsH) + "px";
-                        msgList.style.background = "#121212";
+                        // ✨ スマホ：msgListを非表示にして右サイドアコーディオンを生成
+                        msgList.style.display = "none";
+
+                        // パネルのHTMLをmsgListのli>divから取得
+                        var panelDivs = msgList.querySelectorAll("li > div");
+                        var charPanelHtml = "", workPanelHtml = "";
+                        panelDivs.forEach(function(div) {{
+                            var h3 = div.querySelector("h3");
+                            if (!h3) return;
+                            if (h3.textContent.indexOf("キャラクター") >= 0) charPanelHtml = div.innerHTML;
+                            else if (h3.textContent.indexOf("原作") >= 0)    workPanelHtml = div.innerHTML;
+                        }});
+
+                        // 右サイドアコーディオンを生成
+                        var sideAcc = document.createElement("div");
+                        sideAcc.id = "sp-side-acc";
+                        sideAcc.style.cssText = [
+                            "position:fixed",
+                            "right:0",
+                            "top:50%",
+                            "transform:translateY(-50%)",
+                            "z-index:1800",
+                            "display:flex",
+                            "flex-direction:column",
+                            "gap:6px",
+                            "align-items:flex-end"
+                        ].join(";");
+
+                        [{{"id":"char","label":"👤\nキャラ\n検索","color":"#ff69b4"}},
+                         {{"id":"work","label":"🎬\n原作\n検索","color":"#007bff"}}
+                        ].forEach(function(cfg) {{
+                            var wrap = document.createElement("div");
+                            wrap.style.cssText = "display:flex; align-items:stretch; position:relative;";
+
+                            // パネル本体（左側に展開）
+                            var panel = document.createElement("div");
+                            panel.id = "sp-panel-" + cfg.id;
+                            panel.style.cssText = [
+                                "max-width:0",
+                                "overflow:hidden",
+                                "transition:max-width 0.3s ease, opacity 0.3s ease",
+                                "opacity:0",
+                                "background:#1a1a1a",
+                                "border:2px solid " + cfg.color + "44",
+                                "border-right:none",
+                                "border-radius:12px 0 0 12px",
+                                "padding:0",
+                                "box-sizing:border-box",
+                                "max-height:70vh",
+                                "overflow-y:auto"
+                            ].join(";");
+
+                            // パネル中身（msgListのhtmlを流用）
+                            var inner = document.createElement("div");
+                            inner.style.cssText = "padding:10px; width:240px; box-sizing:border-box;";
+
+                            // ボタン群を取得
+                            var srcDiv = null;
+                            panelDivs.forEach(function(div) {{
+                                var h3 = div.querySelector("h3");
+                                if (!h3) return;
+                                if (cfg.id === "char" && h3.textContent.indexOf("キャラクター") >= 0) srcDiv = div;
+                                if (cfg.id === "work" && h3.textContent.indexOf("原作") >= 0) srcDiv = div;
+                            }});
+                            if (srcDiv) {{
+                                // タイトル
+                                var titleEl = document.createElement("div");
+                                titleEl.style.cssText = "color:" + cfg.color + "; font-weight:900; font-size:13px; margin-bottom:8px; display:flex; align-items:center; gap:6px;";
+                                var h3 = srcDiv.querySelector("h3");
+                                titleEl.textContent = h3 ? h3.textContent.replace("⬅ 戻る","").trim() : "";
+                                // 戻るボタンがある場合
+                                var backA = srcDiv.querySelector("h3 a");
+                                if (backA) {{
+                                    var backBtn = backA.cloneNode(true);
+                                    backBtn.style.cssText = "background:#ff4444;border:2px solid #ff6666;padding:3px 10px;border-radius:20px;color:#fff;font-size:11px;font-weight:900;text-decoration:none;margin-left:6px;";
+                                    titleEl.appendChild(backBtn);
+                                }}
+                                inner.appendChild(titleEl);
+                                // ボタン群
+                                var container = srcDiv.querySelector(".expand-container");
+                                if (container) {{
+                                    var btnWrap = document.createElement("div");
+                                    btnWrap.style.cssText = "display:flex; flex-wrap:wrap; gap:6px;";
+                                    container.querySelectorAll("a").forEach(function(a) {{
+                                        var newA = a.cloneNode(true);
+                                        newA.style.textDecoration = "none";
+                                        newA.style.display = "inline-block";
+                                        btnWrap.appendChild(newA);
+                                    }});
+                                    inner.appendChild(btnWrap);
+                                }}
+                            }}
+                            panel.appendChild(inner);
+
+                            // タブボタン（右端の縦タブ）
+                            var tab = document.createElement("div");
+                            tab.style.cssText = [
+                                "background:" + cfg.color,
+                                "color:#fff",
+                                "font-size:11px",
+                                "font-weight:900",
+                                "writing-mode:vertical-rl",
+                                "padding:14px 7px",
+                                "border-radius:8px 0 0 8px",
+                                "cursor:pointer",
+                                "white-space:pre",
+                                "line-height:1.4",
+                                "min-width:28px",
+                                "text-align:center",
+                                "user-select:none",
+                                "box-shadow:-2px 0 8px rgba(0,0,0,0.4)"
+                            ].join(";");
+                            tab.textContent = cfg.label;
+
+                            var isOpen = false;
+                            tab.addEventListener("click", function() {{
+                                // 他のパネルを閉じる
+                                document.querySelectorAll(".sp-panel").forEach(function(p) {{
+                                    if (p !== panel) {{
+                                        p.style.maxWidth = "0";
+                                        p.style.opacity = "0";
+                                        p.style.padding = "0";
+                                    }}
+                                }});
+                                isOpen = !isOpen;
+                                if (isOpen) {{
+                                    panel.style.maxWidth = "260px";
+                                    panel.style.opacity = "1";
+                                    panel.style.padding = ""; 
+                                }} else {{
+                                    panel.style.maxWidth = "0";
+                                    panel.style.opacity = "0";
+                                    panel.style.padding = "0";
+                                }}
+                            }});
+
+                            panel.className = "sp-panel";
+                            wrap.appendChild(panel);
+                            wrap.appendChild(tab);
+                            sideAcc.appendChild(wrap);
+                        }});
+
+                        document.body.appendChild(sideAcc);
+
                     }} else {{
                         msgList.style.position = "fixed";
                         msgList.style.top = (headerH + breadcrumbsH) + "px";
