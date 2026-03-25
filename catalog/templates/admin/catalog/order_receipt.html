@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>お迎え証明書 {{ order_number }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Rounded+Mplus+1c:wght@400;700;900&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Rounded Mplus 1c', sans-serif; background: #f5f5f5; color: #333; padding: 20px; }
+        .receipt { background: #fff; max-width: 500px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
+        .header { text-align: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid #eee; }
+        .header h1 { font-size: 20px; font-weight: 900; color: #ff4d94; margin-bottom: 5px; }
+        .header p { font-size: 12px; color: #888; }
+        .order-info { margin-bottom: 20px; }
+        .order-number { font-size: 22px; font-weight: 900; color: #333; margin-bottom: 5px; }
+        .order-date { font-size: 13px; color: #888; }
+        .buyer-name { font-size: 15px; color: #555; margin-top: 5px; }
+        .divider { border: none; border-top: 2px dashed #ddd; margin: 15px 0; }
+        .items-header { display: flex; justify-content: space-between; font-size: 12px; color: #888; font-weight: 700; margin-bottom: 8px; }
+        .item-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 8px 0; border-bottom: 1px solid #f0f0f0; }
+        .item-name { font-size: 14px; font-weight: 700; flex: 1; margin-right: 10px; }
+        .item-price { font-size: 14px; font-weight: 900; color: #333; white-space: nowrap; }
+        .total-row { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 2px solid #333; }
+        .total-label { font-size: 18px; font-weight: 900; }
+        .total-price { font-size: 22px; font-weight: 900; color: #ff4d94; }
+        .notice { background: #fff9f0; border: 1px solid #ffcc00; border-radius: 8px; padding: 15px; margin: 20px 0; }
+        .notice p { font-size: 13px; line-height: 1.8; color: #555; }
+        .notice strong { color: #ff4d94; font-size: 15px; }
+        .save-notice { background: #fff0f5; border: 2px solid #ff4d94; border-radius: 8px; padding: 15px; margin-top: 20px; text-align: center; }
+        .save-notice p { font-size: 13px; color: #555; line-height: 1.8; }
+        .save-notice strong { color: #ff4d94; font-size: 14px; display: block; margin-bottom: 5px; }
+        .pdf-btn { display: block; width: 100%; margin-top: 20px; padding: 15px; background: #ff4d94; color: #fff; border: none; border-radius: 10px; font-size: 16px; font-weight: 900; cursor: pointer; font-family: inherit; }
+        .pdf-btn:hover { background: #ff70a8; }
+        @media print {
+            body { background: #fff; padding: 0; }
+            .receipt { box-shadow: none; }
+            .pdf-btn { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <div class="receipt" id="receipt">
+        <div class="header">
+            <h1>💕 kawaii女の子図鑑</h1>
+            <p>お迎え証明書</p>
+        </div>
+
+        <div class="order-info">
+            <div class="order-number">{{ order_number }}</div>
+            <div class="order-date">{{ sold_at|date:"Y年m月d日 H:i" }}</div>
+            {% if buyer_name %}
+            <div class="buyer-name">👤 {{ buyer_name }} 様</div>
+            {% endif %}
+        </div>
+
+        <hr class="divider">
+
+        <div class="items-header">
+            <span>商品名</span>
+            <span>金額</span>
+        </div>
+
+        {% for sale in sales %}
+        <div class="item-row">
+            <div class="item-name">{{ sale.product_name }}</div>
+            <div class="item-price">¥{{ sale.price }}</div>
+        </div>
+        {% endfor %}
+
+        <div class="total-row">
+            <div class="total-label">合計</div>
+            <div class="total-price">¥{{ total }}</div>
+        </div>
+
+        <hr class="divider">
+
+        <div class="notice">
+            <strong>📦 ご案内</strong>
+            <p>
+                上記の注文番号でヤフオクを検索してください。<br>
+                <strong>24時間以内</strong>に出品いたします。
+            </p>
+        </div>
+
+        <div class="save-notice">
+            <strong>📌 必ずこのページを控えておいてください</strong>
+            <p>
+                このタブを保存 / スクリーンショットを撮る /<br>
+                PDFダウンロードのいずれかで保存してください。
+            </p>
+        </div>
+
+        <button class="pdf-btn" onclick="downloadPDF()">📄 PDFダウンロード</button>
+    </div>
+
+    <script>
+        function downloadPDF() {
+            window.print();
+        }
+    </script>
+</body>
+</html>
