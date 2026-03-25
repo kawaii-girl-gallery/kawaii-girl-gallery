@@ -219,7 +219,6 @@ class BaseProductAdmin(admin.ModelAdmin):
         
         for p in full_qs:
             parts = re.split(r'[ _　]', p.name)
-            # 【】を含むものは除去、G数字も除去
             char_name = parts[0] if parts else "不明"
             char_name = re.sub(r'【.*?】', '', char_name).strip()
             if not char_name:
@@ -231,7 +230,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                 work_parts = []
                 for part in parts[1:]:
                     if "同人" in part: break
-                    if re.match(r'^G\d+$', part, re.IGNORECASE): break  # G数字除去
+                    if re.match(r'^G\d+$', part, re.IGNORECASE): break
                     work_parts.append(part)
                 work_name = " ".join(work_parts).strip() if work_parts else "単体作品"
                 if work_name:
@@ -252,10 +251,8 @@ class BaseProductAdmin(admin.ModelAdmin):
 
         is_admin_flag = 'true' if (request.user.is_superuser or request.user.username == 'kawaii-girlgallery') else 'false'
 
-        # アコーディオンパネルHTML + CSS + JS
         accordion_html = mark_safe(f'''
 <style>
-    /* アコーディオンタブ */
     .qs-tab-wrap {{
         position: fixed;
         right: 0;
@@ -284,8 +281,6 @@ class BaseProductAdmin(admin.ModelAdmin):
     .qs-tab:hover {{ opacity: 0.85; }}
     .qs-tab-char {{ background: #ff69b4; border-color: #ff69b4; }}
     .qs-tab-work {{ background: #007bff; border-color: #007bff; }}
-
-    /* パネル本体 */
     .qs-panel {{
         position: fixed;
         right: -420px;
@@ -339,23 +334,18 @@ class BaseProductAdmin(admin.ModelAdmin):
         gap: 6px;
         align-content: flex-start;
     }}
-    /* スクロールバー */
     .qs-panel-body::-webkit-scrollbar {{ width: 6px; }}
     .qs-panel-body::-webkit-scrollbar-track {{ background: #1a1a1a; }}
     .qs-panel-body::-webkit-scrollbar-thumb {{ background: #444; border-radius: 3px; }}
-
-    /* 元のクイック検索パネルを非表示 */
     .messagelist {{ display: none !important; }}
     .top-paginator {{ display: none !important; }}
 </style>
 
-<!-- キャラクタータブ -->
 <div class="qs-tab-wrap">
     <div class="qs-tab qs-tab-char" onclick="togglePanel('char-panel')">👤 キャラクター検索</div>
     <div class="qs-tab qs-tab-work" onclick="togglePanel('work-panel')">🎬 原作作品検索</div>
 </div>
 
-<!-- キャラクター検索パネル -->
 <div id="char-panel" class="qs-panel" style="border-left: 3px solid #ff69b4;">
     <div class="qs-panel-header">
         <div class="qs-panel-title" style="color: #ff69b4;">👤 キャラクター検索 {back_btn_html}</div>
@@ -364,7 +354,6 @@ class BaseProductAdmin(admin.ModelAdmin):
     <div class="qs-panel-body">{char_btns}</div>
 </div>
 
-<!-- 原作作品検索パネル -->
 <div id="work-panel" class="qs-panel" style="border-left: 3px solid #007bff;">
     <div class="qs-panel-header">
         <div class="qs-panel-title" style="color: #007bff;">🎬 原作作品検索</div>
@@ -396,12 +385,10 @@ function closePanel(id) {{
             .cell-center img {{ pointer-events: none !important; user-select: none !important; -webkit-user-drag: none !important; }}
             .cell-center img {{ -webkit-user-drag: none; user-select: none; -moz-user-select: none; }}
 
-            /* 商品一覧タイトルを非表示 */
             #content h1 {{ display: none !important; }}
             img {{ -webkit-user-drag: none !important; user-select: none !important; }}
             #result_list img {{ pointer-events: none !important; }}
 
-            /* 元の検索・ツールボックス・操作行・ページネーターを非表示 */
             #changelist-search {{ display: none !important; }}
             .object-tools {{ display: none !important; }}
             #changelist .actions {{ display: none !important; }}
@@ -416,7 +403,6 @@ function closePanel(id) {{
             .top-paginator {{ display: none !important; }}
             #changelist .paginator {{ display: none !important; }}
 
-            /* 検索窓行 */
             .smart-top-bar {{
                 display: flex;
                 align-items: center;
@@ -453,7 +439,6 @@ function closePanel(id) {{
             .smart-top-bar-spacer {{ flex: 1; }}
             .smart-btn-group {{ display: flex; align-items: center; gap: 8px; flex-shrink: 0; }}
 
-            /* 操作行 */
             .smart-action-bar {{
                 display: flex;
                 align-items: center;
@@ -485,10 +470,49 @@ function closePanel(id) {{
             .modal-content {{ max-height: 70vh !important; max-width: 80vw !important; border: 3px solid #fff !important; border-radius: 0 !important; display: block !important; }}
             #modal-add-btn {{ position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 40px !important; background: rgba(40, 167, 69, 0.9) !important; color: white !important; font-size: 15px !important; font-weight: 900 !important; border: none !important; border-bottom: 2px solid #fff !important; z-index: 21000 !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; }}
             .close-btn {{ position: fixed !important; top: 50px !important; right: 30px !important; color: #fff !important; font-size: 50px !important; z-index: 21100 !important; cursor: pointer; }}
+
+            /* ============================================================
+               ✨ スマホ専用カードレイアウト（768px以下のみ / PCは変わりません）
+               ============================================================ */
+            @media (max-width: 768px) {{
+                #result_list tbody tr {{
+                    display: block !important; position: relative !important;
+                    background: #1e1e1e !important; border: 1px solid #333 !important;
+                    border-radius: 12px !important; margin: 8px !important;
+                    padding: 12px 8px 12px 44px !important;
+                    width: calc(100% - 16px) !important; box-sizing: border-box !important;
+                }}
+                #result_list tbody td {{
+                    display: block !important; width: 100% !important;
+                    text-align: center !important; padding: 4px 8px !important;
+                    border: none !important; height: auto !important;
+                }}
+                #result_list tbody td.action-checkbox {{
+                    position: absolute !important; left: 10px !important;
+                    top: 50% !important; transform: translateY(-50%) !important;
+                    width: 28px !important; padding: 0 !important;
+                    display: flex !important; align-items: center !important; justify-content: center !important;
+                }}
+                #result_list tbody td.action-checkbox input {{ width: 22px !important; height: 22px !important; margin: 0 !important; }}
+                .cell-center {{ height: auto !important; min-height: 0 !important; padding: 4px 0 !important; }}
+                #result_list tbody td .cell-center img {{ max-height: 200px !important; max-width: 85vw !important; }}
+                #result_list tbody tr:nth-child(even) {{ background: #222 !important; }}
+                .smart-top-bar {{ flex-wrap: wrap !important; padding: 8px 10px !important; }}
+                .smart-search-form {{ flex: 1 1 auto !important; }}
+                .smart-search-form input[type=text] {{ width: 100% !important; font-size: 15px !important; padding: 8px 12px !important; }}
+                .smart-search-form input[type=submit] {{ padding: 8px 14px !important; min-height: 38px !important; }}
+                .smart-paginator {{ order: 3 !important; width: 100% !important; flex-wrap: wrap !important; }}
+                .smart-paginator a, .smart-paginator span.this-page {{ min-width: 38px !important; height: 38px !important; }}
+                .smart-top-bar-spacer {{ display: none !important; }}
+                .smart-btn-group {{ order: 4 !important; width: 100% !important; flex-wrap: wrap !important; }}
+                .smart-btn-group a {{ flex: 1 1 auto !important; justify-content: center !important; font-size: 12px !important; padding: 8px 6px !important; min-height: 38px !important; display: inline-flex !important; align-items: center !important; }}
+                .smart-action-bar {{ padding: 8px 10px !important; }}
+                .smart-action-bar select {{ flex: 1 1 auto !important; min-height: 38px !important; }}
+                .smart-action-bar .run-btn {{ min-height: 38px !important; padding: 8px 18px !important; }}
+            }}
         </style>
         <script>
             document.addEventListener('DOMContentLoaded', function() {{
-                // ✨ アコーディオンパネルとタブをbodyに移動（messagelistから脱出）
                 var tabWrap = document.querySelector(".qs-tab-wrap");
                 var charPanel = document.getElementById("char-panel");
                 var workPanel = document.getElementById("work-panel");
@@ -503,8 +527,6 @@ function closePanel(id) {{
                 var origPaginator = document.querySelector('#changelist .paginator');
                 var origActions = document.querySelector('#changelist .actions');
 
-                // 検索窓行
-                // すでに挿入済みの場合はスキップ
                 if (document.querySelector('.smart-top-bar')) return;
 
                 var topBar = document.createElement('div');
@@ -586,7 +608,6 @@ function closePanel(id) {{
 
                 topBar.appendChild(btnGroup);
 
-                // 操作行
                 var actionBar = document.createElement('div');
                 actionBar.className = 'smart-action-bar';
 
@@ -616,7 +637,6 @@ function closePanel(id) {{
                         actionBar.appendChild(newCounter);
                     }}
                 }}
-                // 一括アップロードをactionBar右端に
                 var actionSpacer = document.createElement('div');
                 actionSpacer.style.flex = '1';
                 actionBar.appendChild(actionSpacer);
@@ -629,10 +649,8 @@ function closePanel(id) {{
                 }}
 
                 changelist.parentNode.insertBefore(actionBar, changelist);
-                // ✨ タブとパネルをbodyに移動（fixed positionを効かせるため）
-                // ✨ ヘッダー・パンくず・サイドバーをfixedで固定
+
                 var header = document.querySelector("#header");
-                var breadcrumbsNav = document.querySelector(".breadcrumbs") ? document.querySelector(".breadcrumbs").parentElement : null;
                 var breadcrumbs = document.querySelector(".breadcrumbs");
                 var navSidebar = document.querySelector("#nav-sidebar");
                 var headerH = header ? header.offsetHeight : 75;
@@ -651,15 +669,15 @@ function closePanel(id) {{
                     var contentWrapper = document.querySelector("#content");
                     if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
                 }}
-                // bodyにpaddingTopを追加してコンテンツが隠れないように
                 document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
-                var tabWrap = document.querySelector(".qs-tab-wrap");
-                var charPanel = document.querySelector("#char-panel");
-                var workPanel = document.querySelector("#work-panel");
-                if (tabWrap) document.body.appendChild(tabWrap);
-                if (charPanel) document.body.appendChild(charPanel);
-                if (workPanel) document.body.appendChild(workPanel);
-                // ✨ 全選択チェックボックスをactionBarに追加
+
+                var tabWrap2 = document.querySelector(".qs-tab-wrap");
+                var charPanel2 = document.querySelector("#char-panel");
+                var workPanel2 = document.querySelector("#work-panel");
+                if (tabWrap2) document.body.appendChild(tabWrap2);
+                if (charPanel2) document.body.appendChild(charPanel2);
+                if (workPanel2) document.body.appendChild(workPanel2);
+
                 var selectAllWrap = document.createElement('label');
                 selectAllWrap.style.cssText = 'display:flex; align-items:center; gap:6px; cursor:pointer; color:#aaa; font-size:12px; font-weight:900;';
                 var selectAllChk = document.createElement('input');
@@ -680,14 +698,29 @@ function closePanel(id) {{
 
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
-                // DOMに挿入後に位置を計算
-                var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
+
                 var fixedTopVal = header ? header.offsetHeight : 75;
                 fixedTopVal += breadcrumbs ? breadcrumbs.offsetHeight : 37;
-                var scrollBarW = window.innerWidth - document.documentElement.clientWidth;
                 var topBarW = topBar.offsetWidth;
                 var topBarLeft = topBar.getBoundingClientRect().left;
-                // ✨ スクロールで検索窓行・操作行を固定
+
+                // ✨ スマホ時：カード内のtd順を 画像→名前→価格→タイマー に並び替え
+                if (window.innerWidth <= 768) {{
+                    document.querySelectorAll("#result_list tbody tr").forEach(function(tr) {{
+                        var tdImg = null, tdName = null, tdPrice = null, tdTimer = null;
+                        tr.querySelectorAll("td:not(.action-checkbox)").forEach(function(td) {{
+                            var inner = td.querySelector(".cell-center");
+                            if (!inner) return;
+                            if (inner.querySelector("img"))                        tdImg   = td;
+                            else if (inner.querySelector(".timer-display"))        tdTimer = td;
+                            else if (inner.querySelector("[style*='00ffcc']"))     tdPrice = td;
+                            else                                                   tdName  = td;
+                        }});
+                        [tdImg, tdName, tdPrice, tdTimer].forEach(function(td) {{
+                            if (td) tr.appendChild(td);
+                        }});
+                    }});
+                }}
 
                 window.addEventListener("scroll", function() {{
                     var scrollY = window.scrollY;
@@ -705,7 +738,6 @@ function closePanel(id) {{
                         actionBar.style.width = adjustedW + "px";
                         actionBar.style.zIndex = "599";
                         actionBar.style.background = "#1a1a1a";
-
                     }} else {{
                         topBar.style.position = "";
                         topBar.style.top = "";
@@ -717,7 +749,6 @@ function closePanel(id) {{
                         actionBar.style.left = "";
                         actionBar.style.width = "";
                         actionBar.style.background = "";
-
                     }}
                 }});
             }});
@@ -771,7 +802,7 @@ def character_pedia_view(request):
             if len(parts) > 1:
                 for part in parts[1:]:
                     if "同人" in part: break
-                    if re.match(r'^G\d+$', part, re.IGNORECASE): break  # G数字除去
+                    if re.match(r'^G\d+$', part, re.IGNORECASE): break
                     work_parts.append(part)
             key = " ".join(work_parts).strip() if work_parts else "単体作品"
         else:
@@ -843,12 +874,10 @@ def analysis_sheet_view(request):
         weekday_list = [{"name": n, "revenue": 0, "count": 0} for n in ["月", "火", "水", "木", "金", "土", "日"]]
         for s in sales:
             parts = re.split(r'[ _　]', s.product_name)
-            # キャラクター名：【】除去、空なら次のパーツを使う
             c = re.sub(r'【.*?】', '', parts[0] if parts else '').strip()
             if not c and len(parts) > 1:
                 c = re.sub(r'【.*?】', '', parts[1]).strip()
             c = c or "不明"
-            # 作品名：同人・G数字で終了
             work_parts = []
             if len(parts) > 1:
                 for part in parts[1:]:
@@ -892,13 +921,6 @@ def analysis_sheet_view(request):
 
 def generate_order_number():
     """注文番号を生成する KG-YYYYMMDD-XXX"""
-    from django.utils import timezone
-    today = timezone.localtime().strftime('%Y%m%d')
-    count = Sale.objects.filter(sold_at__date=timezone.localtime().date()).count() + 1
-    return f"KG-{today}-{count:03d}"
-
-def generate_order_number():
-    """注文番号を生成する KG-YYYYMMDD-XXX"""
     from django.utils import timezone as tz
     today = tz.localtime(tz.now()).strftime('%Y%m%d')
     count = Sale.objects.filter(sold_at__date=tz.localtime(tz.now()).date()).values('order_number').distinct().count() + 1
@@ -924,29 +946,13 @@ def order_receipt_view(request, order_number):
 def order_management_view(request):
     from django.utils import timezone as tz
     from django.db.models import Q
-
-    if request.method == 'POST' and request.POST.get('reset_all') == 'true':
-        if request.user.is_superuser or request.user.username == 'kawaii-girlgallery':
-            Sale.objects.all().delete()
-            OrderManagement.objects.all().delete()
-            messages.success(request, "売上・注文データをすべてリセットしました。")
-            return redirect(request.path)
-
-    # リセット処理
-    if request.method == 'POST' and request.POST.get('reset_all') == 'true':
-        if request.user.is_superuser or request.user.username == 'kawaii-girlgallery':
-            Sale.objects.all().delete()
-            OrderManagement.objects.all().delete()
-            messages.success(request, "売上・注文データをすべてリセットしました。")
-            return redirect(request.path)
     import calendar
 
-    # リセット処理
     if request.method == 'POST' and request.POST.get('reset_all') == 'true':
         if request.user.is_superuser or request.user.username == 'kawaii-girlgallery':
             Sale.objects.all().delete()
             OrderManagement.objects.all().delete()
-            messages.success(request, "全データをリセットしました。")
+            messages.success(request, "売上・注文データをすべてリセットしました。")
             return redirect(request.path)
 
     now = tz.localtime(tz.now())
@@ -969,7 +975,6 @@ def order_management_view(request):
     total_pages = max(1, (total_count + per_page - 1) // per_page)
     orders = qs[(page-1)*per_page:page*per_page]
 
-    # 月リスト生成（最初の注文から現在まで）
     first = OrderManagement.objects.order_by('sold_at').first()
     month_list = []
     if first:
@@ -1007,14 +1012,10 @@ def order_management_update_view(request):
     order_number = data.get('order_number')
     try:
         order = OrderManagement.objects.get(order_number=order_number)
-        if 'yahoo_url' in data:
-            order.yahoo_url = data['yahoo_url']
-        if 'check_listed' in data:
-            order.check_listed = data['check_listed']
-        if 'check_sold' in data:
-            order.check_sold = data['check_sold']
-        if 'check_shipped' in data:
-            order.check_shipped = data['check_shipped']
+        if 'yahoo_url' in data: order.yahoo_url = data['yahoo_url']
+        if 'check_listed' in data: order.check_listed = data['check_listed']
+        if 'check_sold' in data: order.check_sold = data['check_sold']
+        if 'check_shipped' in data: order.check_shipped = data['check_shipped']
         order.save()
         return JsonResponse({'status': 'success', 'is_completed': order.is_completed})
     except OrderManagement.DoesNotExist:
@@ -1052,12 +1053,10 @@ def record_sale_view(request):
                 order_number=order_number,
                 user=request.user if request.user.is_authenticated else None
             )
-        # LINE通知
         total = sum(i['price'] for i in items)
         item_lines = '\n'.join([f"・{i['name']} ¥{i['price']}" for i in items])
         message = f"💖 お迎え完了！\n購入者：{buyer_name}\n{item_lines}\n合計: ¥{total:,}\n注文番号：{order_number}"
         send_line_notification(message)
-        # 注文管理レコード作成
         from django.utils import timezone as tz
         product_names = '\n'.join([i['name'] for i in items])
         OrderManagement.objects.create(
@@ -1069,7 +1068,6 @@ def record_sale_view(request):
         )
         return JsonResponse({'status': 'success', 'order_number': order_number, 'buyer_name': buyer_name})
     return JsonResponse({'status': 'error'}, status=405)
-
 
 def get_custom_urls(self):
     return [
