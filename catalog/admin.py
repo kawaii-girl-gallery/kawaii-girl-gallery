@@ -732,7 +732,7 @@ function closePanel(id) {{
                 var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
 
                 var isMobile = window.innerWidth <= 768;
-                if (!isMobile) {{
+                if (!isMobile && !skipTopBar) {{
                     if (header) {{
                         header.style.cssText += "; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;";
                     }}
