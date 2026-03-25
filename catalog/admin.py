@@ -14,7 +14,7 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 from django.apps import apps
 from django.template.loader import render_to_string
-from .models import Product, Show_ProductList_A4, Z_Archive_A4, Show_ProductList_TCG, Z_Archive_TCG, Sale
+from .models import Product, Show_ProductList_A4, Z_Archive_A4, Show_ProductList_TCG, Z_Archive_TCG, Sale, OrderManagement
 
 # ✨ 共通CSS定義
 COMMON_STYLE = """
@@ -921,6 +921,81 @@ def order_receipt_view(request, order_number):
         'sold_at': sold_at,
     })
 
+def order_management_view(request):
+    from django.utils import timezone as tz
+    from django.db.models import Q
+    import calendar
+
+    now = tz.localtime(tz.now())
+    year = int(request.GET.get('year', now.year))
+    month = int(request.GET.get('month', now.month))
+    search = request.GET.get('q', '')
+    status = request.GET.get('status', 'all')
+    page = int(request.GET.get('page', 1))
+    per_page = 20
+
+    qs = OrderManagement.objects.filter(sold_at__year=year, sold_at__month=month)
+    if search:
+        qs = qs.filter(buyer_name__icontains=search)
+    if status == 'done':
+        qs = qs.filter(check_listed=True, check_sold=True, check_shipped=True)
+    elif status == 'undone':
+        qs = qs.exclude(check_listed=True, check_sold=True, check_shipped=True)
+
+    total_count = qs.count()
+    total_pages = max(1, (total_count + per_page - 1) // per_page)
+    orders = qs[(page-1)*per_page:page*per_page]
+
+    # 月リスト生成（最初の注文から現在まで）
+    first = OrderManagement.objects.order_by('sold_at').first()
+    month_list = []
+    if first:
+        cur = first.sold_at.replace(day=1)
+        end = now.replace(day=1)
+        while cur <= end:
+            month_list.append({'year': cur.year, 'month': cur.month, 'label': f"{cur.year}年{cur.month}月"})
+            if cur.month == 12:
+                cur = cur.replace(year=cur.year+1, month=1)
+            else:
+                cur = cur.replace(month=cur.month+1)
+        month_list.reverse()
+
+    return render(request, 'admin/catalog/order_management.html', {
+        **admin.site.each_context(request),
+        'orders': orders,
+        'total_count': total_count,
+        'total_pages': total_pages,
+        'current_page': page,
+        'year': year,
+        'month': month,
+        'search': search,
+        'status': status,
+        'month_list': month_list,
+        'current_label': f"{year}年{month}月",
+        'cl_class': 'admin-custom-mode',
+    })
+
+def order_management_update_view(request):
+    """注文管理のAjax更新エンドポイント"""
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error'}, status=405)
+    data = json.loads(request.body)
+    order_number = data.get('order_number')
+    try:
+        order = OrderManagement.objects.get(order_number=order_number)
+        if 'yahoo_url' in data:
+            order.yahoo_url = data['yahoo_url']
+        if 'check_listed' in data:
+            order.check_listed = data['check_listed']
+        if 'check_sold' in data:
+            order.check_sold = data['check_sold']
+        if 'check_shipped' in data:
+            order.check_shipped = data['check_shipped']
+        order.save()
+        return JsonResponse({'status': 'success', 'is_completed': order.is_completed})
+    except OrderManagement.DoesNotExist:
+        return JsonResponse({'status': 'error', 'message': '注文が見つかりません'}, status=404)
+
 def send_line_notification(message):
     """LINE Messaging APIで管理者に通知を送る"""
     try:
@@ -958,6 +1033,16 @@ def record_sale_view(request):
         item_lines = '\n'.join([f"・{i['name']} ¥{i['price']}" for i in items])
         message = f"💖 お迎え完了！\n購入者：{buyer_name}\n{item_lines}\n合計: ¥{total:,}\n注文番号：{order_number}"
         send_line_notification(message)
+        # 注文管理レコード作成
+        from django.utils import timezone as tz
+        product_names = '\n'.join([i['name'] for i in items])
+        OrderManagement.objects.create(
+            order_number=order_number,
+            buyer_name=buyer_name,
+            total_price=total,
+            product_names=product_names,
+            sold_at=tz.now(),
+        )
         return JsonResponse({'status': 'success', 'order_number': order_number, 'buyer_name': buyer_name})
     return JsonResponse({'status': 'error'}, status=405)
 
@@ -969,6 +1054,8 @@ def get_custom_urls(self):
         path('character-pedia/', self.admin_view(character_pedia_view)),
         path('record-sale/', self.admin_view(record_sale_view)),
         path('order-receipt/<str:order_number>/', order_receipt_view, name='order_receipt'),
+        path('order-management/', self.admin_view(order_management_view)),
+        path('order-management/update/', self.admin_view(order_management_update_view)),
     ] + self.get_urls_original()
 
 if not hasattr(admin.AdminSite, 'get_urls_original'):
@@ -996,7 +1083,7 @@ def get_app_list(self, request, app_label=None):
     if is_admin: tcg_models.append(get_m('Z_Archive_TCG'))
     final_list = [{'name': '一覧表', 'app_label': 'catalog_pedia', 'models': pedia_models, 'has_module_permission': True}, {'name': 'A4サイズポスター', 'app_label': 'catalog_a4', 'models': a4_models, 'has_module_permission': True}, {'name': 'トレーディングカード', 'app_label': 'catalog_tcg', 'models': tcg_models, 'has_module_permission': True}]
     if is_admin:
-        lib_models = [{'name': 'ユーザー認証', 'admin_url': '/admin/auth/user/'}, {'name': '売上ダッシュボード', 'admin_url': '/admin/sales-dashboard/'}, {'name': 'インサイト分析', 'admin_url': '/admin/analysis-sheet/'}]
+        lib_models = [{'name': 'ユーザー認証', 'admin_url': '/admin/auth/user/'}, {'name': '売上ダッシュボード', 'admin_url': '/admin/sales-dashboard/'}, {'name': 'インサイト分析', 'admin_url': '/admin/analysis-sheet/'}, {'name': '注文管理', 'admin_url': '/admin/order-management/'}]
         if get_m('Sale'): lib_models.append(get_m('Sale'))
         final_list.append({'name': '図鑑管理', 'app_label': 'catalog_admin_custom', 'models': lib_models, 'has_module_permission': True})
     return final_list
