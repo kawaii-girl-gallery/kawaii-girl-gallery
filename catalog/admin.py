@@ -532,7 +532,7 @@ function closePanel(id) {{
                 .sp-cart-tab {{
                     position: fixed !important;
                     right: 0 !important;
-                    top: 65% !important;
+                    top: 72% !important;
                     z-index: 3100 !important;
                     writing-mode: vertical-rl !important;
                     padding: 14px 8px !important;
@@ -727,7 +727,7 @@ function closePanel(id) {{
                     document.body.appendChild(breadcrumbs);
                     breadcrumbs.style.cssText = "position: fixed !important; top: " + headerH + "px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1999 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important;";
                 }}
-                if (navSidebar) {{
+                if (navSidebar && window.innerWidth > 768) {{
                     navSidebar.style.cssText += "; position: fixed !important; top: " + (headerH + breadcrumbsH) + "px !important; left: 0 !important; width: " + sidebarW + "px !important; height: calc(100vh - " + (headerH + breadcrumbsH) + "px) !important; overflow-y: auto !important; z-index: 1500 !important;";
                     var contentWrapper = document.querySelector("#content");
                     if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
