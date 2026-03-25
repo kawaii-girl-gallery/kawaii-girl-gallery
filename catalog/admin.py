@@ -924,7 +924,23 @@ def order_receipt_view(request, order_number):
 def order_management_view(request):
     from django.utils import timezone as tz
     from django.db.models import Q
+
+    # リセット処理
+    if request.method == 'POST' and request.POST.get('reset_all') == 'true':
+        if request.user.is_superuser or request.user.username == 'kawaii-girlgallery':
+            Sale.objects.all().delete()
+            OrderManagement.objects.all().delete()
+            messages.success(request, "売上・注文データをすべてリセットしました。")
+            return redirect(request.path)
     import calendar
+
+    # リセット処理
+    if request.method == 'POST' and request.POST.get('reset_all') == 'true':
+        if request.user.is_superuser or request.user.username == 'kawaii-girlgallery':
+            Sale.objects.all().delete()
+            OrderManagement.objects.all().delete()
+            messages.success(request, "全データをリセットしました。")
+            return redirect(request.path)
 
     now = tz.localtime(tz.now())
     year = int(request.GET.get('year', now.year))
@@ -972,6 +988,7 @@ def order_management_view(request):
         'status': status,
         'month_list': month_list,
         'current_label': f"{year}年{month}月",
+        'is_admin': request.user.is_superuser or request.user.username == 'kawaii-girlgallery',
         'cl_class': 'admin-custom-mode',
     })
 
