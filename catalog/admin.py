@@ -638,7 +638,7 @@ function closePanel(id) {{
                             pagDiv.appendChild(newA);
                         }});
                     }}
-                    var totalText = origPaginator.textContent.match(/\d+\s*商品一覧/);
+                    var totalText = origPaginator.textContent.match(/[0-9]+ *商品一覧/);
                     if (totalText) {{
                         var countSpan = document.createElement('span');
                         countSpan.className = 'total-count';
