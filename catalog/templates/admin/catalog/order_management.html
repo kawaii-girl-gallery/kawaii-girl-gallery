@@ -1,0 +1,206 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block title %}注文管理{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Rounded+Mplus+1c:wght@700;900&display=swap');
+    body, #header, #content, #nav-sidebar, h1, h2 { font-family: 'Rounded Mplus 1c', sans-serif !important; }
+    #header { background: #1a1c23 !important; padding: 15px 25px !important; border-bottom: 4px solid transparent !important; border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important; }
+    #branding h1 { font-size: 28px !important; font-weight: 900 !important; display: flex !important; align-items: center !important; gap: 12px !important; background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; }
+    #branding h1::before { content: '💕'; -webkit-text-fill-color: initial !important; font-size: 26px; }
+    #branding h1 a { color: inherit !important; text-decoration: none !important; }
+    .breadcrumbs { background: #1a1c23 !important; color: #ccc !important; }
+    .breadcrumbs a { color: #aaa !important; }
+    #nav-sidebar .module caption a { pointer-events: none !important; cursor: default !important; text-decoration: none !important; color: inherit !important; }
+    #header #user-tools a:not([href*="logout"]) { display: none !important; }
+    #header #user-tools .divider { display: none !important; }
+    #header #user-tools { font-size: 0 !important; }
+    #header #user-tools strong, #header #user-tools form, #header #user-tools a[href*="logout"] { font-size: 13px !important; }
+    .app-catalog_pedia caption, .app-catalog_pedia h2 { background: #6f42c1 !important; color: #fff !important; }
+    .app-catalog_a4 caption, .app-catalog_a4 h2 { background: #ff4d94 !important; color: #fff !important; }
+    .app-catalog_tcg caption, .app-catalog_tcg h2 { background: #2684ff !important; color: #fff !important; }
+    .app-catalog_admin_custom caption, .app-catalog_admin_custom h2 { background: #f0ad4e !important; color: #fff !important; }
+
+    /* フィルターバー固定 */
+    .filter-bar {
+        position: sticky;
+        top: 112px;
+        z-index: 1000;
+        background: #1a1c23;
+        padding: 10px 20px;
+        border-bottom: 1px solid #333;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    .filter-bar select, .filter-bar input { background: #333; color: #eee; border: 1px solid #555; padding: 6px 10px; border-radius: 6px; font-size: 13px; font-family: inherit; }
+    .filter-bar .count-badge { color: #aaa; font-size: 13px; margin-left: 8px; }
+
+    /* コンテンツ */
+    #content { background: rgba(18,18,18,0.85) !important; color: #eee; }
+    .orders-container { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+
+    /* 注文カード */
+    .order-card { background: #1e1e1e; border-radius: 12px; border: 1px solid #333; padding: 16px 20px; transition: opacity 0.3s; }
+    .order-card.completed { opacity: 0.4; }
+    .order-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; flex-wrap: wrap; gap: 8px; }
+    .order-number { font-size: 15px; font-weight: 900; color: #fff; }
+    .order-date { font-size: 12px; color: #888; }
+    .buyer-badge { font-size: 12px; background: #1a3a5c; color: #5ba3e0; padding: 2px 10px; border-radius: 4px; }
+    .order-total { font-size: 15px; font-weight: 900; color: #00ffcc; }
+    .product-list { font-size: 13px; color: #aaa; background: #151515; border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; line-height: 2; }
+    .yahoo-url-row { display: flex; align-items: center; gap: 8px; margin-bottom: 12px; }
+    .yahoo-url-row input { flex: 1; background: #2a2a2a; color: #eee; border: 1px solid #444; padding: 7px 12px; border-radius: 6px; font-size: 13px; font-family: inherit; }
+    .yahoo-url-row button { background: #2684ff; color: #fff; border: none; padding: 7px 16px; border-radius: 6px; font-size: 13px; cursor: pointer; font-family: inherit; font-weight: 900; white-space: nowrap; }
+    .checkboxes { display: flex; gap: 20px; flex-wrap: wrap; }
+    .checkboxes label { display: flex; align-items: center; gap: 6px; font-size: 13px; color: #aaa; cursor: pointer; }
+    .checkboxes input[type="checkbox"] { width: 16px; height: 16px; cursor: pointer; }
+
+    /* ページネーション */
+    .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 20px; }
+    .pagination a { color: #aaa; text-decoration: none; padding: 5px 12px; border: 1px solid #444; border-radius: 6px; font-size: 13px; }
+    .pagination a:hover { background: #333; }
+    .pagination .current { background: #ff4d94; color: #fff; padding: 5px 12px; border-radius: 6px; font-size: 13px; border: none; }
+</style>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        var header = document.querySelector('#header');
+        var breadcrumbs = document.querySelector('.breadcrumbs');
+        var navSidebar = document.querySelector('#nav-sidebar');
+        var headerH = header ? header.offsetHeight : 75;
+        var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 37;
+        var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
+        if (header) header.style.cssText += 'position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;';
+        if (breadcrumbs) { document.body.appendChild(breadcrumbs); breadcrumbs.style.cssText = 'position: fixed !important; top: ' + headerH + 'px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1999 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important;'; }
+        if (navSidebar) { navSidebar.style.cssText += 'position: fixed !important; top: ' + (headerH + breadcrumbsH) + 'px !important; left: 0 !important; width: ' + sidebarW + 'px !important; height: calc(100vh - ' + (headerH + breadcrumbsH) + 'px) !important; overflow-y: auto !important; z-index: 1500 !important;'; var content = document.querySelector('#content'); if (content) content.style.marginLeft = sidebarW + 'px'; }
+        document.body.style.paddingTop = (headerH + breadcrumbsH) + 'px';
+        document.querySelector('.filter-bar').style.top = (headerH + breadcrumbsH) + 'px';
+    });
+
+    function getCookie(name) {
+        let v = null;
+        if (document.cookie) document.cookie.split(';').forEach(c => { c = c.trim(); if (c.startsWith(name + '=')) v = decodeURIComponent(c.slice(name.length + 1)); });
+        return v;
+    }
+
+    async function updateOrder(orderNumber, data) {
+        const res = await fetch('/admin/order-management/update/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
+            body: JSON.stringify({ order_number: orderNumber, ...data })
+        });
+        const result = await res.json();
+        if (result.status === 'success') {
+            const card = document.querySelector('[data-order="' + orderNumber + '"]');
+            if (result.is_completed) card.classList.add('completed');
+            else card.classList.remove('completed');
+        }
+    }
+
+    function saveUrl(orderNumber) {
+        const input = document.querySelector('[data-order="' + orderNumber + '"] .yahoo-url-input');
+        updateOrder(orderNumber, { yahoo_url: input.value });
+        const btn = document.querySelector('[data-order="' + orderNumber + '"] .save-url-btn');
+        btn.textContent = '✅ 保存';
+        setTimeout(() => btn.textContent = '保存', 1500);
+    }
+
+    function toggleCheck(orderNumber, field, checked) {
+        updateOrder(orderNumber, { [field]: checked });
+    }
+
+    function applyFilter() {
+        const params = new URLSearchParams(window.location.search);
+        const month = document.getElementById('month-select').value.split('-');
+        params.set('year', month[0]);
+        params.set('month', month[1]);
+        params.set('q', document.getElementById('search-input').value);
+        params.set('status', document.getElementById('status-select').value);
+        params.set('page', 1);
+        window.location.search = params.toString();
+    }
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="filter-bar">
+    <select id="month-select" onchange="applyFilter()">
+        {% for m in month_list %}
+        <option value="{{ m.year }}-{{ m.month }}" {% if m.year == year and m.month == month %}selected{% endif %}>{{ m.label }}</option>
+        {% empty %}
+        <option value="{{ year }}-{{ month }}">{{ current_label }}</option>
+        {% endfor %}
+    </select>
+    <input type="text" id="search-input" placeholder="購入者名で検索..." value="{{ search }}" onkeydown="if(event.key==='Enter') applyFilter()" style="width: 180px;">
+    <select id="status-select" onchange="applyFilter()">
+        <option value="all" {% if status == 'all' %}selected{% endif %}>すべて</option>
+        <option value="undone" {% if status == 'undone' %}selected{% endif %}>未対応</option>
+        <option value="done" {% if status == 'done' %}selected{% endif %}>完了</option>
+    </select>
+    <span class="count-badge">{{ total_count }}件</span>
+</div>
+
+<div id="content-main">
+    <div class="orders-container">
+        {% for order in orders %}
+        <div class="order-card {% if order.is_completed %}completed{% endif %}" data-order="{{ order.order_number }}">
+            <div class="order-header">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <span class="order-number">{{ order.order_number }}</span>
+                    <span class="order-date">{{ order.sold_at|date:"Y/m/d H:i" }}</span>
+                    {% if order.buyer_name %}<span class="buyer-badge">{{ order.buyer_name }}</span>{% endif %}
+                </div>
+                <span class="order-total">¥{{ order.total_price }}</span>
+            </div>
+
+            <div class="product-list">
+                {% for name in order.product_names.splitlines %}
+                {{ name }}<br>
+                {% endfor %}
+            </div>
+
+            <div class="yahoo-url-row">
+                <input type="text" class="yahoo-url-input" placeholder="ヤフオクURL を入力..." value="{{ order.yahoo_url }}">
+                <button class="save-url-btn" onclick="saveUrl('{{ order.order_number }}')">保存</button>
+            </div>
+
+            <div class="checkboxes">
+                <label>
+                    <input type="checkbox" {% if order.check_listed %}checked{% endif %} onchange="toggleCheck('{{ order.order_number }}', 'check_listed', this.checked)">
+                    ヤフオク出品済み
+                </label>
+                <label>
+                    <input type="checkbox" {% if order.check_sold %}checked{% endif %} onchange="toggleCheck('{{ order.order_number }}', 'check_sold', this.checked)">
+                    落札確認
+                </label>
+                <label>
+                    <input type="checkbox" {% if order.check_shipped %}checked{% endif %} onchange="toggleCheck('{{ order.order_number }}', 'check_shipped', this.checked)">
+                    発送済み
+                </label>
+            </div>
+        </div>
+        {% empty %}
+        <div style="text-align:center; color:#666; padding:40px;">この月の注文はありません</div>
+        {% endfor %}
+    </div>
+
+    {% if total_pages > 1 %}
+    <div class="pagination">
+        {% if current_page > 1 %}
+        <a href="?year={{ year }}&month={{ month }}&q={{ search }}&status={{ status }}&page={{ current_page|add:'-1' }}">前へ</a>
+        {% endif %}
+        {% for i in total_pages|rjust:total_pages %}
+        {% endfor %}
+        <span class="current">{{ current_page }} / {{ total_pages }}</span>
+        {% if current_page < total_pages %}
+        <a href="?year={{ year }}&month={{ month }}&q={{ search }}&status={{ status }}&page={{ current_page|add:'1' }}">次へ</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
