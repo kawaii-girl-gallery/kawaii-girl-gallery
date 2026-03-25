@@ -669,23 +669,30 @@ class BaseProductAdmin(admin.ModelAdmin):
                 }}
 
                 if (msgList) {{
-                    msgList.style.position = "fixed";
-                    msgList.style.top = (headerH + breadcrumbsH) + "px";
-                    var msgLeft = sidebarW + 10;
-                    msgList.style.left = msgLeft + "px";
-                    msgList.style.width = (document.documentElement.clientWidth - msgLeft) + "px";
-                    msgList.style.zIndex = "500";
-                    msgList.style.background = "#121212";
-                    msgList.style.padding = "0";
-                    var lis = msgList.querySelectorAll("li");
-                    lis.forEach(function(li) {{
-                        li.style.background = "#121212";
-                        li.style.marginBottom = "0px";
-                        li.style.paddingBottom = "0";
-                        var innerDiv = li.querySelector("div");
-                        if (innerDiv) innerDiv.style.background = "#121212";
-                    }});
-                    msgList.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
+                    if (isMobile) {{
+                        // ✨ スマホ：クイック検索はfixedにせず通常フロー（被り防止）
+                        msgList.style.position = "static";
+                        msgList.style.marginTop = (headerH + breadcrumbsH) + "px";
+                        msgList.style.background = "#121212";
+                    }} else {{
+                        msgList.style.position = "fixed";
+                        msgList.style.top = (headerH + breadcrumbsH) + "px";
+                        var msgLeft = sidebarW + 10;
+                        msgList.style.left = msgLeft + "px";
+                        msgList.style.width = (document.documentElement.clientWidth - msgLeft) + "px";
+                        msgList.style.zIndex = "500";
+                        msgList.style.background = "#121212";
+                        msgList.style.padding = "0";
+                        var lis = msgList.querySelectorAll("li");
+                        lis.forEach(function(li) {{
+                            li.style.background = "#121212";
+                            li.style.marginBottom = "0px";
+                            li.style.paddingBottom = "0";
+                            var innerDiv = li.querySelector("div");
+                            if (innerDiv) innerDiv.style.background = "#121212";
+                        }});
+                        msgList.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
+                    }}
                 }}
 
                 function applyFixed(el, top) {{
@@ -724,12 +731,13 @@ class BaseProductAdmin(admin.ModelAdmin):
                         tr.querySelectorAll("td:not(.action-checkbox)").forEach(function(td) {{
                             var inner = td.querySelector(".cell-center");
                             if (!inner) return;
-                            if (inner.querySelector("img"))                     tdImg   = td;
-                            else if (inner.querySelector(".timer-display"))     tdTimer = td;
-                            else if (inner.textContent.trim().startsWith("¥")) tdPrice = td;
-                            else                                                tdName  = td;
+                            if (inner.querySelector("img"))                      tdImg   = td;
+                            else if (inner.querySelector(".timer-display"))      tdTimer = td;
+                            else if (inner.querySelector("[style*='00ffcc']") ||
+                                     /[¥\\u00a5]/.test(inner.textContent))     tdPrice = td;
+                            else                                                 tdName  = td;
                         }});
-                        // チェックボックスはCSSのposition:absoluteで左中央に固定するためDOM移動しない
+                        // チェックボックスはCSS position:absolute で左中央固定のためDOM移動しない
                         [tdImg, tdName, tdPrice, tdTimer].forEach(function(td) {{
                             if (td) tr.appendChild(td);
                         }});
