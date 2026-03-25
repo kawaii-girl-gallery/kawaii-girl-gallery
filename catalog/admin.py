@@ -509,6 +509,48 @@ function closePanel(id) {{
                 .smart-action-bar {{ padding: 8px 10px !important; }}
                 .smart-action-bar select {{ flex: 1 1 auto !important; min-height: 38px !important; }}
                 .smart-action-bar .run-btn {{ min-height: 38px !important; padding: 8px 18px !important; }}
+
+                /* ✨ スマホ時：#cart-popup をアコーディオンタブに収納 */
+                #cart-popup {{
+                    position: fixed !important;
+                    right: -100vw !important;
+                    bottom: 0 !important;
+                    top: auto !important;
+                    width: min(320px, 92vw) !important;
+                    max-height: 75vh !important;
+                    overflow-y: auto !important;
+                    border-radius: 12px 0 0 0 !important;
+                    border-left: 3px solid #28a745 !important;
+                    border-top: 3px solid #28a745 !important;
+                    transition: right 0.3s ease !important;
+                    z-index: 3099 !important;
+                    box-shadow: -4px 0 20px rgba(0,0,0,0.7) !important;
+                }}
+                #cart-popup.sp-open {{
+                    right: 0 !important;
+                }}
+                .sp-cart-tab {{
+                    position: fixed !important;
+                    right: 0 !important;
+                    bottom: 160px !important;
+                    z-index: 3100 !important;
+                    writing-mode: vertical-rl !important;
+                    padding: 14px 8px !important;
+                    background: #28a745 !important;
+                    color: #fff !important;
+                    font-size: 11px !important;
+                    font-weight: 900 !important;
+                    border-radius: 10px 0 0 10px !important;
+                    cursor: pointer !important;
+                    user-select: none !important;
+                    box-shadow: -2px 0 8px rgba(0,0,0,0.4) !important;
+                    white-space: pre !important;
+                    line-height: 1.4 !important;
+                    display: none !important;
+                }}
+                .sp-cart-tab.visible {{
+                    display: block !important;
+                }}
             }}
         </style>
         <script>
@@ -720,6 +762,73 @@ function closePanel(id) {{
                             if (td) tr.appendChild(td);
                         }});
                     }});
+                }}
+
+                // ✨ スマホ時：#cart-popup をアコーディオンタブ化
+                if (window.innerWidth <= 768) {{
+                    var spCartOpen = false;
+                    var spCartTab = null;
+
+                    function setupSpCart() {{
+                        if (spCartTab) return; // 二重生成防止
+
+                        spCartTab = document.createElement('div');
+                        spCartTab.className = 'sp-cart-tab';
+                        spCartTab.innerHTML = '🛒<br>カート';
+                        document.body.appendChild(spCartTab);
+
+                        spCartTab.addEventListener('click', function() {{
+                            var popup = document.getElementById('cart-popup');
+                            if (!popup) return;
+                            spCartOpen = !spCartOpen;
+                            if (spCartOpen) {{
+                                popup.classList.add('sp-open');
+                                spCartTab.style.background = '#1e7e34';
+                            }} else {{
+                                popup.classList.remove('sp-open');
+                                spCartTab.style.background = '#28a745';
+                            }}
+                        }});
+                    }}
+
+                    // renderCart後にタブを表示・自動オープンする
+                    // pos_system.jsのrenderCartをラップ
+                    function watchCart() {{
+                        var popup = document.getElementById('cart-popup');
+                        if (!popup) {{
+                            setTimeout(watchCart, 200);
+                            return;
+                        }}
+                        setupSpCart();
+
+                        // cart-popupのdisplay変化を監視
+                        var styleObserver = new MutationObserver(function() {{
+                            var popup = document.getElementById('cart-popup');
+                            if (!popup) return;
+                            var hasItems = popup.style.display !== 'none' && popup.innerHTML.includes('removeFromCart');
+                            if (hasItems) {{
+                                spCartTab.classList.add('visible');
+                                // 商品追加時に自動オープン
+                                if (!spCartOpen) {{
+                                    spCartOpen = true;
+                                    popup.classList.add('sp-open');
+                                    spCartTab.style.background = '#1e7e34';
+                                }}
+                            }} else {{
+                                spCartTab.classList.remove('visible');
+                                popup.classList.remove('sp-open');
+                                spCartOpen = false;
+                                spCartTab.style.background = '#28a745';
+                            }}
+                        }});
+                        styleObserver.observe(popup, {{ attributes: true, attributeFilter: ['style'], childList: true, subtree: false }});
+
+                        // 初期状態確認
+                        if (popup.style.display !== 'none' && popup.innerHTML.includes('removeFromCart')) {{
+                            spCartTab.classList.add('visible');
+                        }}
+                    }}
+                    watchCart();
                 }}
 
                 window.addEventListener("scroll", function() {{
