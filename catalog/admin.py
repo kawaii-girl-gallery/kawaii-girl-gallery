@@ -890,6 +890,37 @@ def analysis_sheet_view(request):
         'cl_class': 'admin-custom-mode'
     })
 
+def generate_order_number():
+    """注文番号を生成する KG-YYYYMMDD-XXX"""
+    from django.utils import timezone
+    today = timezone.localtime().strftime('%Y%m%d')
+    count = Sale.objects.filter(sold_at__date=timezone.localtime().date()).count() + 1
+    return f"KG-{today}-{count:03d}"
+
+def generate_order_number():
+    """注文番号を生成する KG-YYYYMMDD-XXX"""
+    from django.utils import timezone as tz
+    today = tz.localtime(tz.now()).strftime('%Y%m%d')
+    count = Sale.objects.filter(sold_at__date=tz.localtime(tz.now()).date()).values('order_number').distinct().count() + 1
+    return f"KG-{today}-{count:03d}"
+
+def order_receipt_view(request, order_number):
+    """お迎え証明書ページ"""
+    sales = Sale.objects.filter(order_number=order_number)
+    if not sales.exists():
+        from django.http import Http404
+        raise Http404
+    total = sum(s.price for s in sales)
+    buyer_name = sales.first().buyer_name
+    sold_at = sales.first().sold_at
+    return render(request, 'admin/catalog/order_receipt.html', {
+        'order_number': order_number,
+        'sales': sales,
+        'total': total,
+        'buyer_name': buyer_name,
+        'sold_at': sold_at,
+    })
+
 def send_line_notification(message):
     """LINE Messaging APIで管理者に通知を送る"""
     try:
@@ -909,24 +940,55 @@ def send_line_notification(message):
 
 def record_sale_view(request):
     if request.method == 'POST':
-        items = json.loads(request.body).get('items', [])
+        data = json.loads(request.body)
+        items = data.get('items', [])
+        buyer_name = data.get('buyer_name', '')
+        order_number = generate_order_number()
         for i in items:
             Sale.objects.create(
                 product_name=i['name'],
                 price=i['price'],
                 category=i.get('category', ''),
+                buyer_name=buyer_name,
+                order_number=order_number,
                 user=request.user if request.user.is_authenticated else None
             )
         # LINE通知
         total = sum(i['price'] for i in items)
         item_lines = '\n'.join([f"・{i['name']} ¥{i['price']}" for i in items])
-        message = f"💖 お迎え完了！\n{item_lines}\n合計: ¥{total:,}"
+        message = f"💖 お迎え完了！\n購入者：{buyer_name}\n{item_lines}\n合計: ¥{total:,}\n注文番号：{order_number}"
         send_line_notification(message)
-        return JsonResponse({'status': 'success'})
+        return JsonResponse({'status': 'success', 'order_number': order_number, 'buyer_name': buyer_name})
     return JsonResponse({'status': 'error'}, status=405)
 
+def order_receipt_view(request):
+    """お迎え証明書ページ"""
+    order_number = request.GET.get('order_number', '')
+    buyer_name = request.GET.get('buyer_name', '')
+    items_json = request.GET.get('items', '[]')
+    try:
+        items = json.loads(items_json)
+    except:
+        items = []
+    total = sum(i.get('price', 0) for i in items)
+    from django.utils import timezone
+    now = timezone.localtime().strftime('%Y/%m/%d %H:%M')
+    return render(request, 'admin/catalog/order_receipt.html', {
+        'order_number': order_number,
+        'buyer_name': buyer_name,
+        'items': items,
+        'total': total,
+        'now': now,
+    })
+
 def get_custom_urls(self):
-    return [path('sales-dashboard/', self.admin_view(sales_dashboard_view)), path('analysis-sheet/', self.admin_view(analysis_sheet_view)), path('character-pedia/', self.admin_view(character_pedia_view)), path('record-sale/', self.admin_view(record_sale_view))] + self.get_urls_original()
+    return [
+        path('sales-dashboard/', self.admin_view(sales_dashboard_view)),
+        path('analysis-sheet/', self.admin_view(analysis_sheet_view)),
+        path('character-pedia/', self.admin_view(character_pedia_view)),
+        path('record-sale/', self.admin_view(record_sale_view)),
+        path('order-receipt/<str:order_number>/', order_receipt_view, name='order_receipt'),
+    ] + self.get_urls_original()
 
 if not hasattr(admin.AdminSite, 'get_urls_original'):
     admin.AdminSite.get_urls_original = admin.AdminSite.get_urls
