@@ -143,13 +143,8 @@
         <option value="done" {% if status == 'done' %}selected{% endif %}>完了</option>
     </select>
     <span class="count-badge">{{ total_count }}件</span>
-    <form method="post" style="margin-left:auto;" onsubmit="return confirm('売上・注文データをすべてリセットしますか？この操作は取り消せません。');">
-        {% csrf_token %}
-        <input type="hidden" name="reset_all" value="true">
-        <button type="submit" style="background:#ff4444; color:#fff; border:none; padding:6px 16px; border-radius:6px; font-size:13px; cursor:pointer; font-family:inherit; font-weight:900;">🗑️ 全リセット</button>
-    </form>
     {% if is_admin %}
-    <form method="post" style="margin-left: auto;" onsubmit="return confirm('売上・注文データを全部リセットしますか？この操作は取り消せません。');">
+    <form method="post" style="margin-left:auto;" onsubmit="return confirm('売上・注文データをすべてリセットしますか？この操作は取り消せません。');">
         {% csrf_token %}
         <input type="hidden" name="reset_all" value="true">
         <button type="submit" style="background:#ff4444; color:#fff; border:none; padding:6px 16px; border-radius:6px; font-size:13px; cursor:pointer; font-family:inherit; font-weight:900;">🗑️ 全リセット</button>
