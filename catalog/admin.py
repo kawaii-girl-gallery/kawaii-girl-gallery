@@ -532,6 +532,7 @@ function closePanel(id) {{
                 .sp-cart-tab {{
                     position: fixed !important;
                     right: 0 !important;
+                    top: 65% !important;
                     z-index: 3100 !important;
                     writing-mode: vertical-rl !important;
                     padding: 14px 8px !important;
@@ -796,21 +797,8 @@ function closePanel(id) {{
 
                         spCartTab = document.createElement("div");
                         spCartTab.className = "sp-cart-tab";
-                        spCartTab.textContent = "🛒\u000aカート";
+                        spCartTab.textContent = "カート";
                         document.body.appendChild(spCartTab);
-
-                        // qs-tab-wrap の直下に位置を合わせる
-                        function positionCartTab() {{
-                            var tabWrap = document.querySelector(".qs-tab-wrap");
-                            if (tabWrap) {{
-                                var rect = tabWrap.getBoundingClientRect();
-                                var tabWrapBottom = rect.bottom + window.scrollY;
-                                spCartTab.style.top = (rect.bottom + 8) + "px";
-                            }}
-                        }}
-                        positionCartTab();
-                        window.addEventListener("resize", positionCartTab);
-                        window.addEventListener("scroll", positionCartTab);
 
                         spCartTab.addEventListener("click", function() {{
                             var popup = document.getElementById("cart-popup");
