@@ -504,8 +504,8 @@ function closePanel(id) {{
                 .smart-paginator {{ order: 3 !important; width: 100% !important; flex-wrap: wrap !important; }}
                 .smart-paginator a, .smart-paginator span.this-page {{ min-width: 38px !important; height: 38px !important; }}
                 .smart-top-bar-spacer {{ display: none !important; }}
-                .smart-btn-group {{ order: 4 !important; width: 100% !important; flex-wrap: wrap !important; }}
-                .smart-btn-group a {{ flex: 1 1 auto !important; justify-content: center !important; font-size: 12px !important; padding: 8px 6px !important; min-height: 38px !important; display: inline-flex !important; align-items: center !important; }}
+                .smart-btn-group {{ order: 4 !important; width: 100% !important; flex-wrap: wrap !important; gap: 6px !important; }}
+                .smart-btn-group a {{ flex: 0 0 auto !important; justify-content: center !important; font-size: 11px !important; padding: 6px 12px !important; min-height: 32px !important; display: inline-flex !important; align-items: center !important; border-radius: 16px !important; }}
                 .smart-action-bar {{ padding: 8px 10px !important; }}
                 .smart-action-bar select {{ flex: 1 1 auto !important; min-height: 38px !important; }}
                 .smart-action-bar .run-btn {{ min-height: 38px !important; padding: 8px 18px !important; }}
