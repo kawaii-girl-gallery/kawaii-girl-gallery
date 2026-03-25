@@ -589,10 +589,10 @@ function closePanel(id) {{
                 var origPaginator = document.querySelector('#changelist .paginator');
                 var origActions = document.querySelector('#changelist .actions');
 
-                if (document.querySelector('.smart-top-bar')) return;
-
-                var topBar = document.createElement('div');
-                topBar.className = 'smart-top-bar';
+                // smart-top-barが既存なら挿入スキップ（アコーディオン・カートは毎回実行）
+                var skipTopBar = !!document.querySelector('.smart-top-bar');
+                var topBar = skipTopBar ? document.querySelector('.smart-top-bar') : document.createElement('div');
+                if (!skipTopBar) topBar.className = 'smart-top-bar';
 
                 var searchForm = document.createElement('form');
                 searchForm.method = 'GET';
@@ -710,7 +710,7 @@ function closePanel(id) {{
                     actionBar.appendChild(btnUpload2);
                 }}
 
-                changelist.parentNode.insertBefore(actionBar, changelist);
+                if (!skipTopBar) changelist.parentNode.insertBefore(actionBar, changelist);
 
                 var header = document.querySelector("#header");
                 var breadcrumbs = document.querySelector(".breadcrumbs");
@@ -758,8 +758,10 @@ function closePanel(id) {{
                 selectAllWrap.appendChild(selectAllLabel);
                 actionBar.insertBefore(selectAllWrap, actionBar.firstChild);
 
-                changelist.parentNode.insertBefore(actionBar, changelist);
-                changelist.parentNode.insertBefore(topBar, actionBar);
+                if (!skipTopBar) {{
+                    changelist.parentNode.insertBefore(actionBar, changelist);
+                    changelist.parentNode.insertBefore(topBar, actionBar);
+                }}
 
                 var fixedTopVal = header ? header.offsetHeight : 75;
                 fixedTopVal += breadcrumbs ? breadcrumbs.offsetHeight : 37;
