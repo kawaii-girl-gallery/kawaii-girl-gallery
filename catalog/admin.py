@@ -526,6 +526,17 @@ function closePanel(id) {{
                 .sp-hide-mobile {{
                     display: none !important;
                 }}
+                /* カート×ボタンを大きく */
+                #cart-popup button[onclick*="removeFromCart"] {{
+                    font-size: 24px !important;
+                    width: 36px !important;
+                    height: 36px !important;
+                    padding: 0 !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                    flex-shrink: 0 !important;
+                }}
 
                 /* ✨ スマホ時：#cart-popup をアコーディオンタブに収納 */
                 #cart-popup {{
@@ -533,8 +544,8 @@ function closePanel(id) {{
                     right: -100vw !important;
                     bottom: 0 !important;
                     top: auto !important;
-                    width: min(320px, 92vw) !important;
-                    max-height: 75vh !important;
+                    width: min(280px, 85vw) !important;
+                    max-height: 55vh !important;
                     overflow-y: auto !important;
                     border-radius: 12px 0 0 0 !important;
                     border-left: 3px solid #28a745 !important;
