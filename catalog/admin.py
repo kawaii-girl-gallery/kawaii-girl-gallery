@@ -914,44 +914,46 @@ function closePanel(id) {{
 
                 window.addEventListener("scroll", function() {{
                     var scrollY = window.scrollY;
+                    // 毎回DOMから直接取得
+                    var tb = document.querySelector(".smart-top-bar");
+                    var ab = document.querySelector(".smart-action-bar");
+                    var cd = document.querySelector("#content");
+                    if (!tb) return;
                     if (scrollY > 44) {{
-                        topBar.style.position = "fixed";
-                        topBar.style.top = fixedTopVal + "px";
-                        topBar.style.left = topBarLeft + "px";
+                        tb.style.position = "fixed";
+                        tb.style.top = fixedTopVal + "px";
+                        tb.style.left = topBarLeft + "px";
                         var adjustedW = document.querySelector("#result_list") ? document.querySelector("#result_list").offsetWidth : topBarW;
-                        topBar.style.width = adjustedW + "px";
-                        topBar.style.zIndex = "600";
-                        topBar.style.background = "#1a1a1a";
-                        topBar.style.backgroundColor = "#1a1a1a";
-                        topBar.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
-                        topBar.style.setProperty("background", "#1a1a1a", "important");
-                        topBar.style.opacity = "1";
-                        topBar.style.backdropFilter = "none";
-                        actionBar.style.position = "fixed";
-                        actionBar.style.top = (fixedTopVal + topBar.offsetHeight) + "px";
-                        actionBar.style.left = topBarLeft + "px";
-                        actionBar.style.width = adjustedW + "px";
-                        actionBar.style.zIndex = "599";
-                        actionBar.style.background = "#1a1a1a";
-                        // #contentにmargin-topを追加してコンテンツが隠れないようにする
-                        var contentDiv = document.querySelector("#content");
-                        if (contentDiv) {{
-                            var pad = topBar.offsetHeight + (actionBar ? actionBar.offsetHeight : 0);
-                            contentDiv.style.marginTop = pad + "px";
+                        tb.style.width = adjustedW + "px";
+                        tb.style.zIndex = "600";
+                        tb.style.setProperty("background", "#1a1a1a", "important");
+                        tb.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
+                        if (ab) {{
+                            ab.style.position = "fixed";
+                            ab.style.top = (fixedTopVal + tb.offsetHeight) + "px";
+                            ab.style.left = topBarLeft + "px";
+                            ab.style.width = adjustedW + "px";
+                            ab.style.zIndex = "599";
+                            ab.style.setProperty("background", "#1a1a1a", "important");
+                        }}
+                        if (cd) {{
+                            var pad = tb.offsetHeight + (ab ? ab.offsetHeight : 0);
+                            cd.style.marginTop = pad + "px";
                         }}
                     }} else {{
-                        topBar.style.position = "";
-                        topBar.style.top = "";
-                        topBar.style.left = "";
-                        topBar.style.width = "";
-                        topBar.style.background = "";
-                        actionBar.style.position = "";
-                        actionBar.style.top = "";
-                        actionBar.style.left = "";
-                        actionBar.style.width = "";
-                        actionBar.style.background = "";
-                        var contentDiv2 = document.querySelector("#content");
-                        if (contentDiv2) contentDiv2.style.marginTop = "20px";
+                        tb.style.position = "";
+                        tb.style.top = "";
+                        tb.style.left = "";
+                        tb.style.width = "";
+                        tb.style.background = "";
+                        if (ab) {{
+                            ab.style.position = "";
+                            ab.style.top = "";
+                            ab.style.left = "";
+                            ab.style.width = "";
+                            ab.style.background = "";
+                        }}
+                        if (cd) cd.style.marginTop = "20px";
                     }}
                 }});
             }});
