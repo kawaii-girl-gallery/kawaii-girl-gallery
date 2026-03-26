@@ -47,6 +47,9 @@
         #header {
             padding: 15px 0 !important;
             justify-content: center !important;
+            position: sticky !important;
+            top: 0 !important;
+            z-index: 2000 !important;
         }
         #branding {
             width: 100% !important;
@@ -75,6 +78,12 @@
             gap: 4px !important;
         }
         #header #user-tools strong { display: none !important; }
+        .breadcrumbs {
+            position: sticky !important;
+            top: 50px !important;
+            z-index: 1999 !important;
+            background: #1a1c23 !important;
+        }
     }
 
     .breadcrumbs { background: #1a1c23 !important; color: #ccc !important; }
@@ -85,8 +94,15 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // スマホ時はheader固定をスキップ（base_site.htmlのCSS sticky/centerに任せる）
-        if (window.innerWidth <= 768) return;
+        // スマホ時：パンくずをheaderの直後に移動してstickyを有効化
+        if (window.innerWidth <= 768) {
+            var header = document.querySelector('#header');
+            var breadcrumbs = document.querySelector('.breadcrumbs');
+            if (header && breadcrumbs && header.parentNode) {
+                header.parentNode.insertBefore(breadcrumbs, header.nextSibling);
+            }
+            return;
+        }
 
         var header = document.querySelector('#header');
         var breadcrumbs = document.querySelector('.breadcrumbs');
