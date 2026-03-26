@@ -927,8 +927,8 @@ function closePanel(id) {{
                         tb.style.width = adjustedW + "px";
                         tb.style.zIndex = "600";
                         tb.style.setProperty("background", "#1a1a1a", "important");
-                        tb.style.boxShadow = "0 4px 0 #1a1a1a";
                         tb.style.borderRadius = "0";
+                        tb.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
                         if (ab) {{
                             ab.style.position = "fixed";
                             ab.style.top = (fixedTopVal + tb.offsetHeight) + "px";
@@ -941,6 +941,17 @@ function closePanel(id) {{
                             var pad = tb.offsetHeight + (ab ? ab.offsetHeight : 0);
                             cd.style.marginTop = pad + "px";
                         }}
+                        // 固定バー下の背景オーバーレイ
+                        var overlay = document.getElementById("sp-bar-overlay");
+                        if (!overlay) {{
+                            overlay = document.createElement("div");
+                            overlay.id = "sp-bar-overlay";
+                            overlay.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:599;background:#121212;pointer-events:none;";
+                            document.body.appendChild(overlay);
+                        }}
+                        var totalH = fixedTopVal + tb.offsetHeight + (ab ? ab.offsetHeight : 0);
+                        overlay.style.height = totalH + "px";
+                        overlay.style.display = "block";
                     }} else {{
                         tb.style.position = "";
                         tb.style.top = "";
@@ -955,6 +966,8 @@ function closePanel(id) {{
                             ab.style.background = "";
                         }}
                         if (cd) cd.style.marginTop = "20px";
+                        var overlay2 = document.getElementById("sp-bar-overlay");
+                        if (overlay2) overlay2.style.display = "none";
                     }}
                 }});
             }});
