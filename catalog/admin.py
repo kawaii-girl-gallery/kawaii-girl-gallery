@@ -813,10 +813,9 @@ function closePanel(id) {{
                     }}
                     document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
                 }} else {{
-                    // スマホ：marginLeftをリセット、パンくず分のpaddingTopを確保
+                    // スマホ：marginLeftをリセット
                     var contentWrapper = document.querySelector("#content");
                     if (contentWrapper) contentWrapper.style.marginLeft = "0";
-                    document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
                 }}
 
                 var tabWrap2 = document.querySelector(".qs-tab-wrap");
