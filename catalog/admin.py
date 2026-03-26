@@ -515,6 +515,11 @@ function closePanel(id) {{
                 .smart-action-bar select {{ flex: 1 1 auto !important; min-height: 38px !important; }}
                 .smart-action-bar .run-btn {{ min-height: 38px !important; padding: 8px 18px !important; }}
 
+                /* ✨ スマホ×非管理者：操作UIを非表示 */
+                .sp-hide-mobile {{
+                    display: none !important;
+                }}
+
                 /* ✨ スマホ時：#cart-popup をアコーディオンタブに収納 */
                 #cart-popup {{
                     position: fixed !important;
@@ -786,6 +791,18 @@ function closePanel(id) {{
                 fixedTopVal += breadcrumbs ? breadcrumbs.offsetHeight : 37;
                 var topBarW = topBar.offsetWidth;
                 var topBarLeft = topBar.getBoundingClientRect().left;
+
+                // ✨ スマホ×非管理者：検索窓・全選択・プルダウン・Runを非表示
+                if (isMobile && {is_admin_flag} === false) {{
+                    // 検索フォームとページネーターを非表示
+                    var sf = topBar ? topBar.querySelector(".smart-search-form") : null;
+                    var pag = topBar ? topBar.querySelector(".smart-paginator") : null;
+                    var cnt = topBar ? topBar.querySelector(".total-count") : null;
+                    if (sf) sf.classList.add("sp-hide-mobile");
+                    if (pag) pag.classList.add("sp-hide-mobile");
+                    // actionBar全体（全選択・プルダウン・Run）を非表示
+                    if (actionBar) actionBar.classList.add("sp-hide-mobile");
+                }}
 
                 // ✨ スマホ時：カード内のtd順を 画像→名前→価格→タイマー に並び替え
                 if (isMobile) {{
