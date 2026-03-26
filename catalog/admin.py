@@ -526,7 +526,7 @@ function closePanel(id) {{
                 }}
                 /* PCでもカートタブを表示 */
                 .sp-cart-tab {{
-                    display: none !important;
+                    display: none;
                 }}
                 .sp-cart-tab.visible {{
                     display: flex !important;
