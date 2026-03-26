@@ -1027,11 +1027,14 @@ function closePanel(id) {{
                         if (!overlay) {{
                             overlay = document.createElement("div");
                             overlay.id = "sp-bar-overlay";
-                            overlay.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:550;background:#121212;pointer-events:none;";
+                            overlay.style.cssText = "position:fixed;left:0;right:0;z-index:550;background:#121212;pointer-events:none;";
                             document.body.appendChild(overlay);
                         }}
-                        // ヘッダー〜ボタンバー下端まで塞ぐ
-                        overlay.style.height = fixedTopVal + "px";
+                        // パンくずの下からボタンバー下端まで塞ぐ
+                        var breadcrumbsEl = document.querySelector(".breadcrumbs");
+                        var breadcrumbsBottom = breadcrumbsEl ? breadcrumbsEl.getBoundingClientRect().bottom : 0;
+                        overlay.style.top = breadcrumbsBottom + "px";
+                        overlay.style.height = (fixedTopVal - breadcrumbsBottom) + "px";
                         overlay.style.display = "block";
                     }} else {{
                         tb.style.position = "";
