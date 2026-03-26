@@ -64,9 +64,10 @@ COMMON_STYLE = """
     .breadcrumbs { background: #1a1c23 !important; color: #ccc !important; }
     .breadcrumbs a { color: #aaa !important; }
     @media (max-width: 768px) {
-        #header { padding: 10px 15px !important; text-align: center !important; }
+        #header { padding: 10px 15px !important; text-align: center !important; position: sticky !important; top: 0 !important; z-index: 2000 !important; }
         #branding h1 { justify-content: center !important; font-size: 22px !important; }
         #branding h1 a { justify-content: center !important; }
+        .breadcrumbs { position: sticky !important; top: 58px !important; z-index: 1999 !important; }
     }
 </style>
 <script>
@@ -493,6 +494,13 @@ function closePanel(id) {{
             }}
             .sp-cart-tab.visible {{
                 display: flex !important;
+            }}
+            /* カート内画像の保存禁止 */
+            #cart-popup img {{
+                pointer-events: none !important;
+                user-select: none !important;
+                -webkit-user-drag: none !important;
+                -webkit-touch-callout: none !important;
             }}
             /* 閉じるボタンはPCでは非表示 */
             #cart-popup .sp-cart-close-btn {{ display: none !important; }}
@@ -1058,12 +1066,14 @@ class A4PosterAdmin(BaseProductAdmin):
 @admin.register(Z_Archive_A4)
 class A4ArchiveAdmin(BaseProductAdmin):
     def get_queryset(self, request): return super().get_queryset(request).filter(category='A4', is_archived=True)
+    def has_view_permission(self, request, obj=None): return request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
 @admin.register(Show_ProductList_TCG)
 class TCGCardAdmin(BaseProductAdmin):
     def get_queryset(self, request): return super().get_queryset(request).filter(category='TCG', is_archived=False)
 @admin.register(Z_Archive_TCG)
 class TCGArchiveAdmin(BaseProductAdmin):
     def get_queryset(self, request): return super().get_queryset(request).filter(category='TCG', is_archived=True)
+    def has_view_permission(self, request, obj=None): return request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
 
 def character_pedia_view(request):
     mode = request.GET.get('mode', 'char')
