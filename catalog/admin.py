@@ -925,7 +925,7 @@ function closePanel(id) {{
                         tb.style.left = topBarLeft + "px";
                         var adjustedW = document.querySelector("#result_list") ? document.querySelector("#result_list").offsetWidth : topBarW;
                         tb.style.width = adjustedW + "px";
-                        tb.style.zIndex = "600";
+                        tb.style.zIndex = "601";
                         tb.style.setProperty("background", "#1a1a1a", "important");
                         tb.style.borderRadius = "0";
                         tb.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
@@ -934,7 +934,7 @@ function closePanel(id) {{
                             ab.style.top = (fixedTopVal + tb.offsetHeight) + "px";
                             ab.style.left = topBarLeft + "px";
                             ab.style.width = adjustedW + "px";
-                            ab.style.zIndex = "599";
+                            ab.style.zIndex = "600";
                             ab.style.setProperty("background", "#1a1a1a", "important");
                         }}
                         if (cd) {{
@@ -946,7 +946,7 @@ function closePanel(id) {{
                         if (!overlay) {{
                             overlay = document.createElement("div");
                             overlay.id = "sp-bar-overlay";
-                            overlay.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:599;background:#121212;pointer-events:none;";
+                            overlay.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:550;background:#121212;pointer-events:none;";
                             document.body.appendChild(overlay);
                         }}
                         var totalH = fixedTopVal + tb.offsetHeight + (ab ? ab.offsetHeight : 0);
