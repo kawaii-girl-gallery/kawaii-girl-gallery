@@ -985,14 +985,18 @@ function closePanel(id) {{
                                 }}
                                 prevCartCount = currentCount;
                             }} else {{
-                                spCartTab.classList.remove("visible");
+                                // カートが空の時だけタブを非表示（閉じた時は非表示にしない）
+                                var cartIsEmpty = !popup.innerHTML.includes("removeFromCart");
+                                if (cartIsEmpty) {{
+                                    spCartTab.classList.remove("visible");
+                                }}
                                 popup.classList.remove("sp-open");
                                 spCartOpen = false;
                                 spCartTab.style.background = "#28a745";
                                 prevCartCount = 0;
                             }}
                         }});
-                        styleObserver.observe(popup, {{ attributes: true, attributeFilter: ["style"], childList: true, subtree: true }});
+                        styleObserver.observe(popup, {{ childList: true, subtree: false }});
 
                         // 初期状態確認
                         if (popup.style.display !== "none" && popup.innerHTML.includes("removeFromCart")) {{
