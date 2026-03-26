@@ -907,7 +907,6 @@ function closePanel(id) {{
                             if (isMobile) {{
                                 popup.classList.add("sp-open");
                             }} else {{
-                                popup.style.right = "20px";
                                 popup.style.display = "block";
                             }}
                             spCartTab.classList.remove("visible");
