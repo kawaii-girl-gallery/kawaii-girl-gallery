@@ -67,7 +67,7 @@ COMMON_STYLE = """
         #header { padding: 10px 15px !important; text-align: center !important; position: sticky !important; top: 0 !important; z-index: 2000 !important; }
         #branding h1 { justify-content: center !important; font-size: 22px !important; }
         #branding h1 a { justify-content: center !important; }
-        .breadcrumbs { position: sticky !important; top: 58px !important; z-index: 560 !important; background: #1a1c23 !important; }
+        .breadcrumbs { position: sticky !important; top: 58px !important; z-index: 590 !important; background: #1a1c23 !important; }
     }
 </style>
 <script>
@@ -127,14 +127,13 @@ class BaseProductAdmin(admin.ModelAdmin):
         actions = super().get_actions(request)
         if 'delete_selected' in actions:
             actions['delete_selected'] = (actions['delete_selected'][0], actions['delete_selected'][1], "✅ 選択した商品を削除")
-        if not self.has_change_permission(request): return {}
         is_admin = request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
         is_archive_page = 'Archive' in self.__class__.__name__
         if is_archive_page:
             if 'move_to_archive' in actions: del actions['move_to_archive']
         else:
             if 'restore_from_archive' in actions: del actions['restore_from_archive']
-        # 管理者以外は保管庫移動・削除を禁止
+        # 管理者以外は保管庫移動・削除を禁止（チェックボックスは残す）
         if not is_admin:
             if 'move_to_archive' in actions: del actions['move_to_archive']
             if 'delete_selected' in actions: del actions['delete_selected']
@@ -1030,11 +1029,9 @@ function closePanel(id) {{
                             overlay.style.cssText = "position:fixed;left:0;right:0;z-index:550;background:#121212;pointer-events:none;";
                             document.body.appendChild(overlay);
                         }}
-                        // パンくずの下からボタンバー下端まで塞ぐ
-                        var breadcrumbsEl = document.querySelector(".breadcrumbs");
-                        var breadcrumbsBottom = breadcrumbsEl ? breadcrumbsEl.getBoundingClientRect().bottom : 0;
-                        overlay.style.top = breadcrumbsBottom + "px";
-                        overlay.style.height = (fixedTopVal - breadcrumbsBottom) + "px";
+                        // ヘッダー〜ボタンバー下端まで塞ぐ
+                        overlay.style.top = "0";
+                        overlay.style.height = fixedTopVal + "px";
                         overlay.style.display = "block";
                     }} else {{
                         tb.style.position = "";
