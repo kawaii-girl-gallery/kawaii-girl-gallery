@@ -690,30 +690,56 @@ function closePanel(id) {{
                     var pagDiv = document.createElement("div");
                     pagDiv.className = 'smart-paginator';
                     var lis = origPaginator.querySelectorAll('li');
+                    
+                    // ページ番号を収集
+                    var pages = [];
                     if (lis.length > 0) {{
                         lis.forEach(function(li) {{
                             var a = li.querySelector('a');
                             var s = li.querySelector('span.this-page');
-                            if (a) {{
-                                var newA = document.createElement('a');
-                                newA.href = a.href;
-                                newA.textContent = a.textContent.trim();
-                                pagDiv.appendChild(newA);
-                            }} else if (s) {{
-                                var newS = document.createElement('span');
-                                newS.className = 'this-page';
-                                newS.textContent = s.textContent.trim();
-                                pagDiv.appendChild(newS);
-                            }}
+                            if (a) pages.push({{ type: 'a', href: a.href, text: a.textContent.trim() }});
+                            else if (s) pages.push({{ type: 'current', text: s.textContent.trim() }});
                         }});
                     }} else {{
                         origPaginator.querySelectorAll('a').forEach(function(a) {{
-                            var newA = document.createElement('a');
-                            newA.href = a.href;
-                            newA.textContent = a.textContent.trim();
-                            pagDiv.appendChild(newA);
+                            pages.push({{ type: 'a', href: a.href, text: a.textContent.trim() }});
                         }});
                     }}
+
+                    // スマホ時は5ページ以上を省略
+                    var isMobileForPag = window.innerWidth <= 768;
+                    var currentIdx = pages.findIndex(function(p) {{ return p.type === 'current'; }});
+                    
+                    pages.forEach(function(p, i) {{
+                        // スマホで5ページ以上の場合：現在ページ±1と最初・最後のみ表示
+                        if (isMobileForPag && pages.length > 4) {{
+                            var isFirst = i === 0;
+                            var isLast = i === pages.length - 1;
+                            var isNearCurrent = Math.abs(i - currentIdx) <= 1;
+                            if (!isFirst && !isLast && !isNearCurrent) {{
+                                // 省略記号を追加（隣接する省略は1つだけ）
+                                if (pagDiv.lastChild && pagDiv.lastChild.textContent !== '…') {{
+                                    var dots = document.createElement('span');
+                                    dots.textContent = '…';
+                                    dots.style.cssText = 'color:#aaa; padding: 0 2px;';
+                                    pagDiv.appendChild(dots);
+                                }}
+                                return;
+                            }}
+                        }}
+                        if (p.type === 'a') {{
+                            var newA = document.createElement('a');
+                            newA.href = p.href;
+                            newA.textContent = p.text;
+                            pagDiv.appendChild(newA);
+                        }} else {{
+                            var newS = document.createElement('span');
+                            newS.className = 'this-page';
+                            newS.textContent = p.text;
+                            pagDiv.appendChild(newS);
+                        }}
+                    }});
+
                     var totalText = origPaginator.textContent.match(/[0-9]+ *商品一覧/);
                     if (totalText) {{
                         var countSpan = document.createElement('span');
