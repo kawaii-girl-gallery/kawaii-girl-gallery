@@ -467,6 +467,33 @@ function closePanel(id) {{
                 color: #aaa; font-size: 12px; font-weight: 700;
             }}
 
+            /* カートタブ（PC・スマホ共通） */
+            .sp-cart-tab {{
+                position: fixed !important;
+                right: 0 !important;
+                top: 72% !important;
+                z-index: 3100 !important;
+                writing-mode: vertical-rl !important;
+                text-orientation: mixed !important;
+                padding: 16px 8px !important;
+                min-height: 130px !important;
+                background: #28a745 !important;
+                color: #fff !important;
+                font-size: 12px !important;
+                font-weight: 900 !important;
+                border-radius: 10px 0 0 10px !important;
+                cursor: pointer !important;
+                user-select: none !important;
+                letter-spacing: 1px !important;
+                border: 2px solid #28a745 !important;
+                border-right: none !important;
+                display: none !important;
+                align-items: center !important;
+                justify-content: center !important;
+            }}
+            .sp-cart-tab.visible {{
+                display: flex !important;
+            }}
             /* 閉じるボタンはPCでは非表示 */
             #cart-popup .sp-cart-close-btn {{ display: none !important; }}
             /* PCではcart-popupを右下固定表示（スマホのアコーディオンをリセット） */
@@ -479,8 +506,7 @@ function closePanel(id) {{
                     width: 280px !important;
                     max-height: none !important;
                     border-radius: 10px !important;
-                    border-left: 1px solid #444 !important;
-                    border-top: 1px solid #444 !important;
+                    border: 1px solid #444 !important;
                     transition: none !important;
                     z-index: 9999 !important;
                 }}
@@ -490,25 +516,6 @@ function closePanel(id) {{
                 }}
                 .sp-cart-tab.visible {{
                     display: flex !important;
-                    writing-mode: vertical-rl !important;
-                    text-orientation: mixed !important;
-                    position: fixed !important;
-                    right: 0 !important;
-                    top: 72% !important;
-                    z-index: 3100 !important;
-                    padding: 16px 8px !important;
-                    min-height: 130px !important;
-                    background: #28a745 !important;
-                    color: #fff !important;
-                    font-size: 12px !important;
-                    font-weight: 900 !important;
-                    border-radius: 10px 0 0 10px !important;
-                    cursor: pointer !important;
-                    letter-spacing: 1px !important;
-                    border: 2px solid #28a745 !important;
-                    border-right: none !important;
-                    align-items: center !important;
-                    justify-content: center !important;
                 }}
             }}
 
@@ -605,33 +612,7 @@ function closePanel(id) {{
                 #cart-popup.sp-open {{
                     right: 0 !important;
                 }}
-                .sp-cart-tab {{
-                    position: fixed !important;
-                    right: 0 !important;
-                    top: 72% !important;
-                    z-index: 3100 !important;
-                    writing-mode: vertical-rl !important;
-                    text-orientation: mixed !important;
-                    padding: 16px 8px !important;
-                    min-height: 130px !important;
-                    background: #28a745 !important;
-                    color: #fff !important;
-                    font-size: 12px !important;
-                    font-weight: 900 !important;
-                    border-radius: 10px 0 0 10px !important;
-                    cursor: pointer !important;
-                    user-select: none !important;
-                    letter-spacing: 1px !important;
-                    border: 2px solid #28a745 !important;
-                    border-right: none !important;
-                    transition: opacity 0.2s !important;
-                    display: none !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                }}
-                .sp-cart-tab.visible {{
-                    display: flex !important;
-                }}
+                /* sp-cart-tabはPC共通CSSで定義 */
                 /* カート追加トースト */
                 .sp-cart-toast {{
                     position: fixed !important;
@@ -885,10 +866,9 @@ function closePanel(id) {{
                     }});
                 }}
 
-                // ✨ スマホ時：#cart-popup をアコーディオンタブ化
-                if (isMobile) {{
-                    var spCartOpen = false;
-                    var spCartTab = null;
+                // ✨ カートタブ（PC・スマホ共通）
+                var spCartOpen = false;
+                var spCartTab = null;
 
                     function setupSpCart() {{
                         if (spCartTab) return; // 二重生成防止
@@ -902,7 +882,11 @@ function closePanel(id) {{
                             var popup = document.getElementById("cart-popup");
                             if (!popup) return;
                             spCartOpen = true;
-                            popup.classList.add("sp-open");
+                            if (isMobile) {{
+                                popup.classList.add("sp-open");
+                            }} else {{
+                                popup.style.display = "block";
+                            }}
                             spCartTab.classList.remove("visible");
                         }});
                     }}
@@ -931,11 +915,12 @@ function closePanel(id) {{
                     // カートを閉じるグローバル関数
                     window.spCartCloseFunc = function() {{
                         var popup = document.getElementById("cart-popup");
-                        if (popup) popup.classList.remove("sp-open");
-                        spCartOpen = false;
-                        if (spCartTab) {{
-                            spCartTab.classList.add("visible");
+                        if (popup) {{
+                            popup.classList.remove("sp-open");
+                            if (!isMobile) popup.style.display = "none";
                         }}
+                        spCartOpen = false;
+                        if (spCartTab) spCartTab.classList.add("visible");
                     }};
 
                     function watchCart() {{
@@ -966,7 +951,8 @@ function closePanel(id) {{
                             if (!popup) return;
                             var hasItems = popup.style.display !== "none" && popup.innerHTML.includes("removeFromCart");
                             if (hasItems) {{
-                                spCartTab.classList.add("visible");
+                                // カートが閉じている時だけタブを表示
+                                if (!spCartOpen) spCartTab.classList.add("visible");
                                 addCloseBtn(popup);
                                 // カートの件数を数えて「増えた時だけ」トーストを表示
                                 var currentCount = (popup.innerHTML.match(/removeFromCart/g) || []).length;
@@ -990,25 +976,6 @@ function closePanel(id) {{
                         }}
                     }}
                     watchCart();
-                }}
-
-                // PC用カートタブ（クリックでカートパネルのdisplay切り替え）
-                if (!isMobile) {{
-                    var pcCartTab = document.querySelector(".sp-cart-tab");
-                    if (pcCartTab) {{
-                        pcCartTab.addEventListener("click", function() {{
-                            var popup = document.getElementById("cart-popup");
-                            if (!popup) return;
-                            if (popup.style.display === "none" || popup.style.display === "") {{
-                                popup.style.display = "block";
-                                pcCartTab.classList.remove("visible");
-                            }} else {{
-                                popup.style.display = "none";
-                                pcCartTab.classList.add("visible");
-                            }}
-                        }});
-                    }}
-                }}
 
                 // 初期化時にスクロールイベントを発火して固定状態を設定
                 setTimeout(function() {{ window.dispatchEvent(new Event("scroll")); }}, 100);
