@@ -927,7 +927,8 @@ function closePanel(id) {{
                         tb.style.width = adjustedW + "px";
                         tb.style.zIndex = "600";
                         tb.style.setProperty("background", "#1a1a1a", "important");
-                        tb.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
+                        tb.style.boxShadow = "0 4px 0 #1a1a1a";
+                        tb.style.borderRadius = "0";
                         if (ab) {{
                             ab.style.position = "fixed";
                             ab.style.top = (fixedTopVal + tb.offsetHeight) + "px";
