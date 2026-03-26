@@ -133,10 +133,12 @@ class BaseProductAdmin(admin.ModelAdmin):
             if 'move_to_archive' in actions: del actions['move_to_archive']
         else:
             if 'restore_from_archive' in actions: del actions['restore_from_archive']
-        # 管理者以外は保管庫移動・削除を禁止（チェックボックスは残す）
+        # 管理者以外は保管庫移動・削除を禁止（チェックボックス表示のためdummy actionを残す）
         if not is_admin:
             if 'move_to_archive' in actions: del actions['move_to_archive']
+            if 'restore_from_archive' in actions: del actions['restore_from_archive']
             if 'delete_selected' in actions: del actions['delete_selected']
+            actions['dummy_action'] = (lambda modeladmin, request, queryset: None, 'dummy_action', '----------')
         return actions
 
     def get_urls(self):
