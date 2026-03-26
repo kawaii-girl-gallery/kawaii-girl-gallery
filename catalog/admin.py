@@ -905,6 +905,7 @@ function closePanel(id) {{
                             if (!popup) return;
                             spCartOpen = true;
                             if (isMobile) {{
+                                popup.style.display = "block";
                                 popup.classList.add("sp-open");
                             }} else {{
                                 popup.style.display = "block";
