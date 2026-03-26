@@ -470,6 +470,11 @@ function closePanel(id) {{
             #pos-modal {{ background-color: rgba(0, 0, 0, 0.98) !important; display: none; position: fixed !important; z-index: 20000 !important; top: 0; left: 0; width: 100vw; height: 100vh; }}
             .modal-nav {{ position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; cursor: pointer; padding: 20px; }}
             .nav-prev {{ left: 2vw !important; }} .nav-next {{ right: 2vw !important; }}
+            @media (max-width: 768px) {{
+                .modal-content {{ max-height: 60vh !important; max-width: 60vw !important; }}
+                .modal-nav {{ font-size: 50px !important; color: rgba(255,255,255,0.9) !important; background: rgba(0,0,0,0.5) !important; border-radius: 50% !important; width: 50px !important; height: 50px !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 0 !important; }}
+                .nav-prev {{ left: 4px !important; }} .nav-next {{ right: 4px !important; }}
+            }}
             .modal-center-container {{ display: flex !important; justify-content: center !important; align-items: center !important; height: 100vh !important; width: 100vw !important; }}
             .modal-main-unit {{ display: flex !important; flex-direction: column !important; align-items: center !important; }}
             .modal-content {{ max-height: 70vh !important; max-width: 80vw !important; border: 3px solid #fff !important; border-radius: 0 !important; display: block !important; }}
