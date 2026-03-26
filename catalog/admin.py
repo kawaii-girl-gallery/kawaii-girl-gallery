@@ -468,7 +468,7 @@ function closePanel(id) {{
             }}
 
             /* 閉じるボタンはPCでは非表示 */
-            .sp-cart-close-btn {{ display: none; }}
+            #cart-popup .sp-cart-close-btn {{ display: none !important; }}
 
             #pos-modal {{ background-color: rgba(0, 0, 0, 0.98) !important; display: none; position: fixed !important; z-index: 20000 !important; top: 0; left: 0; width: 100vw; height: 100vh; }}
             .modal-nav {{ position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; cursor: pointer; padding: 20px; }}
