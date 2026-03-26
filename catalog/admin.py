@@ -544,8 +544,8 @@ function closePanel(id) {{
                     right: -100vw !important;
                     bottom: 0 !important;
                     top: auto !important;
-                    width: min(280px, 85vw) !important;
-                    max-height: 55vh !important;
+                    width: min(260px, 80vw) !important;
+                    max-height: 45vh !important;
                     overflow-y: auto !important;
                     border-radius: 12px 0 0 0 !important;
                     border-left: 3px solid #28a745 !important;
@@ -856,9 +856,10 @@ function closePanel(id) {{
                             spCartOpen = !spCartOpen;
                             if (spCartOpen) {{
                                 popup.classList.add("sp-open");
-                                spCartTab.style.background = "#1e7e34";
+                                spCartTab.style.display = "none";
                             }} else {{
                                 popup.classList.remove("sp-open");
+                                spCartTab.style.display = "flex";
                                 spCartTab.style.background = "#28a745";
                             }}
                         }});
@@ -893,6 +894,22 @@ function closePanel(id) {{
                         }}
                         setupSpCart();
 
+                        // カートに閉じるボタンを追加する関数
+                        function addCloseBtn(popup) {{
+                            if (popup.querySelector(".sp-cart-close")) return;
+                            var closeBtn = document.createElement("button");
+                            closeBtn.className = "sp-cart-close";
+                            closeBtn.textContent = "✕ 閉じる";
+                            closeBtn.style.cssText = "width:100%;padding:8px;background:#333;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:900;cursor:pointer;margin-bottom:8px;";
+                            closeBtn.addEventListener("click", function() {{
+                                popup.classList.remove("sp-open");
+                                spCartOpen = false;
+                                spCartTab.style.display = "flex";
+                                spCartTab.style.background = "#28a745";
+                            }});
+                            popup.insertBefore(closeBtn, popup.firstChild);
+                        }}
+
                         // cart-popupのdisplay・中身の変化を監視
                         var prevCartCount = 0;
                         var styleObserver = new MutationObserver(function() {{
@@ -901,6 +918,7 @@ function closePanel(id) {{
                             var hasItems = popup.style.display !== "none" && popup.innerHTML.includes("removeFromCart");
                             if (hasItems) {{
                                 spCartTab.classList.add("visible");
+                                addCloseBtn(popup);
                                 // カートの件数を数えて「増えた時だけ」トーストを表示
                                 var currentCount = (popup.innerHTML.match(/removeFromCart/g) || []).length;
                                 if (currentCount > prevCartCount) {{
