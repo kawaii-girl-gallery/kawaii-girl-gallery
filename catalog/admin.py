@@ -67,7 +67,7 @@ COMMON_STYLE = """
         #header { padding: 10px 15px !important; text-align: center !important; position: sticky !important; top: 0 !important; z-index: 2000 !important; }
         #branding h1 { justify-content: center !important; font-size: 22px !important; }
         #branding h1 a { justify-content: center !important; }
-        .breadcrumbs { position: fixed !important; top: 58px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 590 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important; }
+        .breadcrumbs { position: fixed !important; top: 50px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 590 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important; }
     }
 </style>
 <script>
