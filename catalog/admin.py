@@ -908,6 +908,9 @@ function closePanel(id) {{
                     watchCart();
                 }}
 
+                // 初期化時にスクロールイベントを発火して固定状態を設定
+                setTimeout(function() {{ window.dispatchEvent(new Event("scroll")); }}, 100);
+
                 window.addEventListener("scroll", function() {{
                     var scrollY = window.scrollY;
                     if (scrollY > 44) {{
