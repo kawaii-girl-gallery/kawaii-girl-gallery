@@ -67,7 +67,7 @@ COMMON_STYLE = """
         #header { padding: 10px 15px !important; text-align: center !important; position: sticky !important; top: 0 !important; z-index: 2000 !important; }
         #branding h1 { justify-content: center !important; font-size: 22px !important; }
         #branding h1 a { justify-content: center !important; }
-        .breadcrumbs { position: fixed !important; top: 50px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 590 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important; }
+        .breadcrumbs { position: sticky !important; top: 50px !important; z-index: 590 !important; background: #1a1c23 !important; }
     }
 </style>
 <script>
@@ -1000,6 +1000,18 @@ function closePanel(id) {{
                         }}
                     }}
                     watchCart();
+
+                // カートタブの初期状態を設定（ページ更新後も正しく表示）
+                setTimeout(function() {{
+                    var popup = document.getElementById("cart-popup");
+                    var tab = document.querySelector(".sp-cart-tab");
+                    if (popup && tab) {{
+                        var hasItems = popup.style.display !== "none" && popup.innerHTML.includes("removeFromCart");
+                        if (hasItems) {{
+                            tab.classList.add("visible");
+                        }}
+                    }}
+                }}, 300);
 
                 // 初期化時にスクロールイベントを発火して固定状態を設定
                 setTimeout(function() {{ window.dispatchEvent(new Event("scroll")); }}, 100);
