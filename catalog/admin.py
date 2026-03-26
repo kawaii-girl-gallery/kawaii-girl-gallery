@@ -911,6 +911,7 @@ function closePanel(id) {{
                                 popup.style.display = "block";
                             }}
                             spCartTab.classList.remove("visible");
+                            spCartTab.style.setProperty("display", "none", "important");
                         }});
                     }}
 
