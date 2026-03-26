@@ -1,4 +1,3 @@
-
 function updateTimers() {
     const now = new Date();
     document.querySelectorAll('.timer-display').forEach(elem => {
@@ -139,8 +138,7 @@ function closeCart() {
     var p = document.getElementById('cart-popup');
     if (p) { p.classList.remove('sp-open'); p.style.display = 'none'; }
     var t = document.querySelector('.sp-cart-tab');
-    if (t) { t.classList.add('visible'); t.style.display = 'flex'; }
-    if (window.spCartCloseFunc) window.spCartCloseFunc();
+    if (t) { t.classList.add('visible'); t.style.setProperty('display', 'flex', 'important'); }
 }
 
 function renderCart() {
