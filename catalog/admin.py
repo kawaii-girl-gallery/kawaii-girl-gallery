@@ -127,12 +127,17 @@ class BaseProductAdmin(admin.ModelAdmin):
         actions = super().get_actions(request)
         if 'delete_selected' in actions:
             actions['delete_selected'] = (actions['delete_selected'][0], actions['delete_selected'][1], "✅ 選択した商品を削除")
-        if not self.has_change_permission(request): return {} 
+        if not self.has_change_permission(request): return {}
+        is_admin = request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
         is_archive_page = 'Archive' in self.__class__.__name__
         if is_archive_page:
             if 'move_to_archive' in actions: del actions['move_to_archive']
         else:
             if 'restore_from_archive' in actions: del actions['restore_from_archive']
+        # 管理者以外は保管庫移動・削除を禁止
+        if not is_admin:
+            if 'move_to_archive' in actions: del actions['move_to_archive']
+            if 'delete_selected' in actions: del actions['delete_selected']
         return actions
 
     def get_urls(self):
@@ -1025,8 +1030,9 @@ function closePanel(id) {{
                             overlay.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:550;background:#121212;pointer-events:none;";
                             document.body.appendChild(overlay);
                         }}
-                        // ヘッダー下からtopBarの上端までの隙間だけを塞ぐ
-                        overlay.style.height = fixedTopVal + "px";
+                        // ヘッダー高さだけを塞ぐ（パンくずは覆わない）
+                        var headerOnly = header ? header.offsetHeight : 50;
+                        overlay.style.height = headerOnly + "px";
                         overlay.style.display = "block";
                     }} else {{
                         tb.style.position = "";
