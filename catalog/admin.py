@@ -385,7 +385,7 @@ function closePanel(id) {{
 
         custom_css = f"""<style>
             #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
-            #result_list thead {{ display: none !important; }}
+            #result_list thead th {{ background: #1a1a1a !important; text-align: center !important; padding: 12px 5px !important; font-weight: 700; }}
             .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
             .cell-center img {{ pointer-events: none !important; user-select: none !important; -webkit-user-drag: none !important; }}
             .cell-center img {{ -webkit-user-drag: none; user-select: none; -moz-user-select: none; }}
@@ -480,6 +480,7 @@ function closePanel(id) {{
                ✨ スマホ専用カードレイアウト（768px以下のみ / PCは変わりません）
                ============================================================ */
             @media (max-width: 768px) {{
+                #result_list thead {{ display: none !important; }}
                 #result_list tbody tr {{
                     display: block !important; position: relative !important;
                     background: #1e1e1e !important; border: 1px solid #333 !important;
