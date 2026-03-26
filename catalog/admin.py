@@ -67,7 +67,7 @@ COMMON_STYLE = """
         #header { padding: 10px 15px !important; text-align: center !important; position: sticky !important; top: 0 !important; z-index: 2000 !important; }
         #branding h1 { justify-content: center !important; font-size: 22px !important; }
         #branding h1 a { justify-content: center !important; }
-        .breadcrumbs { position: sticky !important; top: 58px !important; z-index: 1999 !important; }
+        .breadcrumbs { position: sticky !important; top: 58px !important; z-index: 560 !important; background: #1a1c23 !important; }
     }
 </style>
 <script>
@@ -1030,9 +1030,8 @@ function closePanel(id) {{
                             overlay.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:550;background:#121212;pointer-events:none;";
                             document.body.appendChild(overlay);
                         }}
-                        // ヘッダー高さだけを塞ぐ（パンくずは覆わない）
-                        var headerOnly = header ? header.offsetHeight : 50;
-                        overlay.style.height = headerOnly + "px";
+                        // ヘッダー〜ボタンバー下端まで塞ぐ
+                        overlay.style.height = fixedTopVal + "px";
                         overlay.style.display = "block";
                     }} else {{
                         tb.style.position = "";
