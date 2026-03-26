@@ -156,10 +156,22 @@ function renderCart() {
     const closeBtn = `<button class="sp-cart-close-btn" onclick="closeCart()" style="width:100%;padding:8px;background:#444;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:900;cursor:pointer;margin-bottom:8px;">✕ カートを閉じる</button>`;
     cartPopup.innerHTML = `${closeBtn}<h3>🛒 カート合計</h3><ul id="cart-list" style="margin:0; padding:0; list-style:none; max-height:220px; overflow-y:auto;">${cart.map((item, index) => `<li style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:12px; border-bottom:1px solid #222; padding-bottom:5px;"><div style="display:flex; align-items:center; gap:8px; flex:1; overflow:hidden;"><img src="${item.url}" style="width:35px; height:35px; object-fit:cover; border-radius:3px; pointer-events:none; -webkit-touch-callout:none;"><div style="display:flex; flex-direction:column; overflow:hidden;"><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:bold;">${item.name}</span><span style="color:#ffcc00;">¥${item.price.toLocaleString()}</span>${item.category ? `<span style="color:#aaa; font-size:10px;">${item.category}</span>` : ''}</div></div><button onclick="removeFromCart(${index})" style="background:transparent; color:#ff4444; border:none; cursor:pointer; font-size:22px; padding:0 8px; font-weight:bold; min-width:36px; min-height:36px;">×</button></li>`).join('')}</ul><div style="margin-top:10px; border-top:1px solid #333; padding-top:8px; display:flex; justify-content:space-between; font-weight:bold;"><span>合計:</span><span>¥${total.toLocaleString()}</span></div><button onclick="checkout()" style="width:100%; margin-top:10px; background:#28a745; color:white; border:none; padding:12px; cursor:pointer; border-radius:4px; font-weight:bold; font-size:16px;">✨ 会計確定</button><button onclick="clearCart()" style="width:100%; margin-top:10px; background:#333; color:white; border:none; padding:8px; cursor:pointer; border-radius:4px; font-size:12px;">リセット</button>`;
     cartPopup.style.display = cart.length > 0 ? 'block' : 'none';
-    // カートに商品があればタブを表示
-    if (cart.length > 0) {
-        var tab = document.querySelector('.sp-cart-tab');
-        if (tab) { tab.classList.add('visible'); tab.style.setProperty('display', 'flex', 'important'); }
+    // カートに商品があり、カートが閉じている時だけタブを表示
+    var tab = document.querySelector('.sp-cart-tab');
+    if (tab) {
+        var popup2 = document.getElementById('cart-popup');
+        // スマホはsp-openクラスで判定、PCはdisplay:noneかどうかで判定
+        var isMobileView = window.innerWidth <= 768;
+        var cartIsOpen = popup2 && (
+            isMobileView ? popup2.classList.contains('sp-open') : popup2.style.display === 'block'
+        );
+        if (cart.length > 0 && !cartIsOpen) {
+            tab.classList.add('visible');
+            tab.style.setProperty('display', 'flex', 'important');
+        } else if (cart.length === 0) {
+            tab.classList.remove('visible');
+            tab.style.removeProperty('display');
+        }
     }
 }
 
@@ -217,7 +229,14 @@ async function confirmCheckout() {
     } catch (error) { alert("通信エラー: " + error); }
 }
 
-function removeFromCart(index) { cart.splice(index, 1); localStorage.setItem('pos_cart_data', JSON.stringify(cart)); renderCart(); }
+function removeFromCart(index) {
+    cart.splice(index, 1);
+    localStorage.setItem('pos_cart_data', JSON.stringify(cart));
+    renderCart();
+    // カートが開いている間はタブを非表示
+    var t = document.querySelector('.sp-cart-tab');
+    if (t) t.style.setProperty('display', 'none', 'important');
+}
 function clearCart() { if(confirm("カートをリセットしますか？")) { cart = []; localStorage.removeItem('pos_cart_data'); renderCart(); } }
 function getCookie(name) { let v = null; if (document.cookie && document.cookie !== '') { const cookies = document.cookie.split(';'); for (let i = 0; i < cookies.length; i++) { const c = cookies[i].trim(); if (c.substring(0, name.length + 1) === (name + '=')) { v = decodeURIComponent(c.substring(name.length + 1)); break; } } } return v; }
 document.addEventListener('DOMContentLoaded', () => renderCart());
