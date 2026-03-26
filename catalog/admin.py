@@ -949,8 +949,8 @@ function closePanel(id) {{
                             overlay.style.cssText = "position:fixed;top:0;left:0;right:0;z-index:550;background:#121212;pointer-events:none;";
                             document.body.appendChild(overlay);
                         }}
-                        var totalH = fixedTopVal + tb.offsetHeight + (ab ? ab.offsetHeight : 0);
-                        overlay.style.height = totalH + "px";
+                        // ヘッダー下からtopBarの上端までの隙間だけを塞ぐ
+                        overlay.style.height = fixedTopVal + "px";
                         overlay.style.display = "block";
                     }} else {{
                         tb.style.position = "";
