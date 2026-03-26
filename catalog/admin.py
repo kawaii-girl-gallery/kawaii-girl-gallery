@@ -484,6 +484,32 @@ function closePanel(id) {{
                     transition: none !important;
                     z-index: 9999 !important;
                 }}
+                /* PCでもカートタブを表示 */
+                .sp-cart-tab {{
+                    display: none !important;
+                }}
+                .sp-cart-tab.visible {{
+                    display: flex !important;
+                    writing-mode: vertical-rl !important;
+                    text-orientation: mixed !important;
+                    position: fixed !important;
+                    right: 0 !important;
+                    top: 72% !important;
+                    z-index: 3100 !important;
+                    padding: 16px 8px !important;
+                    min-height: 130px !important;
+                    background: #28a745 !important;
+                    color: #fff !important;
+                    font-size: 12px !important;
+                    font-weight: 900 !important;
+                    border-radius: 10px 0 0 10px !important;
+                    cursor: pointer !important;
+                    letter-spacing: 1px !important;
+                    border: 2px solid #28a745 !important;
+                    border-right: none !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                }}
             }}
 
             #pos-modal {{ background-color: rgba(0, 0, 0, 0.98) !important; display: none; position: fixed !important; z-index: 20000 !important; top: 0; left: 0; width: 100vw; height: 100vh; }}
@@ -964,6 +990,24 @@ function closePanel(id) {{
                         }}
                     }}
                     watchCart();
+                }}
+
+                // PC用カートタブ（クリックでカートパネルのdisplay切り替え）
+                if (!isMobile) {{
+                    var pcCartTab = document.querySelector(".sp-cart-tab");
+                    if (pcCartTab) {{
+                        pcCartTab.addEventListener("click", function() {{
+                            var popup = document.getElementById("cart-popup");
+                            if (!popup) return;
+                            if (popup.style.display === "none" || popup.style.display === "") {{
+                                popup.style.display = "block";
+                                pcCartTab.classList.remove("visible");
+                            }} else {{
+                                popup.style.display = "none";
+                                pcCartTab.classList.add("visible");
+                            }}
+                        }});
+                    }}
                 }}
 
                 // 初期化時にスクロールイベントを発火して固定状態を設定
