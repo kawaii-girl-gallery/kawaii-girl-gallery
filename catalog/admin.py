@@ -851,13 +851,22 @@ function closePanel(id) {{
                 var topBarW = topBar.offsetWidth;
                 var topBarLeft = topBar.getBoundingClientRect().left;
 
-                // ✨ スマホ×非管理者：検索窓・全選択・プルダウン・Runを非表示
+                // ✨ スマホ×非管理者：検索窓・プルダウン・Runを非表示（チェックボックスは残す）
                 if (isMobile && {is_admin_flag} === false) {{
                     // 検索フォームのみ非表示（ページネーターは残す）
                     var sf = topBar ? topBar.querySelector(".smart-search-form") : null;
                     if (sf) sf.classList.add("sp-hide-mobile");
-                    // actionBar全体（全選択・プルダウン・Run）を非表示
-                    if (actionBar) actionBar.classList.add("sp-hide-mobile");
+                    // actionBar内のselect・run・counterのみ非表示
+                    if (actionBar) {{
+                        var sel = actionBar.querySelector("select");
+                        var run = actionBar.querySelector(".run-btn");
+                        var counter = actionBar.querySelector(".counter-label");
+                        var upload = actionBar.querySelector("a[href*='bulk-upload']");
+                        if (sel) sel.classList.add("sp-hide-mobile");
+                        if (run) run.classList.add("sp-hide-mobile");
+                        if (counter) counter.classList.add("sp-hide-mobile");
+                        if (upload) upload.classList.add("sp-hide-mobile");
+                    }}
                 }}
 
                 // ✨ スマホ時：カード内のtd順を 画像→名前→価格→タイマー に並び替え
