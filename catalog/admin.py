@@ -469,6 +469,22 @@ function closePanel(id) {{
 
             /* 閉じるボタンはPCでは非表示 */
             #cart-popup .sp-cart-close-btn {{ display: none !important; }}
+            /* PCではcart-popupを右下固定表示（スマホのアコーディオンをリセット） */
+            @media (min-width: 769px) {{
+                #cart-popup {{
+                    position: fixed !important;
+                    right: 20px !important;
+                    bottom: 20px !important;
+                    top: auto !important;
+                    width: 280px !important;
+                    max-height: none !important;
+                    border-radius: 10px !important;
+                    border-left: 1px solid #444 !important;
+                    border-top: 1px solid #444 !important;
+                    transition: none !important;
+                    z-index: 9999 !important;
+                }}
+            }}
 
             #pos-modal {{ background-color: rgba(0, 0, 0, 0.98) !important; display: none; position: fixed !important; z-index: 20000 !important; top: 0; left: 0; width: 100vw; height: 100vh; }}
             .modal-nav {{ position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; cursor: pointer; padding: 20px; }}
