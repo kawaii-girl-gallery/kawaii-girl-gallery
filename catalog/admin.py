@@ -794,12 +794,9 @@ function closePanel(id) {{
 
                 // ✨ スマホ×非管理者：検索窓・全選択・プルダウン・Runを非表示
                 if (isMobile && {is_admin_flag} === false) {{
-                    // 検索フォームとページネーターを非表示
+                    // 検索フォームのみ非表示（ページネーターは残す）
                     var sf = topBar ? topBar.querySelector(".smart-search-form") : null;
-                    var pag = topBar ? topBar.querySelector(".smart-paginator") : null;
-                    var cnt = topBar ? topBar.querySelector(".total-count") : null;
                     if (sf) sf.classList.add("sp-hide-mobile");
-                    if (pag) pag.classList.add("sp-hide-mobile");
                     // actionBar全体（全選択・プルダウン・Run）を非表示
                     if (actionBar) actionBar.classList.add("sp-hide-mobile");
                 }}
@@ -920,6 +917,7 @@ function closePanel(id) {{
                         topBar.style.width = adjustedW + "px";
                         topBar.style.zIndex = "600";
                         topBar.style.background = "#1a1a1a";
+                        topBar.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
                         actionBar.style.position = "fixed";
                         actionBar.style.top = (fixedTopVal + topBar.offsetHeight) + "px";
                         actionBar.style.left = topBarLeft + "px";
