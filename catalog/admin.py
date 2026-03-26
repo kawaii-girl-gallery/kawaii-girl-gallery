@@ -929,6 +929,9 @@ function closePanel(id) {{
                         actionBar.style.width = adjustedW + "px";
                         actionBar.style.zIndex = "599";
                         actionBar.style.background = "#1a1a1a";
+                        // コンテンツが固定バーに隠れないようpaddingを追加
+                        var cl = document.querySelector("#changelist");
+                        if (cl) cl.style.paddingTop = (topBar.offsetHeight + actionBar.offsetHeight) + "px";
                     }} else {{
                         topBar.style.position = "";
                         topBar.style.top = "";
