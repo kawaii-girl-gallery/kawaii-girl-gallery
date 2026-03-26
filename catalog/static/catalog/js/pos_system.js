@@ -136,7 +136,16 @@ let cart = JSON.parse(localStorage.getItem('pos_cart_data')) || [];
 
 function closeCart() {
     var p = document.getElementById('cart-popup');
-    if (p) { p.classList.remove('sp-open'); p.style.display = 'none'; }
+    if (p) {
+        p.classList.remove('sp-open');
+        // display:noneにするとMutationObserverが発火してタブが消えるため
+        // 代わりにright:-100vwで画面外に移動
+        if (window.innerWidth > 768) {
+            p.style.right = '-100vw';
+        } else {
+            p.style.display = 'none';
+        }
+    }
     var t = document.querySelector('.sp-cart-tab');
     if (t) { t.classList.add('visible'); t.style.setProperty('display', 'flex', 'important'); }
 }
