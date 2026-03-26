@@ -954,18 +954,7 @@ function closePanel(id) {{
                         }}
                         setupSpCart();
 
-                        // カートに閉じるボタンを追加する関数（renderCart後に毎回呼ぶ）
-                        function addCloseBtn(popup) {{
-                            if (popup.querySelector(".sp-cart-close")) return;
-                            var closeBtn = document.createElement("button");
-                            closeBtn.className = "sp-cart-close";
-                            closeBtn.textContent = "✕ 閉じる";
-                            closeBtn.style.cssText = "width:100%;padding:8px;background:#333;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:900;cursor:pointer;margin-bottom:8px;";
-                            closeBtn.addEventListener("click", function() {{
-                                window.spCartCloseFunc();
-                            }});
-                            popup.insertBefore(closeBtn, popup.firstChild);
-                        }}
+
 
                         // cart-popupのdisplay・中身の変化を監視
                         var prevCartCount = 0;
@@ -976,7 +965,6 @@ function closePanel(id) {{
                             if (hasItems) {{
                                 // カートが閉じている時だけタブを表示
                                 if (!spCartOpen) spCartTab.classList.add("visible");
-                                addCloseBtn(popup);
                                 // カートの件数を数えて「増えた時だけ」トーストを表示
                                 var currentCount = (popup.innerHTML.match(/removeFromCart/g) || []).length;
                                 if (currentCount > prevCartCount) {{
