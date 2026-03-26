@@ -412,7 +412,7 @@ function closePanel(id) {{
                 display: flex;
                 align-items: center;
                 gap: 6px;
-                background: #1a1a1a;
+                background: #1a1a1a !important;
                 padding: 8px 12px;
                 border-radius: 10px;
                 margin-bottom: 4px;
@@ -917,7 +917,9 @@ function closePanel(id) {{
                         topBar.style.width = adjustedW + "px";
                         topBar.style.zIndex = "600";
                         topBar.style.background = "#1a1a1a";
+                        topBar.style.backgroundColor = "#1a1a1a";
                         topBar.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
+                        topBar.style.setProperty("background", "#1a1a1a", "important");
                         actionBar.style.position = "fixed";
                         actionBar.style.top = (fixedTopVal + topBar.offsetHeight) + "px";
                         actionBar.style.left = topBarLeft + "px";
