@@ -508,8 +508,7 @@ function closePanel(id) {{
                 -webkit-user-drag: none !important;
                 -webkit-touch-callout: none !important;
             }}
-            /* 閉じるボタンはPCでは非表示 */
-            #cart-popup .sp-cart-close-btn {{ display: none !important; }}
+            /* 閉じるボタンはPC・スマホ共通で表示 */
             /* PCではcart-popupを右下固定表示（スマホのアコーディオンをリセット） */
             @media (min-width: 769px) {{
                 #cart-popup {{
