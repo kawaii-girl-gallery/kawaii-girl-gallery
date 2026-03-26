@@ -502,7 +502,8 @@ function closePanel(id) {{
                 .cell-center {{ height: auto !important; min-height: 0 !important; padding: 4px 0 !important; }}
                 #result_list tbody td .cell-center img {{ max-height: 200px !important; max-width: 85vw !important; }}
                 #result_list tbody tr:nth-child(even) {{ background: #222 !important; }}
-                .smart-top-bar {{ flex-wrap: wrap !important; padding: 8px 10px !important; }}
+                .smart-top-bar {{ flex-wrap: wrap !important; padding: 8px 10px !important; background: #1a1a1a !important; }}
+                .smart-top-bar[style*="fixed"] {{ background: #1a1a1a !important; }}
                 .smart-search-form {{ flex: 1 1 auto !important; }}
                 .smart-search-form input[type=text] {{ width: 100% !important; font-size: 15px !important; padding: 8px 12px !important; }}
                 .smart-search-form input[type=submit] {{ padding: 8px 14px !important; min-height: 38px !important; }}
@@ -920,6 +921,8 @@ function closePanel(id) {{
                         topBar.style.backgroundColor = "#1a1a1a";
                         topBar.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
                         topBar.style.setProperty("background", "#1a1a1a", "important");
+                        topBar.style.opacity = "1";
+                        topBar.style.backdropFilter = "none";
                         actionBar.style.position = "fixed";
                         actionBar.style.top = (fixedTopVal + topBar.offsetHeight) + "px";
                         actionBar.style.left = topBarLeft + "px";
