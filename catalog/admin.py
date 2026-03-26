@@ -932,15 +932,12 @@ function closePanel(id) {{
                         actionBar.style.width = adjustedW + "px";
                         actionBar.style.zIndex = "599";
                         actionBar.style.background = "#1a1a1a";
-                        // コンテンツが固定バーに隠れないようスペーサーを挿入
-                        var spacerFixed = document.getElementById("sp-fixed-spacer");
-                        if (!spacerFixed) {{
-                            spacerFixed = document.createElement("div");
-                            spacerFixed.id = "sp-fixed-spacer";
-                            if (topBar.parentNode) topBar.parentNode.insertBefore(spacerFixed, topBar);
+                        // #contentにmargin-topを追加してコンテンツが隠れないようにする
+                        var contentDiv = document.querySelector("#content");
+                        if (contentDiv) {{
+                            var pad = topBar.offsetHeight + (actionBar ? actionBar.offsetHeight : 0);
+                            contentDiv.style.marginTop = pad + "px";
                         }}
-                        spacerFixed.style.height = (topBar.offsetHeight + actionBar.offsetHeight) + "px";
-                        spacerFixed.style.display = "block";
                     }} else {{
                         topBar.style.position = "";
                         topBar.style.top = "";
@@ -952,8 +949,8 @@ function closePanel(id) {{
                         actionBar.style.left = "";
                         actionBar.style.width = "";
                         actionBar.style.background = "";
-                        var spacerFixed2 = document.getElementById("sp-fixed-spacer");
-                        if (spacerFixed2) spacerFixed2.style.display = "none";
+                        var contentDiv2 = document.querySelector("#content");
+                        if (contentDiv2) contentDiv2.style.marginTop = "20px";
                     }}
                 }});
             }});
