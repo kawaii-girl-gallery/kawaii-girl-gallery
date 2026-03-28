@@ -827,7 +827,7 @@ function closePanel(id) {{
                 // ソートドロップダウン
                 var sortSel = document.createElement('select');
                 sortSel.style.cssText = 'background:#2a2a2a; border:1px solid #555; color:#fff; border-radius:8px; padding:5px 10px; font-size:12px; font-weight:700; cursor:pointer;';
-                var currentSort = new URLSearchParams(window.location.search).get('sort') || '';
+                var currentSort = new URLSearchParams(window.location.search).get('xsort') || '';
                 [['', '並び順'], ['asc', '⏳ 期限近い順'], ['desc', '⌛ 期限遠い順']].forEach(function(opt) {{
                     var o = document.createElement('option');
                     o.value = opt[0];
@@ -837,7 +837,7 @@ function closePanel(id) {{
                 }});
                 sortSel.addEventListener('change', function() {{
                     var p = new URLSearchParams(window.location.search);
-                    if (this.value) {{ p.set('sort', this.value); }} else {{ p.delete('sort'); }}
+                    if (this.value) {{ p.set('xsort', this.value); }} else {{ p.delete('xsort'); }}
                     p.delete('p');
                     window.location.href = '?' + p.toString();
                 }});
@@ -1161,7 +1161,7 @@ function closePanel(id) {{
 class A4PosterAdmin(BaseProductAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request).filter(category='A4', is_archived=False)
-        sort = request.GET.get('sort', '')
+        sort = request.GET.get('xsort', '')
         if sort == 'asc': return qs.order_by('created_at')
         if sort == 'desc': return qs.order_by('-created_at')
         return qs
@@ -1173,7 +1173,7 @@ class A4ArchiveAdmin(BaseProductAdmin):
 class TCGCardAdmin(BaseProductAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request).filter(category='TCG', is_archived=False)
-        sort = request.GET.get('sort', '')
+        sort = request.GET.get('xsort', '')
         if sort == 'asc': return qs.order_by('created_at')
         if sort == 'desc': return qs.order_by('-created_at')
         return qs
