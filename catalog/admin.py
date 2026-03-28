@@ -408,11 +408,7 @@ function closePanel(id) {{
 
         custom_css = f"""<style>
             #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
-            #result_list thead th {{ background: #1a1a1a !important; text-align: center !important; padding: 12px 5px !important; font-weight: 700; }}
-            #result_list thead {{ position: sticky !important; top: 0 !important; z-index: 100 !important; background: #1a1a1a !important; }}
-            /* ソートリンクのスタイル */
-            #result_list thead th a {{ color: #ccc !important; text-decoration: none !important; }}
-            #result_list thead th.sorted a {{ color: #00ffcc !important; }}
+            #result_list thead {{ display: none !important; }}
             .cell-center {{ display: flex; flex-direction: column; align-items: center; justify-content: center; height: 170px; width: 100%; }}
             .cell-center img {{ pointer-events: none !important; user-select: none !important; -webkit-user-drag: none !important; }}
             .cell-center img {{ -webkit-user-drag: none; user-select: none; -moz-user-select: none; }}
@@ -827,6 +823,25 @@ function closePanel(id) {{
                 var actionSpacer = document.createElement("div");
                 actionSpacer.style.flex = '1';
                 actionBar.appendChild(actionSpacer);
+
+                // ソートドロップダウン
+                var sortSel = document.createElement('select');
+                sortSel.style.cssText = 'background:#2a2a2a; border:1px solid #555; color:#fff; border-radius:8px; padding:5px 10px; font-size:12px; font-weight:700; cursor:pointer;';
+                var currentSort = new URLSearchParams(window.location.search).get('sort') || '';
+                [['', '並び順'], ['asc', '⏳ 期限近い順'], ['desc', '⌛ 期限遠い順']].forEach(function(opt) {{
+                    var o = document.createElement('option');
+                    o.value = opt[0];
+                    o.textContent = opt[1];
+                    if (opt[0] === currentSort) o.selected = true;
+                    sortSel.appendChild(o);
+                }});
+                sortSel.addEventListener('change', function() {{
+                    var p = new URLSearchParams(window.location.search);
+                    if (this.value) {{ p.set('sort', this.value); }} else {{ p.delete('sort'); }}
+                    p.delete('p');
+                    window.location.href = '?' + p.toString();
+                }});
+                actionBar.appendChild(sortSel);
                 if ({is_admin_flag} === true) {{
                     var btnUpload2 = document.createElement('a');
                     btnUpload2.href = 'bulk-upload/';
