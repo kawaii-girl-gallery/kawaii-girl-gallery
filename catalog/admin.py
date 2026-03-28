@@ -214,13 +214,12 @@ class BaseProductAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         is_archive = 'Archive' in self.__class__.__name__
-        # xsortパラメータを保存してGETから除去（Djangoのフィールド検証エラーを防ぐ）
+        # xsortパラメータをGETから除去してchangelist_view内で処理
+        xsort = ''
         if 'xsort' in request.GET:
-            request._xsort = request.GET['xsort']
+            xsort = request.GET['xsort']
             request.GET = request.GET.copy()
             request.GET.pop('xsort')
-        else:
-            request._xsort = getattr(request, '_xsort', '')
 
         # ✨ 期限切れ商品を自動アーカイブ
         if not is_archive:
@@ -244,6 +243,14 @@ class BaseProductAdmin(admin.ModelAdmin):
             app_config.verbose_name = "トレーディングカード"
         extra_context['title'] = "保管庫" if is_archive else "商品一覧"
         
+        # xsortによるソート適用
+        if xsort == 'asc':
+            self.ordering = ['created_at']
+        elif xsort == 'desc':
+            self.ordering = ['-created_at']
+        else:
+            self.ordering = ['created_at']
+
         cl = self.get_changelist_instance(request)
         from django.contrib.admin.templatetags.admin_list import pagination as pagination_tag
         pag_context = pagination_tag(cl)
@@ -1167,11 +1174,7 @@ function closePanel(id) {{
 @admin.register(Show_ProductList_A4)
 class A4PosterAdmin(BaseProductAdmin):
     def get_queryset(self, request):
-        qs = super().get_queryset(request).filter(category='A4', is_archived=False)
-        sort = getattr(request, '_xsort', '')
-        if sort == 'asc': return qs.order_by('created_at')
-        if sort == 'desc': return qs.order_by('-created_at')
-        return qs
+        return super().get_queryset(request).filter(category='A4', is_archived=False)
 @admin.register(Z_Archive_A4)
 class A4ArchiveAdmin(BaseProductAdmin):
     def get_queryset(self, request): return super().get_queryset(request).filter(category='A4', is_archived=True)
@@ -1179,11 +1182,7 @@ class A4ArchiveAdmin(BaseProductAdmin):
 @admin.register(Show_ProductList_TCG)
 class TCGCardAdmin(BaseProductAdmin):
     def get_queryset(self, request):
-        qs = super().get_queryset(request).filter(category='TCG', is_archived=False)
-        sort = getattr(request, '_xsort', '')
-        if sort == 'asc': return qs.order_by('created_at')
-        if sort == 'desc': return qs.order_by('-created_at')
-        return qs
+        return super().get_queryset(request).filter(category='TCG', is_archived=False)
 @admin.register(Z_Archive_TCG)
 class TCGArchiveAdmin(BaseProductAdmin):
     def get_queryset(self, request): return super().get_queryset(request).filter(category='TCG', is_archived=True)
