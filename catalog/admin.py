@@ -771,6 +771,26 @@ function closePanel(id) {{
                 var btnGroup = document.createElement("div");
                 btnGroup.className = 'smart-btn-group';
 
+                // ソートボタン（created_atでソート）
+                var currentSort = new URLSearchParams(window.location.search).get('sort') || '';
+                var btnSortAsc = document.createElement('a');
+                btnSortAsc.href = '?' + (function() {{
+                    var p = new URLSearchParams(window.location.search);
+                    p.set('sort', 'asc'); p.delete('p'); return p.toString();
+                }})();
+                btnSortAsc.innerHTML = '⏳ 期限近い順';
+                btnSortAsc.style.cssText = 'background:' + (currentSort === 'asc' ? '#555' : '#333') + '; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px; cursor:pointer; border:1px solid #555;';
+                btnGroup.appendChild(btnSortAsc);
+
+                var btnSortDesc = document.createElement('a');
+                btnSortDesc.href = '?' + (function() {{
+                    var p = new URLSearchParams(window.location.search);
+                    p.set('sort', 'desc'); p.delete('p'); return p.toString();
+                }})();
+                btnSortDesc.innerHTML = '⌛ 期限遠い順';
+                btnSortDesc.style.cssText = 'background:' + (currentSort === 'desc' ? '#555' : '#333') + '; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px; cursor:pointer; border:1px solid #555;';
+                btnGroup.appendChild(btnSortDesc);
+
                 var btnSlide = document.createElement('a');
                 btnSlide.href = 'javascript:void(0)';
                 btnSlide.setAttribute('onclick', 'bulkCarousel()');
@@ -1123,14 +1143,24 @@ function closePanel(id) {{
 
 @admin.register(Show_ProductList_A4)
 class A4PosterAdmin(BaseProductAdmin):
-    def get_queryset(self, request): return super().get_queryset(request).filter(category='A4', is_archived=False)
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).filter(category='A4', is_archived=False)
+        sort = request.GET.get('sort', '')
+        if sort == 'asc': return qs.order_by('created_at')
+        if sort == 'desc': return qs.order_by('-created_at')
+        return qs
 @admin.register(Z_Archive_A4)
 class A4ArchiveAdmin(BaseProductAdmin):
     def get_queryset(self, request): return super().get_queryset(request).filter(category='A4', is_archived=True)
     def has_view_permission(self, request, obj=None): return request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
 @admin.register(Show_ProductList_TCG)
 class TCGCardAdmin(BaseProductAdmin):
-    def get_queryset(self, request): return super().get_queryset(request).filter(category='TCG', is_archived=False)
+    def get_queryset(self, request):
+        qs = super().get_queryset(request).filter(category='TCG', is_archived=False)
+        sort = request.GET.get('sort', '')
+        if sort == 'asc': return qs.order_by('created_at')
+        if sort == 'desc': return qs.order_by('-created_at')
+        return qs
 @admin.register(Z_Archive_TCG)
 class TCGArchiveAdmin(BaseProductAdmin):
     def get_queryset(self, request): return super().get_queryset(request).filter(category='TCG', is_archived=True)
