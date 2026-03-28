@@ -110,6 +110,7 @@ class BaseProductAdmin(admin.ModelAdmin):
     list_display_links = None 
     search_fields = ('name',)
     actions = ['move_to_archive', 'restore_from_archive']
+    ordering = ['created_at']
 
     def has_change_permission(self, request, obj=None):
         return request.user.is_staff
@@ -408,7 +409,7 @@ function closePanel(id) {{
         custom_css = f"""<style>
             #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
             #result_list thead th {{ background: #1a1a1a !important; text-align: center !important; padding: 12px 5px !important; font-weight: 700; }}
-            #result_list thead {{ position: sticky !important; top: 0 !important; z-index: 100 !important; }}
+            #result_list thead {{ position: sticky !important; top: 0 !important; z-index: 100 !important; background: #1a1a1a !important; }}
             /* ソートリンクのスタイル */
             #result_list thead th a {{ color: #ccc !important; text-decoration: none !important; }}
             #result_list thead th.sorted a {{ color: #00ffcc !important; }}
@@ -1051,6 +1052,19 @@ function closePanel(id) {{
                         }}
                     }}
                 }}, 300);
+
+                // theadのtopをボタンバーの高さに合わせて設定
+                function updateTheadTop() {{
+                    var thead = document.querySelector("#result_list thead");
+                    var tb = document.querySelector(".smart-top-bar");
+                    var ab = document.querySelector(".smart-action-bar");
+                    if (thead && tb && ab) {{
+                        var topH = tb.offsetHeight + ab.offsetHeight;
+                        thead.style.top = topH + "px";
+                    }}
+                }}
+                updateTheadTop();
+                window.addEventListener("resize", updateTheadTop);
 
                 // 初期化時にスクロールイベントを発火して固定状態を設定
                 setTimeout(function() {{ window.dispatchEvent(new Event("scroll")); }}, 100);
