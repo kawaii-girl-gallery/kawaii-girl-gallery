@@ -208,6 +208,7 @@ class BaseProductAdmin(admin.ModelAdmin):
     display_price_jp.short_description = '価格'
     def display_timer_jp(self, obj): return format_html('<div class="cell-center"><div class="timer-display" data-date="{}" data-duration="{}" style="font-weight: 800;">⏳ ...</div></div>', obj.created_at.isoformat(), obj.duration_days)
     display_timer_jp.short_description = '掲載期限'
+    display_timer_jp.admin_order_field = 'created_at'
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
@@ -771,25 +772,7 @@ function closePanel(id) {{
                 var btnGroup = document.createElement("div");
                 btnGroup.className = 'smart-btn-group';
 
-                // ソートボタン（created_atでソート）
-                var currentSort = new URLSearchParams(window.location.search).get('sort') || '';
-                var btnSortAsc = document.createElement('a');
-                btnSortAsc.href = '?' + (function() {{
-                    var p = new URLSearchParams(window.location.search);
-                    p.set('sort', 'asc'); p.delete('p'); return p.toString();
-                }})();
-                btnSortAsc.innerHTML = '⏳ 期限近い順';
-                btnSortAsc.style.cssText = 'background:' + (currentSort === 'asc' ? '#555' : '#333') + '; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px; cursor:pointer; border:1px solid #555;';
-                btnGroup.appendChild(btnSortAsc);
 
-                var btnSortDesc = document.createElement('a');
-                btnSortDesc.href = '?' + (function() {{
-                    var p = new URLSearchParams(window.location.search);
-                    p.set('sort', 'desc'); p.delete('p'); return p.toString();
-                }})();
-                btnSortDesc.innerHTML = '⌛ 期限遠い順';
-                btnSortDesc.style.cssText = 'background:' + (currentSort === 'desc' ? '#555' : '#333') + '; color:#fff; padding:6px 16px; border-radius:20px; font-weight:900; text-decoration:none; font-size:13px; cursor:pointer; border:1px solid #555;';
-                btnGroup.appendChild(btnSortDesc);
 
                 var btnSlide = document.createElement('a');
                 btnSlide.href = 'javascript:void(0)';
