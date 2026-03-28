@@ -214,6 +214,13 @@ class BaseProductAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         is_archive = 'Archive' in self.__class__.__name__
+        # xsortパラメータを保存してGETから除去（Djangoのフィールド検証エラーを防ぐ）
+        if 'xsort' in request.GET:
+            request._xsort = request.GET['xsort']
+            request.GET = request.GET.copy()
+            request.GET.pop('xsort')
+        else:
+            request._xsort = getattr(request, '_xsort', '')
 
         # ✨ 期限切れ商品を自動アーカイブ
         if not is_archive:
@@ -1161,7 +1168,7 @@ function closePanel(id) {{
 class A4PosterAdmin(BaseProductAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request).filter(category='A4', is_archived=False)
-        sort = request.GET.get('xsort', '')
+        sort = getattr(request, '_xsort', '')
         if sort == 'asc': return qs.order_by('created_at')
         if sort == 'desc': return qs.order_by('-created_at')
         return qs
@@ -1173,7 +1180,7 @@ class A4ArchiveAdmin(BaseProductAdmin):
 class TCGCardAdmin(BaseProductAdmin):
     def get_queryset(self, request):
         qs = super().get_queryset(request).filter(category='TCG', is_archived=False)
-        sort = request.GET.get('xsort', '')
+        sort = getattr(request, '_xsort', '')
         if sort == 'asc': return qs.order_by('created_at')
         if sort == 'desc': return qs.order_by('-created_at')
         return qs
