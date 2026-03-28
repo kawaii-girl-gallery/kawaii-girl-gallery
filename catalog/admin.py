@@ -212,6 +212,20 @@ class BaseProductAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         is_archive = 'Archive' in self.__class__.__name__
+
+        # ✨ 期限切れ商品を自動アーカイブ
+        if not is_archive:
+            import datetime
+            from django.utils import timezone as tz
+            now = tz.now()
+            expired = []
+            for p in Product.objects.filter(is_archived=False):
+                deadline = p.created_at + datetime.timedelta(days=p.duration_days)
+                deadline = deadline.replace(hour=23, minute=59, second=59)
+                if now > deadline:
+                    expired.append(p.id)
+            if expired:
+                Product.objects.filter(id__in=expired).update(is_archived=True)
         app_config = apps.get_app_config('catalog')
         if "a4" in self.__class__.__name__.lower():
             cat_filter = 'A4'
