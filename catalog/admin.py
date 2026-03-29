@@ -867,7 +867,7 @@ function closePanel(id) {{
                 var sortSel = document.createElement('select');
                 sortSel.style.cssText = 'background:#2a2a2a; border:1px solid #555; color:#fff; border-radius:8px; padding:5px 10px; font-size:12px; font-weight:700; cursor:pointer;';
                 var currentSort = new URLSearchParams(window.location.search).get('xsort') || '';
-                [['', '並び順'], ['asc', '⏳ 期限近い順'], ['desc', '⌛ 期限遠い順']].forEach(function(opt) {{
+                [['', '並び順'], ['asc', '⏳ 掲載短い順'], ['desc', '⌛ 掲載長い順']].forEach(function(opt) {{
                     var o = document.createElement('option');
                     o.value = opt[0];
                     o.textContent = opt[1];
