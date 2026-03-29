@@ -780,7 +780,11 @@ function closePanel(id) {{
                         }}
                         if (p.type === 'a') {{
                             var newA = document.createElement('a');
-                            newA.href = p.href;
+                            // xsortパラメータを引き継ぐ
+                            var pageUrl = new URL(p.href, window.location.href);
+                            var xsortVal = new URLSearchParams(window.location.search).get('xsort');
+                            if (xsortVal) pageUrl.searchParams.set('xsort', xsortVal);
+                            newA.href = pageUrl.toString();
                             newA.textContent = p.text;
                             pagDiv.appendChild(newA);
                         }} else {{
