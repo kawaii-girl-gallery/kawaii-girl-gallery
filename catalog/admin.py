@@ -132,6 +132,15 @@ class BaseProductAdmin(admin.ModelAdmin):
             request.GET.pop('xsort')
         return super().get_changelist_instance(request)
 
+    def get_ordering(self, request):
+        # xsortが指定されている場合はdeadlineでソート
+        xsort = getattr(request, '_xsort_val', '')
+        if xsort == 'asc':
+            return ['deadline']
+        if xsort == 'desc':
+            return ['-deadline']
+        return super().get_ordering(request)
+
     def get_actions(self, request):
         actions = super().get_actions(request)
         if 'delete_selected' in actions:
