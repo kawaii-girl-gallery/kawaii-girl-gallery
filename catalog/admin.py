@@ -243,13 +243,9 @@ class BaseProductAdmin(admin.ModelAdmin):
             app_config.verbose_name = "トレーディングカード"
         extra_context['title'] = "保管庫" if is_archive else "商品一覧"
         
-        # xsortによるソート適用
-        if xsort == 'asc':
-            self.ordering = ['created_at']
-        elif xsort == 'desc':
-            self.ordering = ['-created_at']
-        else:
-            self.ordering = ['created_at']
+        # xsortをrequestに保存してget_querysetで使う
+        request._xsort = xsort
+        self.ordering = ['created_at']
 
         cl = self.get_changelist_instance(request)
         from django.contrib.admin.templatetags.admin_list import pagination as pagination_tag
@@ -1174,7 +1170,17 @@ function closePanel(id) {{
 @admin.register(Show_ProductList_A4)
 class A4PosterAdmin(BaseProductAdmin):
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(category='A4', is_archived=False)
+        import datetime
+        from django.db.models import ExpressionWrapper, F, fields
+        qs = super().get_queryset(request).filter(category='A4', is_archived=False)
+        xsort = getattr(request, '_xsort', '')
+        if xsort in ['asc', 'desc']:
+            qs = qs.annotate(deadline=ExpressionWrapper(
+                F('created_at') + F('duration_days') * datetime.timedelta(days=1),
+                output_field=fields.DateTimeField()
+            ))
+            return qs.order_by('deadline' if xsort == 'asc' else '-deadline')
+        return qs
 @admin.register(Z_Archive_A4)
 class A4ArchiveAdmin(BaseProductAdmin):
     def get_queryset(self, request): return super().get_queryset(request).filter(category='A4', is_archived=True)
@@ -1182,7 +1188,17 @@ class A4ArchiveAdmin(BaseProductAdmin):
 @admin.register(Show_ProductList_TCG)
 class TCGCardAdmin(BaseProductAdmin):
     def get_queryset(self, request):
-        return super().get_queryset(request).filter(category='TCG', is_archived=False)
+        import datetime
+        from django.db.models import ExpressionWrapper, F, fields
+        qs = super().get_queryset(request).filter(category='TCG', is_archived=False)
+        xsort = getattr(request, '_xsort', '')
+        if xsort in ['asc', 'desc']:
+            qs = qs.annotate(deadline=ExpressionWrapper(
+                F('created_at') + F('duration_days') * datetime.timedelta(days=1),
+                output_field=fields.DateTimeField()
+            ))
+            return qs.order_by('deadline' if xsort == 'asc' else '-deadline')
+        return qs
 @admin.register(Z_Archive_TCG)
 class TCGArchiveAdmin(BaseProductAdmin):
     def get_queryset(self, request): return super().get_queryset(request).filter(category='TCG', is_archived=True)
