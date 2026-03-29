@@ -124,6 +124,22 @@ class BaseProductAdmin(admin.ModelAdmin):
     def has_view_permission(self, request, obj=None):
         return request.user.is_staff
 
+    def get_changelist(self, request):
+        from django.contrib.admin.views.main import ChangeList
+        class CustomChangeList(ChangeList):
+            def get_queryset(self, request, *args, **kwargs):
+                qs = super().get_queryset(request, *args, **kwargs)
+                xsort = getattr(request, '_xsort_val', '')
+                if xsort in ['asc', 'desc']:
+                    import datetime
+                    from django.db.models import ExpressionWrapper, F, fields
+                    qs = qs.annotate(deadline=ExpressionWrapper(
+                        F('created_at') + F('duration_days') * datetime.timedelta(days=1),
+                        output_field=fields.DateTimeField()
+                    )).order_by('deadline' if xsort == 'asc' else '-deadline')
+                return qs
+        return CustomChangeList
+
     def get_changelist_instance(self, request):
         # xsortを保存してからGETを除去（get_querysetで使う）
         request._xsort_val = request.GET.get('xsort', '')
@@ -132,14 +148,7 @@ class BaseProductAdmin(admin.ModelAdmin):
             request.GET.pop('xsort')
         return super().get_changelist_instance(request)
 
-    def get_ordering(self, request):
-        # xsortが指定されている場合はdeadlineでソート
-        xsort = getattr(request, '_xsort_val', '')
-        if xsort == 'asc':
-            return ['deadline']
-        if xsort == 'desc':
-            return ['-deadline']
-        return super().get_ordering(request)
+
 
     def get_actions(self, request):
         actions = super().get_actions(request)
@@ -256,7 +265,12 @@ class BaseProductAdmin(admin.ModelAdmin):
             app_config.verbose_name = "トレーディングカード"
         extra_context['title'] = "保管庫" if is_archive else "商品一覧"
         
-        self.ordering = ['created_at']
+        if xsort == 'asc':
+            self.ordering = ['created_at']  # get_querysetでdeadlineアノテーション済み
+        elif xsort == 'desc':
+            self.ordering = ['-created_at']
+        else:
+            self.ordering = ['created_at']
 
         cl = self.get_changelist_instance(request)
         from django.contrib.admin.templatetags.admin_list import pagination as pagination_tag
