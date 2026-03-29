@@ -124,6 +124,14 @@ class BaseProductAdmin(admin.ModelAdmin):
     def has_view_permission(self, request, obj=None):
         return request.user.is_staff
 
+    def get_changelist_instance(self, request):
+        # xsortを保存してからGETを除去（get_querysetで使う）
+        request._xsort_val = request.GET.get('xsort', '')
+        if 'xsort' in request.GET:
+            request.GET = request.GET.copy()
+            request.GET.pop('xsort')
+        return super().get_changelist_instance(request)
+
     def get_actions(self, request):
         actions = super().get_actions(request)
         if 'delete_selected' in actions:
@@ -214,12 +222,8 @@ class BaseProductAdmin(admin.ModelAdmin):
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         is_archive = 'Archive' in self.__class__.__name__
-        # xsortパラメータをGETから除去してchangelist_view内で処理
-        xsort = ''
-        if 'xsort' in request.GET:
-            xsort = request.GET['xsort']
-            request.GET = request.GET.copy()
-            request.GET.pop('xsort')
+        # xsortをGETから除去せずget_querysetで使う
+        xsort = request.GET.get('xsort', '')
 
         # ✨ 期限切れ商品を自動アーカイブ
         if not is_archive:
@@ -243,8 +247,6 @@ class BaseProductAdmin(admin.ModelAdmin):
             app_config.verbose_name = "トレーディングカード"
         extra_context['title'] = "保管庫" if is_archive else "商品一覧"
         
-        # xsortをrequestに保存してget_querysetで使う
-        request._xsort = xsort
         self.ordering = ['created_at']
 
         cl = self.get_changelist_instance(request)
@@ -1173,7 +1175,7 @@ class A4PosterAdmin(BaseProductAdmin):
         import datetime
         from django.db.models import ExpressionWrapper, F, fields
         qs = super().get_queryset(request).filter(category='A4', is_archived=False)
-        xsort = getattr(request, '_xsort', '')
+        xsort = getattr(request, '_xsort_val', '')
         if xsort in ['asc', 'desc']:
             qs = qs.annotate(deadline=ExpressionWrapper(
                 F('created_at') + F('duration_days') * datetime.timedelta(days=1),
@@ -1191,7 +1193,7 @@ class TCGCardAdmin(BaseProductAdmin):
         import datetime
         from django.db.models import ExpressionWrapper, F, fields
         qs = super().get_queryset(request).filter(category='TCG', is_archived=False)
-        xsort = getattr(request, '_xsort', '')
+        xsort = getattr(request, '_xsort_val', '')
         if xsort in ['asc', 'desc']:
             qs = qs.annotate(deadline=ExpressionWrapper(
                 F('created_at') + F('duration_days') * datetime.timedelta(days=1),
