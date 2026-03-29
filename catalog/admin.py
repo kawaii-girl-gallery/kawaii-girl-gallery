@@ -136,7 +136,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                     qs = qs.annotate(deadline=ExpressionWrapper(
                         F('created_at') + F('duration_days') * datetime.timedelta(days=1),
                         output_field=fields.DateTimeField()
-                    )).order_by('-deadline' if xsort == 'asc' else 'deadline')
+                    )).order_by('deadline' if xsort == 'asc' else '-deadline')
                 return qs
         return CustomChangeList
 
