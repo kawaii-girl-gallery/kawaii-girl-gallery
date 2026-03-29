@@ -741,12 +741,12 @@ function closePanel(id) {{
                     var currentIdx = pages.findIndex(function(p) {{ return p.type === 'current'; }});
                     
                     pages.forEach(function(p, i) {{
-                        // スマホで5ページ以上の場合：現在ページ±1と最初・最後のみ表示
-                        if (isMobileForPag && pages.length > 4) {{
-                            var isFirst = i === 0;
-                            var isLast = i === pages.length - 1;
-                            var isNearCurrent = Math.abs(i - currentIdx) <= 1;
-                            if (!isFirst && !isLast && !isNearCurrent) {{
+                        // スマホで6ページ以上の場合：現在ページ±2と最初2件・最後2件を表示
+                        if (isMobileForPag && pages.length > 5) {{
+                            var isFirst2 = i <= 1;
+                            var isLast2 = i >= pages.length - 2;
+                            var isNearCurrent = Math.abs(i - currentIdx) <= 2;
+                            if (!isFirst2 && !isLast2 && !isNearCurrent) {{
                                 // 省略記号を追加（隣接する省略は1つだけ）
                                 if (pagDiv.lastChild && pagDiv.lastChild.textContent !== '…') {{
                                     var dots = document.createElement('span');
