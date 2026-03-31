@@ -252,11 +252,12 @@ class BaseProductAdmin(admin.ModelAdmin):
         # xsortをGETから除去せずget_querysetで使う
         xsort = request.GET.get('xsort', '')
 
-        # ✨ 期限切れ商品を自動アーカイブ
+        # ✨ 期限切れ商品を自動アーカイブ（日本時間基準）
         if not is_archive:
-            import datetime
+            import datetime, pytz
             from django.utils import timezone as tz
-            now = tz.now()
+            jst = pytz.timezone('Asia/Tokyo')
+            now = tz.now().astimezone(jst)
             expired = []
             for p in Product.objects.filter(is_archived=False):
                 deadline = p.created_at + datetime.timedelta(days=p.duration_days)
@@ -285,9 +286,19 @@ class BaseProductAdmin(admin.ModelAdmin):
         char_counts, work_counts = {}, {}
         full_qs = Product.objects.filter(category=cat_filter, is_archived=is_archive)
         
+        # 2単語キャラ名リスト
+        TWO_WORD_CHARS = ['初音ミク', '鏡音リン', '鏡音レン', '巡音ルカ', '重音テト']
         for p in full_qs:
             parts = re.split(r'[ _　]', p.name)
-            char_name = parts[0] if parts else "不明"
+            # 2単語キャラ名チェック
+            char_name = None
+            if len(parts) >= 2:
+                candidate = parts[0] + ' ' + parts[1]
+                if candidate in TWO_WORD_CHARS:
+                    char_name = candidate
+                    parts = [candidate] + parts[2:]
+            if char_name is None:
+                char_name = parts[0] if parts else "不明"
             char_name = re.sub(r'【.*?】', '', char_name).strip()
             if not char_name:
                 char_name = re.sub(r'【.*?】', '', parts[1]).strip() if len(parts) > 1 else "不明"
