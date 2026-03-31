@@ -97,10 +97,9 @@ class MultipleFileField(forms.ImageField):
 class BulkUploadForm(forms.Form):
     category = forms.ChoiceField(choices=[('A4', 'A4サイズポスター'), ('TCG', 'トレーディングカード')], label='種別')
     price = forms.IntegerField(label='一括設定金額', initial=88)
-    duration_days = forms.ChoiceField(
-        choices=[(str(i), f'{i}日間') for i in range(1, 15)],
-        label='掲載日数',
-        initial='6'
+    end_date = forms.DateField(
+        label='掲載終了日',
+        widget=forms.DateInput(attrs={'type': 'date', 'style': 'background:#333; color:white; border:1px solid #555; padding:5px; border-radius:4px;'}),
     )
     add_watermark = forms.BooleanField(label='SAMPLEの透かしを追加', required=False, initial=True)
     images = MultipleFileField(label='画像ファイル選択')
@@ -185,7 +184,16 @@ class BaseProductAdmin(admin.ModelAdmin):
             cat = request.POST.get('category', 'A4')
             pr = int(request.POST.get('price', 88))
             add_watermark = request.POST.get('add_watermark', 'true') == 'true'
-            duration_days = int(request.POST.get('duration_days', 6))
+            end_date_str = request.POST.get('end_date', '')
+            if end_date_str:
+                from datetime import date
+                end_date = date.fromisoformat(end_date_str)
+                today = timezone.localtime(timezone.now()).date()
+                duration_days = (end_date - today).days
+                if duration_days < 1:
+                    duration_days = 1
+            else:
+                duration_days = 6
             f = request.FILES.get('image')
             if not f:
                 return JsonResponse({'status': 'error', 'message': 'ファイルがありません'}, status=400)
@@ -210,7 +218,7 @@ class BaseProductAdmin(admin.ModelAdmin):
         if not (request.user.is_superuser or request.user.username == 'kawaii-girlgallery'): return redirect('..')
         return render(request, 'admin/catalog/bulk_upload.html', {
             **self.admin_site.each_context(request),
-            'form': BulkUploadForm(initial={'category': 'A4' if 'a4' in request.path else 'TCG', 'add_watermark': True}),
+            'form': BulkUploadForm(initial={'category': 'A4' if 'a4' in request.path else 'TCG', 'add_watermark': True, 'end_date': (timezone.localtime(timezone.now()).date() + __import__('datetime').timedelta(days=6)).isoformat()}),
             'title': '一括アップロード'
         })
 
