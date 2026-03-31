@@ -130,6 +130,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                 import datetime
                 from django.db.models import ExpressionWrapper, F, fields
                 xsort = getattr(request, '_xsort_val', '')
+                print(f"[DEBUG] _xsort_val={xsort!r}", flush=True)
                 qs = super().get_queryset(request, *args, **kwargs)
                 if xsort in ['asc', 'desc']:
                     qs = qs.annotate(deadline=ExpressionWrapper(
