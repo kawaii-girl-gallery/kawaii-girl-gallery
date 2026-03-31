@@ -127,11 +127,14 @@ class BaseProductAdmin(admin.ModelAdmin):
         from django.contrib.admin.views.main import ChangeList
         class CustomChangeList(ChangeList):
             def get_queryset(self, request, *args, **kwargs):
-                qs = super().get_queryset(request, *args, **kwargs)
+                import datetime
+                from django.db.models import ExpressionWrapper, F, fields
                 xsort = getattr(request, '_xsort_val', '')
+                # super()を呼ぶ前にorderingを上書き（アノテーション込みのソート）
                 if xsort in ['asc', 'desc']:
-                    import datetime
-                    from django.db.models import ExpressionWrapper, F, fields
+                    self.model_admin.ordering = ['deadline' if xsort == 'asc' else '-deadline']
+                qs = super().get_queryset(request, *args, **kwargs)
+                if xsort in ['asc', 'desc']:
                     qs = qs.annotate(deadline=ExpressionWrapper(
                         F('created_at') + F('duration_days') * datetime.timedelta(days=1),
                         output_field=fields.DateTimeField()
@@ -273,11 +276,7 @@ class BaseProductAdmin(admin.ModelAdmin):
             app_config.verbose_name = "トレーディングカード"
         extra_context['title'] = "保管庫" if is_archive else "商品一覧"
         
-        if xsort == 'asc':
-            self.ordering = ['created_at']  # get_querysetでdeadlineアノテーション済み
-        elif xsort == 'desc':
-            self.ordering = ['-created_at']
-        else:
+        if xsort not in ['asc', 'desc']:
             self.ordering = ['created_at']
 
         cl = self.get_changelist_instance(request)
@@ -875,7 +874,7 @@ function closePanel(id) {{
                 var sortSel = document.createElement('select');
                 sortSel.style.cssText = 'background:#2a2a2a; border:1px solid #555; color:#fff; border-radius:8px; padding:5px 10px; font-size:12px; font-weight:700; cursor:pointer;';
                 var currentSort = new URLSearchParams(window.location.search).get('xsort') || '';
-                [['', '並び順'], ['asc', '⌛ 掲載長い順'], ['desc', '⏳ 掲載短い順']].forEach(function(opt) {{
+                [['', '並び順'], ['asc', '⏳ 掲載短い順'], ['desc', '⌛ 掲載長い順']].forEach(function(opt) {{
                     var o = document.createElement('option');
                     o.value = opt[0];
                     o.textContent = opt[1];
