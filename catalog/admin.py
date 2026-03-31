@@ -1444,7 +1444,7 @@ def order_management_view(request):
     first = OrderManagement.objects.order_by('sold_at').first()
     month_list = []
     if first:
-        cur = first.sold_at.replace(day=1)
+        cur = tz.localtime(first.sold_at).replace(day=1)
         end = now.replace(day=1)
         while cur <= end:
             month_list.append({'year': cur.year, 'month': cur.month, 'label': f"{cur.year}年{cur.month}月"})
