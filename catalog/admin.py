@@ -1429,7 +1429,14 @@ def order_management_view(request):
     page = int(request.GET.get('page', 1))
     per_page = 20
 
-    qs = OrderManagement.objects.filter(sold_at__year=year, sold_at__month=month)
+    import datetime, pytz
+    jst = pytz.timezone('Asia/Tokyo')
+    month_start = jst.localize(datetime.datetime(year, month, 1, 0, 0, 0))
+    if month == 12:
+        month_end = jst.localize(datetime.datetime(year+1, 1, 1, 0, 0, 0))
+    else:
+        month_end = jst.localize(datetime.datetime(year, month+1, 1, 0, 0, 0))
+    qs = OrderManagement.objects.filter(sold_at__gte=month_start, sold_at__lt=month_end)
     if search:
         qs = qs.filter(buyer_name__icontains=search)
     if status == 'done':
