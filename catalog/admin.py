@@ -142,7 +142,8 @@ class BaseProductAdmin(admin.ModelAdmin):
 
     def get_changelist_instance(self, request):
         # xsortを保存してからGETを除去（get_querysetで使う）
-        request._xsort_val = request.GET.get('xsort', '')
+        if not hasattr(request, '_xsort_val'):
+            request._xsort_val = request.GET.get('xsort', '')
         if 'xsort' in request.GET:
             request.GET = request.GET.copy()
             request.GET.pop('xsort')
