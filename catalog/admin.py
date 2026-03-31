@@ -260,7 +260,7 @@ class BaseProductAdmin(admin.ModelAdmin):
             now = tz.now().astimezone(jst)
             expired = []
             for p in Product.objects.filter(is_archived=False):
-                deadline = p.created_at + datetime.timedelta(days=p.duration_days)
+                deadline = p.created_at.astimezone(jst) + datetime.timedelta(days=p.duration_days)
                 deadline = deadline.replace(hour=23, minute=59, second=59)
                 if now > deadline:
                     expired.append(p.id)
