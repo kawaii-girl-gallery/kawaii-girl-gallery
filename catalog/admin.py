@@ -130,15 +130,12 @@ class BaseProductAdmin(admin.ModelAdmin):
                 import datetime
                 from django.db.models import ExpressionWrapper, F, fields
                 xsort = getattr(request, '_xsort_val', '')
-                # super()を呼ぶ前にorderingを上書き（アノテーション込みのソート）
-                if xsort in ['asc', 'desc']:
-                    self.model_admin.ordering = ['deadline' if xsort == 'asc' else '-deadline']
                 qs = super().get_queryset(request, *args, **kwargs)
                 if xsort in ['asc', 'desc']:
                     qs = qs.annotate(deadline=ExpressionWrapper(
                         F('created_at') + F('duration_days') * datetime.timedelta(days=1),
                         output_field=fields.DateTimeField()
-                    )).order_by('deadline' if xsort == 'asc' else '-deadline')
+                    )).order_by('deadline' if xsort == 'asc' else '-deadline', 'id')
                 return qs
         return CustomChangeList
 
