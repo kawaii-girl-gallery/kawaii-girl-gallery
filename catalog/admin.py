@@ -1300,7 +1300,7 @@ def sales_dashboard_view(request):
     sales_qs = Sale.objects.filter(sold_at__range=(s_dt, e_dt))
 
     def calc_stats(qs):
-        total_customers = qs.values('user').distinct().count()
+        total_customers = qs.values('buyer_name').distinct().count()
         total_items = qs.count()
         return {
             'total_revenue': qs.aggregate(Sum('price'))['price__sum'] or 0,
