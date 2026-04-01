@@ -1558,10 +1558,12 @@ if not hasattr(admin.AdminSite, 'get_urls_original'):
     admin.AdminSite.get_urls = get_custom_urls
 
 def get_date_range(request):
-    now = timezone.now()
+    import pytz
+    jst = pytz.timezone('Asia/Tokyo')
+    now = timezone.now().astimezone(jst)
     s_str, e_str = request.GET.get('start_date'), request.GET.get('end_date')
-    s_dt = timezone.make_aware(datetime.strptime(s_str, '%Y-%m-%d')) if s_str else now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    e_dt = timezone.make_aware(datetime.strptime(e_str, '%Y-%m-%d')).replace(hour=23, minute=59, second=59) if e_str else now.replace(hour=23, minute=59, second=59, microsecond=999999)
+    s_dt = jst.localize(datetime.strptime(s_str, '%Y-%m-%d')) if s_str else now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    e_dt = jst.localize(datetime.strptime(e_str, '%Y-%m-%d')).replace(hour=23, minute=59, second=59) if e_str else now.replace(hour=23, minute=59, second=59, microsecond=999999)
     return s_dt, e_dt, f"{s_dt.year}年{s_dt.month}月" if not s_str else f"{s_str}〜{e_str}"
 
 def get_app_list(self, request, app_label=None):
