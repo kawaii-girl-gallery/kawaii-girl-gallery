@@ -217,6 +217,7 @@ class OrderManagement(models.Model):
     product_names = models.TextField('商品名リスト', blank=True, default='')
     sold_at = models.DateTimeField('注文日時')
     yahoo_url = models.URLField('ヤフオクURL', blank=True, default='')
+    platform = models.CharField('プラットフォーム', max_length=20, blank=True, default='メルカリ')
     check_listed = models.BooleanField('ヤフオク出品済み', default=False)
     check_sold = models.BooleanField('落札確認', default=False)
     check_shipped = models.BooleanField('発送済み', default=False)
