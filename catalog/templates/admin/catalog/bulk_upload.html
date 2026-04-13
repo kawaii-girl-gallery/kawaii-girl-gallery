@@ -16,8 +16,10 @@
     #header #user-tools .divider { display: none !important; }
     #header #user-tools { font-size: 0 !important; }
     #header #user-tools strong, #header #user-tools form, #header #user-tools a[href*="logout"] { font-size: 13px !important; }
+    .app-catalog_pedia caption, .app-catalog_pedia h2 { background: #6f42c1 !important; color: #fff !important; }
     .app-catalog_a4 caption, .app-catalog_a4 h2 { background: #ff4d94 !important; color: #fff !important; }
     .app-catalog_tcg caption, .app-catalog_tcg h2 { background: #2684ff !important; color: #fff !important; }
+    .app-catalog_admin_custom caption, .app-catalog_admin_custom h2 { background: #f0ad4e !important; color: #fff !important; }
     #content { background: rgba(18, 18, 18, 0.85) !important; margin: 20px; border-radius: 15px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); color: #eee; }
     .module { background: #222; border: 1px solid #444; padding: 20px; border-radius: 8px; }
     h2 { color: #ffcc00 !important; }
@@ -33,27 +35,6 @@
     #progress-detail div { padding: 2px 0; border-bottom: 1px solid #222; }
     .success-item { color: #28a745; }
     .error-item { color: #ff4444; }
-    /* カレンダー */
-    input[type="date"] {
-        background: #333 !important;
-        color: white !important;
-        border: 1px solid #555 !important;
-        padding: 8px 12px !important;
-        border-radius: 8px !important;
-        font-size: 15px !important;
-        font-weight: 700 !important;
-        cursor: pointer !important;
-    }
-    input[type="date"]::-webkit-calendar-picker-indicator {
-        filter: invert(1);
-        cursor: pointer;
-    }
-    .end-date-info {
-        color: #00ffcc;
-        font-size: 13px;
-        margin-top: 6px;
-        font-weight: 700;
-    }
 </style>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -75,23 +56,16 @@
         }
         document.body.style.paddingTop = (headerH + breadcrumbsH) + 'px';
 
-        // 終了日変更時に残り日数を表示
-        var endDateInput = document.getElementById('id_end_date');
-        if (endDateInput) {
-            function updateDateInfo() {
-                var val = endDateInput.value;
-                if (!val) return;
-                var end = new Date(val);
-                var now = new Date();
-                now.setHours(0,0,0,0);
-                var diff = Math.round((end - now) / 86400000);
-                var info = document.getElementById('end-date-info');
-                if (info) {
-                    info.textContent = '📅 ' + val + ' 23:59 掲載終了（残り' + diff + '日間）';
-                }
-            }
-            endDateInput.addEventListener('change', updateDateInfo);
-            updateDateInfo();
+        // カテゴリ切り替えで金額を自動変更
+        var categorySelect = document.getElementById('id_category');
+        var priceInput = document.getElementById('id_price');
+        var defaultPrices = { 'A4': 500, 'TCG': 1270 };
+        if (categorySelect && priceInput) {
+            categorySelect.addEventListener('change', function() {
+                priceInput.value = defaultPrices[this.value] || 500;
+            });
+            // 初期値設定
+            priceInput.value = defaultPrices[categorySelect.value] || 500;
         }
     });
 
@@ -105,10 +79,9 @@
         const files = document.getElementById('id_images').files;
         const category = document.getElementById('id_category').value;
         const price = document.getElementById('id_price').value;
-        const endDate = document.getElementById('id_end_date').value;
+        const durationDays = document.getElementById('id_duration_days').value;
         const addWatermark = document.getElementById('id_add_watermark').checked;
         if (!files.length) { alert('ファイルを選択してください'); return; }
-        if (!endDate) { alert('掲載終了日を選択してください'); return; }
         const total = files.length;
         let done = 0, errors = 0;
         const PARALLEL = 5;
@@ -128,7 +101,7 @@
             fd.append('image', file);
             fd.append('category', category);
             fd.append('price', price);
-            fd.append('end_date', endDate);
+            fd.append('duration_days', durationDays);
             fd.append('add_watermark', addWatermark ? 'true' : 'false');
             fd.append('csrfmiddlewaretoken', getCookie('csrftoken'));
             try {
@@ -174,8 +147,7 @@
                 {{ form.price.label_tag }} {{ form.price }}
             </div>
             <div class="form-row">
-                {{ form.end_date.label_tag }} {{ form.end_date }}
-                <div id="end-date-info" class="end-date-info"></div>
+                {{ form.duration_days.label_tag }} {{ form.duration_days }}
             </div>
             <div class="form-row" style="display:flex; align-items:center; gap:10px;">
                 {{ form.add_watermark }} <label for="id_add_watermark" style="width:auto; font-weight:900; color:#00ffcc;">SAMPLEの透かしを追加する</label>
