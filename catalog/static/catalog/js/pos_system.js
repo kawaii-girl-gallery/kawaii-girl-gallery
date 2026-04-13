@@ -22,13 +22,14 @@ function updateTimers() {
 }
 setInterval(updateTimers, 1000);
 
+// 現在のページのカテゴリを判別
 function getCurrentCategory() {
     if (window.location.href.includes('show_productlist_a4') || window.location.href.includes('z_archive_a4')) return 'A4';
     if (window.location.href.includes('show_productlist_tcg') || window.location.href.includes('z_archive_tcg')) return 'TCG';
     return '';
 }
 
-let currentImages = [];
+let currentImages = []; 
 let currentIndex = 0;
 
 function openCarousel(imgUrl, name, price) {
@@ -38,6 +39,7 @@ function openCarousel(imgUrl, name, price) {
         modal.id = 'pos-modal';
         document.body.appendChild(modal);
     }
+
     modal.innerHTML = `
         <span class="close-btn" onclick="closeModal()">&times;</span>
         <button id="modal-add-btn" onclick="addCurrentToCart(event)">🛒 この商品をカートへ追加</button>
@@ -50,15 +52,21 @@ function openCarousel(imgUrl, name, price) {
             </div>
         </div>
     `;
+    
     const modalImg = document.getElementById('modal-img');
     const counterElem = document.getElementById('modal-counter');
     if (currentImages.length > 0) {
         counterElem.innerText = `${currentIndex + 1} / ${currentImages.length}`;
         counterElem.style.display = "block";
     }
+
     modal.style.display = "block";
     modalImg.src = imgUrl;
-    modalImg.onload = function() { modalImg.oncontextmenu = () => false; };
+
+    modalImg.onload = function() {
+        modalImg.oncontextmenu = () => false;
+    };
+
     modal.setAttribute('data-current-name', name);
     modal.setAttribute('data-current-price', price);
     modal.setAttribute('data-current-url', imgUrl);
@@ -106,6 +114,7 @@ function getRowData(row) {
     const nameCell = row.querySelector('.column-display_name_jp div') || row.querySelector('.column-display_name div') || row.cells[1];
     const imgCell = row.querySelector('.column-display_image_jp img') || row.querySelector('.column-display_image img') || row.cells[2].querySelector('img');
     const priceCell = row.querySelector('.column-display_price_jp div') || row.querySelector('.column-display_price div') || row.cells[3];
+    // 改行をスペースに変換して1行にする
     const rawName = nameCell ? nameCell.innerText.trim() : '不明';
     const name = rawName.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
     return { url: imgCell ? imgCell.src : '', name: name, price: priceCell ? priceCell.innerText.trim() : '0' };
@@ -133,17 +142,6 @@ function bulkAddToCart() {
 }
 
 let cart = JSON.parse(localStorage.getItem('pos_cart_data')) || [];
-
-function closeCart() {
-    var p = document.getElementById('cart-popup');
-    if (p) {
-        p.classList.remove('sp-open');
-        p.style.display = 'none';
-    }
-    var t = document.querySelector('.sp-cart-tab');
-    if (t) { t.classList.add('visible'); t.style.setProperty('display', 'flex', 'important'); }
-}
-
 function renderCart() {
     let cartPopup = document.getElementById('cart-popup');
     if (!cartPopup) {
@@ -153,30 +151,12 @@ function renderCart() {
         document.body.appendChild(cartPopup);
     }
     const total = cart.reduce((sum, item) => sum + item.price, 0);
-    const closeBtn = `<button class="sp-cart-close-btn" onclick="closeCart()" style="width:100%;padding:8px;background:#444;color:#fff;border:none;border-radius:6px;font-size:13px;font-weight:900;cursor:pointer;margin-bottom:8px;">✕ カートを閉じる</button>`;
-    cartPopup.innerHTML = `${closeBtn}<h3>🛒 カート合計</h3><ul id="cart-list" style="margin:0; padding:0; list-style:none; max-height:220px; overflow-y:auto;">${cart.map((item, index) => `<li style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:12px; border-bottom:1px solid #222; padding-bottom:5px;"><div style="display:flex; align-items:center; gap:8px; flex:1; overflow:hidden;"><img src="${item.url}" style="width:35px; height:35px; object-fit:cover; border-radius:3px; pointer-events:none; -webkit-touch-callout:none;"><div style="display:flex; flex-direction:column; overflow:hidden;"><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:bold;">${item.name}</span><span style="color:#ffcc00;">¥${item.price.toLocaleString()}</span>${item.category ? `<span style="color:#aaa; font-size:10px;">${item.category}</span>` : ''}</div></div><button onclick="removeFromCart(${index})" style="background:transparent; color:#ff4444; border:none; cursor:pointer; font-size:22px; padding:0 8px; font-weight:bold; min-width:36px; min-height:36px;">×</button></li>`).join('')}</ul><div style="margin-top:10px; border-top:1px solid #333; padding-top:8px; display:flex; justify-content:space-between; font-weight:bold;"><span>合計:</span><span>¥${total.toLocaleString()}</span></div><button onclick="checkout()" style="width:100%; margin-top:10px; background:#28a745; color:white; border:none; padding:12px; cursor:pointer; border-radius:4px; font-weight:bold; font-size:16px;">✨ 会計確定</button><button onclick="clearCart()" style="width:100%; margin-top:10px; background:#333; color:white; border:none; padding:8px; cursor:pointer; border-radius:4px; font-size:12px;">リセット</button>`;
+    cartPopup.innerHTML = `<h3>🛒 カート合計</h3><ul id="cart-list" style="margin:0; padding:0; list-style:none; max-height:220px; overflow-y:auto;">${cart.map((item, index) => `<li style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:12px; border-bottom:1px solid #222; padding-bottom:5px;"><div style="display:flex; align-items:center; gap:8px; flex:1; overflow:hidden;"><img src="${item.url}" style="width:35px; height:35px; object-fit:cover; border-radius:3px;"><div style="display:flex; flex-direction:column; overflow:hidden;"><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:bold;">${item.name}</span><span style="color:#ffcc00;">¥${item.price.toLocaleString()}</span>${item.category ? `<span style="color:#aaa; font-size:10px;">${item.category}</span>` : ''}</div></div><button onclick="removeFromCart(${index})" style="background:transparent; color:#ff4444; border:none; cursor:pointer; font-size:16px; padding:0 5px; font-weight:bold;">×</button></li>`).join('')}</ul><div style="margin-top:10px; border-top:1px solid #333; padding-top:8px; display:flex; justify-content:space-between; font-weight:bold;"><span>合計:</span><span>¥${total.toLocaleString()}</span></div><button onclick="checkout()" style="width:100%; margin-top:10px; background:#28a745; color:white; border:none; padding:12px; cursor:pointer; border-radius:4px; font-weight:bold; font-size:16px;">✨ 会計確定</button><button onclick="clearCart()" style="width:100%; margin-top:10px; background:#333; color:white; border:none; padding:8px; cursor:pointer; border-radius:4px; font-size:12px;">リセット</button>`;
     cartPopup.style.display = cart.length > 0 ? 'block' : 'none';
-    // カートに商品があり、カートが閉じている時だけタブを表示
-    var tab = document.querySelector('.sp-cart-tab');
-    if (tab) {
-        var popup2 = document.getElementById('cart-popup');
-        // スマホはsp-openクラスで判定、PCはdisplay:noneかどうかで判定
-        var isMobileView = window.innerWidth <= 768;
-        var cartIsOpen = popup2 && (
-            isMobileView ? popup2.classList.contains('sp-open') : popup2.style.display === 'block'
-        );
-        if (cart.length > 0 && !cartIsOpen) {
-            tab.classList.add('visible');
-            tab.style.setProperty('display', 'flex', 'important');
-        } else if (cart.length === 0) {
-            tab.classList.remove('visible');
-            tab.style.removeProperty('display');
-        }
-    }
 }
-
 async function checkout() {
     if (cart.length === 0) return;
+
     let dialog = document.getElementById('checkout-dialog');
     if (!dialog) {
         dialog = document.createElement('div');
@@ -185,26 +165,45 @@ async function checkout() {
         dialog.innerHTML = `
             <div style="background:#1a1a1a; border:2px solid #ff4d94; border-radius:15px; padding:30px; width:320px; text-align:center;">
                 <h3 style="color:#ff4d94; margin:0 0 10px 0;">💖 お名前を入力してください</h3>
-                <p style="color:#aaa; font-size:12px; margin:0 0 20px 0;">※ヤフオクと同じ名前でお願いします。</p>
-                <input id="buyer-name-input" type="text" placeholder="お名前" style="width:100%; padding:10px; background:#333; color:#fff; border:1px solid #555; border-radius:8px; font-size:16px; box-sizing:border-box;">
-                <div style="margin-top:15px; display:flex; gap:10px;">
+                <p style="color:#aaa; font-size:12px; margin:0 0 15px 0;">※ヤフオクと同じ名前でお願いします。</p>
+                <input id="buyer-name-input" type="text" placeholder="お名前" style="width:100%; padding:10px; background:#333; color:#fff; border:1px solid #555; border-radius:8px; font-size:16px; box-sizing:border-box; margin-bottom:15px;">
+                <div style="display:flex; justify-content:center; gap:20px; margin-bottom:20px;">
+                    <label style="display:flex; align-items:center; gap:6px; color:#eee; font-size:15px; cursor:pointer;">
+                        <input type="checkbox" id="check-mercari" name="platform" value="メルカリ" checked style="width:18px; height:18px; cursor:pointer;"> メルカリ
+                    </label>
+                    <label style="display:flex; align-items:center; gap:6px; color:#eee; font-size:15px; cursor:pointer;">
+                        <input type="checkbox" id="check-rakuma" name="platform" value="ラクマ" style="width:18px; height:18px; cursor:pointer;"> ラクマ
+                    </label>
+                </div>
+                <div style="display:flex; gap:10px;">
                     <button onclick="document.getElementById('checkout-dialog').remove()" style="flex:1; padding:10px; background:#333; color:#fff; border:none; border-radius:8px; cursor:pointer;">キャンセル</button>
-                    <button id="confirm-checkout-btn" onclick="confirmCheckout()" style="flex:1; padding:10px; background:#ff4d94; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:900;">会計確定</button>
+                    <button id="confirm-checkout-btn" onclick="confirmCheckout()" style="flex:1; padding:10px; background:#ff4d94; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:900; opacity:0.4; pointer-events:none;">会計確定</button>
                 </div>
             </div>
         `;
         document.body.appendChild(dialog);
+
         setTimeout(() => {
-            const input = document.getElementById('buyer-name-input');
-            const btn = document.getElementById('confirm-checkout-btn');
-            input.focus();
-            input.addEventListener('input', () => {
-                btn.style.opacity = input.value.trim() ? '1' : '0.4';
-                btn.style.pointerEvents = input.value.trim() ? 'auto' : 'none';
-            });
-            btn.style.opacity = '0.4';
-            btn.style.pointerEvents = 'none';
-            input.addEventListener('keydown', e => { if (e.key === 'Enter' && input.value.trim()) confirmCheckout(); });
+            const nameInput = document.getElementById('buyer-name-input');
+            const confirmBtn = document.getElementById('confirm-checkout-btn');
+            const mercari = document.getElementById('check-mercari');
+            const rakuma = document.getElementById('check-rakuma');
+
+            function updateBtn() {
+                const nameOk = nameInput.value.trim() !== '';
+                const platformOk = mercari.checked || rakuma.checked;
+                const ok = nameOk && platformOk;
+                confirmBtn.style.opacity = ok ? '1' : '0.4';
+                confirmBtn.style.pointerEvents = ok ? 'auto' : 'none';
+            }
+
+            // メルカリとラクマを排他的に
+            mercari.addEventListener('change', () => { if (mercari.checked) rakuma.checked = false; updateBtn(); });
+            rakuma.addEventListener('change', () => { if (rakuma.checked) mercari.checked = false; updateBtn(); });
+            nameInput.addEventListener('input', updateBtn);
+            nameInput.addEventListener('keydown', e => { if (e.key === 'Enter') confirmCheckout(); });
+            nameInput.focus();
+            updateBtn();
         }, 100);
     }
 }
@@ -212,12 +211,16 @@ async function checkout() {
 async function confirmCheckout() {
     const buyerName = document.getElementById('buyer-name-input').value.trim();
     if (!buyerName) return;
+    const mercari = document.getElementById('check-mercari');
+    const rakuma = document.getElementById('check-rakuma');
+    const platform = mercari && mercari.checked ? 'メルカリ' : (rakuma && rakuma.checked ? 'ラクマ' : '');
+    if (!platform) return;
     document.getElementById('checkout-dialog').remove();
     try {
         const response = await fetch('/admin/record-sale/', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', 'X-CSRFToken': getCookie('csrftoken') },
-            body: JSON.stringify({ items: cart, buyer_name: buyerName })
+            body: JSON.stringify({ items: cart, buyer_name: buyerName, platform: platform })
         });
         if (response.ok) {
             const data = await response.json();
@@ -228,15 +231,7 @@ async function confirmCheckout() {
         }
     } catch (error) { alert("通信エラー: " + error); }
 }
-
-function removeFromCart(index) {
-    cart.splice(index, 1);
-    localStorage.setItem('pos_cart_data', JSON.stringify(cart));
-    renderCart();
-    // カートが開いている間はタブを非表示
-    var t = document.querySelector('.sp-cart-tab');
-    if (t) t.style.setProperty('display', 'none', 'important');
-}
+function removeFromCart(index) { cart.splice(index, 1); localStorage.setItem('pos_cart_data', JSON.stringify(cart)); renderCart(); }
 function clearCart() { if(confirm("カートをリセットしますか？")) { cart = []; localStorage.removeItem('pos_cart_data'); renderCart(); } }
 function getCookie(name) { let v = null; if (document.cookie && document.cookie !== '') { const cookies = document.cookie.split(';'); for (let i = 0; i < cookies.length; i++) { const c = cookies[i].trim(); if (c.substring(0, name.length + 1) === (name + '=')) { v = decodeURIComponent(c.substring(name.length + 1)); break; } } } return v; }
 document.addEventListener('DOMContentLoaded', () => renderCart());
