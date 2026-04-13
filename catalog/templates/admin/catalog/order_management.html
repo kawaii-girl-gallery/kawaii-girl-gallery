@@ -160,7 +160,7 @@
                 <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                     <span class="order-number">{{ order.order_number }}</span>
                     <span class="order-date">{{ order.sold_at|date:"Y/m/d H:i" }}</span>
-                    {% if order.buyer_name %}<span class="buyer-badge">{{ order.buyer_name }}</span>{% endif %}
+                    {% if order.buyer_name %}<span class="buyer-badge">{{ order.buyer_name }}{% if order.platform %}（{{ order.platform }}）{% endif %}</span>{% endif %}
                 </div>
                 <span class="order-total">¥{{ order.total_price }}</span>
             </div>
