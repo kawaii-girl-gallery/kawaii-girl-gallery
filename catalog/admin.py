@@ -27,8 +27,8 @@ COMMON_STYLE = """
     .messagelist li > div { color: initial !important; }
 
     #header { background: #1a1c23 !important; padding: 15px 25px !important; border-bottom: 4px solid transparent !important; border-image: linear-gradient(to right, #ff4d94, #2684ff, #f0ad4e) 1 !important; position: sticky !important; top: 0 !important; z-index: 1000 !important; }
-    #branding h1 { font-size: 28px !important; font-weight: 900 !important; display: flex !important; align-items: center !important; justify-content: center !important; gap: 12px !important; background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; }
-    #branding h1::before { content: none !important; display: none !important; }
+    #branding h1 { font-size: 28px !important; font-weight: 900 !important; display: flex !important; align-items: center !important; gap: 12px !important; background: linear-gradient(to right, #ff69b4, #2684ff, #f0ad4e) !important; -webkit-background-clip: text !important; -webkit-text-fill-color: transparent !important; }
+    #branding h1::before { content: '💕'; -webkit-text-fill-color: initial !important; font-size: 26px; }
     #branding h1 a { color: inherit !important; text-decoration: none !important; }
     
     .app-catalog_pedia caption, .app-catalog_pedia h2, .pedia-mode h2, .pedia-mode caption { background: #6f42c1 !important; color: #fff !important; }
@@ -63,12 +63,6 @@ COMMON_STYLE = """
     .breadcrumbs { position: sticky !important; top: 75px !important; z-index: 999 !important; background: #1a1c23 !important; }
     .breadcrumbs { background: #1a1c23 !important; color: #ccc !important; }
     .breadcrumbs a { color: #aaa !important; }
-    @media (max-width: 768px) {
-        #header { padding: 10px 15px !important; text-align: center !important; position: sticky !important; top: 0 !important; z-index: 2000 !important; }
-        #branding h1 { justify-content: center !important; font-size: 22px !important; }
-        #branding h1 a { justify-content: center !important; }
-        .breadcrumbs { position: sticky !important; top: 50px !important; z-index: 590 !important; background: #1a1c23 !important; }
-    }
 </style>
 <script>
     if (location.pathname.includes('character-pedia')) {{
@@ -96,10 +90,11 @@ class MultipleFileField(forms.ImageField):
 
 class BulkUploadForm(forms.Form):
     category = forms.ChoiceField(choices=[('A4', 'A4サイズポスター'), ('TCG', 'トレーディングカード')], label='種別')
-    price = forms.IntegerField(label='一括設定金額', initial=88)
-    end_date = forms.DateField(
-        label='掲載終了日',
-        widget=forms.DateInput(attrs={'type': 'date', 'style': 'background:#333; color:white; border:1px solid #555; padding:5px; border-radius:4px;'}),
+    price = forms.IntegerField(label='一括設定金額', initial=500)
+    duration_days = forms.ChoiceField(
+        choices=[(str(i), f'{i}日間') for i in range(1, 15)],
+        label='掲載日数',
+        initial='6'
     )
     add_watermark = forms.BooleanField(label='SAMPLEの透かしを追加', required=False, initial=True)
     images = MultipleFileField(label='画像ファイル選択')
@@ -109,7 +104,6 @@ class BaseProductAdmin(admin.ModelAdmin):
     list_display_links = None 
     search_fields = ('name',)
     actions = ['move_to_archive', 'restore_from_archive']
-    ordering = ['created_at']
 
     def has_change_permission(self, request, obj=None):
         return request.user.is_staff
@@ -123,49 +117,16 @@ class BaseProductAdmin(admin.ModelAdmin):
     def has_view_permission(self, request, obj=None):
         return request.user.is_staff
 
-    def get_changelist(self, request):
-        from django.contrib.admin.views.main import ChangeList
-        class CustomChangeList(ChangeList):
-            def get_queryset(self, request, *args, **kwargs):
-                import datetime
-                from django.db.models import ExpressionWrapper, F, fields
-                xsort = getattr(request, '_xsort_val', '')
-                qs = super().get_queryset(request, *args, **kwargs)
-                if xsort in ['asc', 'desc']:
-                    qs = qs.annotate(deadline=ExpressionWrapper(
-                        F('created_at') + F('duration_days') * datetime.timedelta(days=1),
-                        output_field=fields.DateTimeField()
-                    )).order_by('deadline' if xsort == 'asc' else '-deadline', 'id')
-                return qs
-        return CustomChangeList
-
-    def get_changelist_instance(self, request):
-        # xsortを保存してからGETを除去（get_querysetで使う）
-        if not hasattr(request, '_xsort_val'):
-            request._xsort_val = request.GET.get('xsort', '')
-        if 'xsort' in request.GET:
-            request.GET = request.GET.copy()
-            request.GET.pop('xsort')
-        return super().get_changelist_instance(request)
-
-
-
     def get_actions(self, request):
         actions = super().get_actions(request)
         if 'delete_selected' in actions:
             actions['delete_selected'] = (actions['delete_selected'][0], actions['delete_selected'][1], "✅ 選択した商品を削除")
-        is_admin = request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
+        if not self.has_change_permission(request): return {} 
         is_archive_page = 'Archive' in self.__class__.__name__
         if is_archive_page:
             if 'move_to_archive' in actions: del actions['move_to_archive']
         else:
             if 'restore_from_archive' in actions: del actions['restore_from_archive']
-        # 管理者以外は保管庫移動・削除を禁止（チェックボックス表示のためdummy actionを残す）
-        if not is_admin:
-            if 'move_to_archive' in actions: del actions['move_to_archive']
-            if 'restore_from_archive' in actions: del actions['restore_from_archive']
-            if 'delete_selected' in actions: del actions['delete_selected']
-            actions['dummy_action'] = (lambda modeladmin, request, queryset: None, 'dummy_action', '----------')
         return actions
 
     def get_urls(self):
@@ -185,16 +146,7 @@ class BaseProductAdmin(admin.ModelAdmin):
             cat = request.POST.get('category', 'A4')
             pr = int(request.POST.get('price', 88))
             add_watermark = request.POST.get('add_watermark', 'true') == 'true'
-            end_date_str = request.POST.get('end_date', '')
-            if end_date_str:
-                from datetime import date
-                end_date = date.fromisoformat(end_date_str)
-                today = timezone.localtime(timezone.now()).date()
-                duration_days = (end_date - today).days
-                if duration_days < 1:
-                    duration_days = 1
-            else:
-                duration_days = 6
+            duration_days = int(request.POST.get('duration_days', 6))
             f = request.FILES.get('image')
             if not f:
                 return JsonResponse({'status': 'error', 'message': 'ファイルがありません'}, status=400)
@@ -219,7 +171,7 @@ class BaseProductAdmin(admin.ModelAdmin):
         if not (request.user.is_superuser or request.user.username == 'kawaii-girlgallery'): return redirect('..')
         return render(request, 'admin/catalog/bulk_upload.html', {
             **self.admin_site.each_context(request),
-            'form': BulkUploadForm(initial={'category': 'A4' if 'a4' in request.path else 'TCG', 'add_watermark': True, 'end_date': (timezone.localtime(timezone.now()).date() + __import__('datetime').timedelta(days=6)).isoformat()}),
+            'form': BulkUploadForm(initial={'category': 'A4' if 'a4' in request.path else 'TCG', 'add_watermark': True}),
             'title': '一括アップロード'
         })
 
@@ -244,28 +196,10 @@ class BaseProductAdmin(admin.ModelAdmin):
     display_price_jp.short_description = '価格'
     def display_timer_jp(self, obj): return format_html('<div class="cell-center"><div class="timer-display" data-date="{}" data-duration="{}" style="font-weight: 800;">⏳ ...</div></div>', obj.created_at.isoformat(), obj.duration_days)
     display_timer_jp.short_description = '掲載期限'
-    display_timer_jp.admin_order_field = 'created_at'
 
     def changelist_view(self, request, extra_context=None):
         extra_context = extra_context or {}
         is_archive = 'Archive' in self.__class__.__name__
-        # xsortをGETから除去せずget_querysetで使う
-        xsort = request.GET.get('xsort', '')
-
-        # ✨ 期限切れ商品を自動アーカイブ（日本時間基準）
-        if not is_archive:
-            import datetime, pytz
-            from django.utils import timezone as tz
-            jst = pytz.timezone('Asia/Tokyo')
-            now = tz.now().astimezone(jst)
-            expired = []
-            for p in Product.objects.filter(is_archived=False):
-                deadline = p.created_at.astimezone(jst) + datetime.timedelta(days=p.duration_days)
-                deadline = deadline.replace(hour=23, minute=59, second=59)
-                if now > deadline:
-                    expired.append(p.id)
-            if expired:
-                Product.objects.filter(id__in=expired).update(is_archived=True)
         app_config = apps.get_app_config('catalog')
         if "a4" in self.__class__.__name__.lower():
             cat_filter = 'A4'
@@ -275,9 +209,6 @@ class BaseProductAdmin(admin.ModelAdmin):
             app_config.verbose_name = "トレーディングカード"
         extra_context['title'] = "保管庫" if is_archive else "商品一覧"
         
-        if xsort not in ['asc', 'desc']:
-            self.ordering = ['created_at']
-
         cl = self.get_changelist_instance(request)
         from django.contrib.admin.templatetags.admin_list import pagination as pagination_tag
         pag_context = pagination_tag(cl)
@@ -286,19 +217,10 @@ class BaseProductAdmin(admin.ModelAdmin):
         char_counts, work_counts = {}, {}
         full_qs = Product.objects.filter(category=cat_filter, is_archived=is_archive)
         
-        # 2単語キャラ名リスト
-        TWO_WORD_CHARS = ['初音ミク', '鏡音リン', '鏡音レン', '巡音ルカ', '重音テト']
         for p in full_qs:
             parts = re.split(r'[ _　]', p.name)
-            # 2単語キャラ名チェック
-            char_name = None
-            if len(parts) >= 2:
-                candidate = parts[0] + ' ' + parts[1]
-                if candidate in TWO_WORD_CHARS:
-                    char_name = candidate
-                    parts = [candidate] + parts[2:]
-            if char_name is None:
-                char_name = parts[0] if parts else "不明"
+            # 【】を含むものは除去、G数字も除去
+            char_name = parts[0] if parts else "不明"
             char_name = re.sub(r'【.*?】', '', char_name).strip()
             if not char_name:
                 char_name = re.sub(r'【.*?】', '', parts[1]).strip() if len(parts) > 1 else "不明"
@@ -309,7 +231,7 @@ class BaseProductAdmin(admin.ModelAdmin):
                 work_parts = []
                 for part in parts[1:]:
                     if "同人" in part: break
-                    if re.match(r'^G\d+$', part, re.IGNORECASE): break
+                    if re.match(r'^G\d+$', part, re.IGNORECASE): break  # G数字除去
                     work_parts.append(part)
                 work_name = " ".join(work_parts).strip() if work_parts else "単体作品"
                 if work_name:
@@ -330,8 +252,10 @@ class BaseProductAdmin(admin.ModelAdmin):
 
         is_admin_flag = 'true' if (request.user.is_superuser or request.user.username == 'kawaii-girlgallery') else 'false'
 
+        # アコーディオンパネルHTML + CSS + JS
         accordion_html = mark_safe(f'''
 <style>
+    /* アコーディオンタブ */
     .qs-tab-wrap {{
         position: fixed;
         right: 0;
@@ -360,6 +284,8 @@ class BaseProductAdmin(admin.ModelAdmin):
     .qs-tab:hover {{ opacity: 0.85; }}
     .qs-tab-char {{ background: #ff69b4; border-color: #ff69b4; }}
     .qs-tab-work {{ background: #007bff; border-color: #007bff; }}
+
+    /* パネル本体 */
     .qs-panel {{
         position: fixed;
         right: -420px;
@@ -413,18 +339,23 @@ class BaseProductAdmin(admin.ModelAdmin):
         gap: 6px;
         align-content: flex-start;
     }}
+    /* スクロールバー */
     .qs-panel-body::-webkit-scrollbar {{ width: 6px; }}
     .qs-panel-body::-webkit-scrollbar-track {{ background: #1a1a1a; }}
     .qs-panel-body::-webkit-scrollbar-thumb {{ background: #444; border-radius: 3px; }}
+
+    /* 元のクイック検索パネルを非表示 */
     .messagelist {{ display: none !important; }}
     .top-paginator {{ display: none !important; }}
 </style>
 
+<!-- キャラクタータブ -->
 <div class="qs-tab-wrap">
     <div class="qs-tab qs-tab-char" onclick="togglePanel('char-panel')">👤 キャラクター検索</div>
     <div class="qs-tab qs-tab-work" onclick="togglePanel('work-panel')">🎬 原作作品検索</div>
 </div>
 
+<!-- キャラクター検索パネル -->
 <div id="char-panel" class="qs-panel" style="border-left: 3px solid #ff69b4;">
     <div class="qs-panel-header">
         <div class="qs-panel-title" style="color: #ff69b4;">👤 キャラクター検索 {back_btn_html}</div>
@@ -433,6 +364,7 @@ class BaseProductAdmin(admin.ModelAdmin):
     <div class="qs-panel-body">{char_btns}</div>
 </div>
 
+<!-- 原作作品検索パネル -->
 <div id="work-panel" class="qs-panel" style="border-left: 3px solid #007bff;">
     <div class="qs-panel-header">
         <div class="qs-panel-title" style="color: #007bff;">🎬 原作作品検索</div>
@@ -460,14 +392,16 @@ function closePanel(id) {{
         custom_css = f"""<style>
             #result_list tbody td {{ text-align: center !important; vertical-align: middle !important; padding: 12px 5px !important; font-weight: 700; }}
             #result_list thead {{ display: none !important; }}
-            .cell-center {{ display: flex; flex-direction: column; align-items: center; justify-content: center; height: 170px; width: 100%; }}
+            .cell-center {{ display: flex; align-items: center; justify-content: center; height: 170px; width: 100%; }}
             .cell-center img {{ pointer-events: none !important; user-select: none !important; -webkit-user-drag: none !important; }}
             .cell-center img {{ -webkit-user-drag: none; user-select: none; -moz-user-select: none; }}
 
+            /* 商品一覧タイトルを非表示 */
             #content h1 {{ display: none !important; }}
             img {{ -webkit-user-drag: none !important; user-select: none !important; }}
             #result_list img {{ pointer-events: none !important; }}
 
+            /* 元の検索・ツールボックス・操作行・ページネーターを非表示 */
             #changelist-search {{ display: none !important; }}
             .object-tools {{ display: none !important; }}
             #changelist .actions {{ display: none !important; }}
@@ -482,11 +416,12 @@ function closePanel(id) {{
             .top-paginator {{ display: none !important; }}
             #changelist .paginator {{ display: none !important; }}
 
+            /* 検索窓行 */
             .smart-top-bar {{
                 display: flex;
                 align-items: center;
                 gap: 6px;
-                background: #1a1a1a !important;
+                background: #1a1a1a;
                 padding: 8px 12px;
                 border-radius: 10px;
                 margin-bottom: 4px;
@@ -518,6 +453,7 @@ function closePanel(id) {{
             .smart-top-bar-spacer {{ flex: 1; }}
             .smart-btn-group {{ display: flex; align-items: center; gap: 8px; flex-shrink: 0; }}
 
+            /* 操作行 */
             .smart-action-bar {{
                 display: flex;
                 align-items: center;
@@ -541,184 +477,18 @@ function closePanel(id) {{
                 color: #aaa; font-size: 12px; font-weight: 700;
             }}
 
-            /* カートタブ（PC・スマホ共通） */
-            .sp-cart-tab {{
-                position: fixed !important;
-                right: 0 !important;
-                top: 72% !important;
-                z-index: 3100 !important;
-                writing-mode: vertical-rl !important;
-                text-orientation: mixed !important;
-                padding: 16px 8px !important;
-                min-height: 130px !important;
-                background: #28a745 !important;
-                color: #fff !important;
-                font-size: 12px !important;
-                font-weight: 900 !important;
-                border-radius: 10px 0 0 10px !important;
-                cursor: pointer !important;
-                user-select: none !important;
-                letter-spacing: 1px !important;
-                border: 2px solid #28a745 !important;
-                border-right: none !important;
-                display: none !important;
-                align-items: center !important;
-                justify-content: center !important;
-            }}
-            .sp-cart-tab.visible {{
-                display: flex !important;
-            }}
-            /* カート内画像の保存禁止 */
-            #cart-popup img {{
-                pointer-events: none !important;
-                user-select: none !important;
-                -webkit-user-drag: none !important;
-                -webkit-touch-callout: none !important;
-            }}
-            /* 閉じるボタンはPC・スマホ共通で表示 */
-            /* PCではcart-popupを右下固定表示（スマホのアコーディオンをリセット） */
-            @media (min-width: 769px) {{
-                #cart-popup {{
-                    position: fixed !important;
-                    right: 20px !important;
-                    bottom: 20px !important;
-                    top: auto !important;
-                    width: 280px !important;
-                    max-height: none !important;
-                    border-radius: 10px !important;
-                    border: 1px solid #444 !important;
-                    transition: none !important;
-                    z-index: 9999 !important;
-                }}
-                /* PCでもカートタブを表示 */
-                .sp-cart-tab {{
-                    display: none;
-                }}
-                .sp-cart-tab.visible {{
-                    display: flex !important;
-                }}
-            }}
-
             #pos-modal {{ background-color: rgba(0, 0, 0, 0.98) !important; display: none; position: fixed !important; z-index: 20000 !important; top: 0; left: 0; width: 100vw; height: 100vh; }}
             .modal-nav {{ position: fixed !important; top: 50% !important; transform: translateY(-50%) !important; font-size: 80px !important; color: rgba(255,255,255,0.4) !important; z-index: 20020 !important; cursor: pointer; padding: 20px; }}
             .nav-prev {{ left: 2vw !important; }} .nav-next {{ right: 2vw !important; }}
-            @media (max-width: 768px) {{
-                .modal-content {{ max-height: 60vh !important; max-width: 60vw !important; }}
-                .modal-nav {{ font-size: 50px !important; color: rgba(255,255,255,0.9) !important; background: rgba(0,0,0,0.5) !important; border-radius: 50% !important; width: 50px !important; height: 50px !important; display: flex !important; align-items: center !important; justify-content: center !important; padding: 0 !important; }}
-                .nav-prev {{ left: 4px !important; }} .nav-next {{ right: 4px !important; }}
-            }}
             .modal-center-container {{ display: flex !important; justify-content: center !important; align-items: center !important; height: 100vh !important; width: 100vw !important; }}
             .modal-main-unit {{ display: flex !important; flex-direction: column !important; align-items: center !important; }}
             .modal-content {{ max-height: 70vh !important; max-width: 80vw !important; border: 3px solid #fff !important; border-radius: 0 !important; display: block !important; }}
             #modal-add-btn {{ position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 40px !important; background: rgba(40, 167, 69, 0.9) !important; color: white !important; font-size: 15px !important; font-weight: 900 !important; border: none !important; border-bottom: 2px solid #fff !important; z-index: 21000 !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; }}
             .close-btn {{ position: fixed !important; top: 50px !important; right: 30px !important; color: #fff !important; font-size: 50px !important; z-index: 21100 !important; cursor: pointer; }}
-
-            /* ============================================================
-               ✨ スマホ専用カードレイアウト（768px以下のみ / PCは変わりません）
-               ============================================================ */
-            @media (max-width: 768px) {{
-                #result_list thead {{ display: none !important; }}
-                #result_list tbody tr {{
-                    display: block !important; position: relative !important;
-                    background: #1e1e1e !important; border: 1px solid #333 !important;
-                    border-radius: 12px !important; margin: 8px !important;
-                    padding: 12px 8px 12px 44px !important;
-                    width: calc(100% - 16px) !important; box-sizing: border-box !important;
-                }}
-                #result_list tbody td {{
-                    display: block !important; width: 100% !important;
-                    text-align: center !important; padding: 4px 8px !important;
-                    border: none !important; height: auto !important;
-                }}
-                #result_list tbody td.action-checkbox {{
-                    position: absolute !important; left: 10px !important;
-                    top: 50% !important; transform: translateY(-50%) !important;
-                    width: 28px !important; padding: 0 !important;
-                    display: flex !important; align-items: center !important; justify-content: center !important;
-                }}
-                #result_list tbody td.action-checkbox input {{ width: 22px !important; height: 22px !important; margin: 0 !important; }}
-                .cell-center {{ height: auto !important; min-height: 0 !important; padding: 4px 0 !important; }}
-                #result_list tbody td .cell-center img {{ max-height: 200px !important; max-width: 85vw !important; }}
-                #result_list tbody tr:nth-child(even) {{ background: #222 !important; }}
-                .smart-top-bar {{ flex-wrap: wrap !important; padding: 8px 10px !important; background: #1a1a1a !important; }}
-                .smart-top-bar[style*="fixed"] {{ background: #1a1a1a !important; }}
-                .smart-search-form {{ flex: 1 1 auto !important; }}
-                .smart-search-form input[type=text] {{ width: 100% !important; font-size: 15px !important; padding: 8px 12px !important; }}
-                .smart-search-form input[type=submit] {{ padding: 8px 14px !important; min-height: 38px !important; }}
-                .smart-paginator {{ order: 3 !important; width: 100% !important; flex-wrap: wrap !important; }}
-                .smart-paginator a, .smart-paginator span.this-page {{ min-width: 38px !important; height: 38px !important; }}
-                .smart-top-bar-spacer {{ display: none !important; }}
-                .smart-btn-group {{ order: 4 !important; width: 100% !important; flex-wrap: wrap !important; gap: 6px !important; }}
-                .smart-btn-group a {{ flex: 0 0 auto !important; justify-content: center !important; font-size: 11px !important; padding: 6px 12px !important; min-height: 32px !important; display: inline-flex !important; align-items: center !important; border-radius: 16px !important; }}
-                .smart-action-bar {{ padding: 8px 10px !important; }}
-                .smart-action-bar select {{ flex: 1 1 auto !important; min-height: 38px !important; }}
-                .smart-action-bar .run-btn {{ min-height: 38px !important; padding: 8px 18px !important; }}
-
-                /* ✨ スマホ×非管理者：操作UIを非表示 */
-                .sp-hide-mobile {{
-                    display: none !important;
-                }}
-                /* 閉じるボタンはスマホのみ表示 */
-                .sp-cart-close-btn {{ display: block !important; }}
-
-                /* カート×ボタンを大きく */
-                #cart-popup button[onclick*="removeFromCart"] {{
-                    font-size: 24px !important;
-                    width: 36px !important;
-                    height: 36px !important;
-                    padding: 0 !important;
-                    display: flex !important;
-                    align-items: center !important;
-                    justify-content: center !important;
-                    flex-shrink: 0 !important;
-                }}
-
-                /* ✨ スマホ時：#cart-popup をアコーディオンタブに収納 */
-                #cart-popup {{
-                    position: fixed !important;
-                    right: -100vw !important;
-                    bottom: 0 !important;
-                    top: auto !important;
-                    width: min(260px, 80vw) !important;
-                    max-height: 45vh !important;
-                    overflow-y: auto !important;
-                    border-radius: 12px 0 0 0 !important;
-                    border-left: 3px solid #28a745 !important;
-                    border-top: 3px solid #28a745 !important;
-                    transition: right 0.3s ease !important;
-                    z-index: 3099 !important;
-                    box-shadow: -4px 0 20px rgba(0,0,0,0.7) !important;
-                }}
-                #cart-popup.sp-open {{
-                    right: 0 !important;
-                }}
-                /* sp-cart-tabはPC共通CSSで定義 */
-                /* カート追加トースト */
-                .sp-cart-toast {{
-                    position: fixed !important;
-                    bottom: 80px !important;
-                    left: 50% !important;
-                    transform: translateX(-50%) translateY(20px) !important;
-                    background: #28a745 !important;
-                    color: #fff !important;
-                    font-size: 13px !important;
-                    font-weight: 900 !important;
-                    padding: 10px 20px !important;
-                    border-radius: 20px !important;
-                    z-index: 9999 !important;
-                    opacity: 0 !important;
-                    transition: opacity 0.2s, transform 0.2s !important;
-                    pointer-events: none !important;
-                    white-space: nowrap !important;
-                }}
-                .sp-cart-toast.show {{
-                    opacity: 1 !important;
-                    transform: translateX(-50%) translateY(0) !important;
-                }}
-            }}
         </style>
         <script>
             document.addEventListener('DOMContentLoaded', function() {{
+                // ✨ アコーディオンパネルとタブをbodyに移動（messagelistから脱出）
                 var tabWrap = document.querySelector(".qs-tab-wrap");
                 var charPanel = document.getElementById("char-panel");
                 var workPanel = document.getElementById("work-panel");
@@ -733,10 +503,12 @@ function closePanel(id) {{
                 var origPaginator = document.querySelector('#changelist .paginator');
                 var origActions = document.querySelector('#changelist .actions');
 
-                // smart-top-barが既存なら挿入スキップ（アコーディオン・カートは毎回実行）
-                var skipTopBar = !!document.querySelector(".smart-top-bar");
-                var topBar = skipTopBar ? document.querySelector(".smart-top-bar") : document.createElement("div");
-                if (!skipTopBar) topBar.className = 'smart-top-bar';
+                // 検索窓行
+                // すでに挿入済みの場合はスキップ
+                if (document.querySelector('.smart-top-bar')) return;
+
+                var topBar = document.createElement('div');
+                topBar.className = 'smart-top-bar';
 
                 var searchForm = document.createElement('form');
                 searchForm.method = 'GET';
@@ -754,64 +526,34 @@ function closePanel(id) {{
                 topBar.appendChild(searchForm);
 
                 if (origPaginator) {{
-                    var pagDiv = document.createElement("div");
+                    var pagDiv = document.createElement('div');
                     pagDiv.className = 'smart-paginator';
                     var lis = origPaginator.querySelectorAll('li');
-                    
-                    // ページ番号を収集
-                    var pages = [];
                     if (lis.length > 0) {{
                         lis.forEach(function(li) {{
                             var a = li.querySelector('a');
                             var s = li.querySelector('span.this-page');
-                            if (a) pages.push({{ type: 'a', href: a.href, text: a.textContent.trim() }});
-                            else if (s) pages.push({{ type: 'current', text: s.textContent.trim() }});
+                            if (a) {{
+                                var newA = document.createElement('a');
+                                newA.href = a.href;
+                                newA.textContent = a.textContent.trim();
+                                pagDiv.appendChild(newA);
+                            }} else if (s) {{
+                                var newS = document.createElement('span');
+                                newS.className = 'this-page';
+                                newS.textContent = s.textContent.trim();
+                                pagDiv.appendChild(newS);
+                            }}
                         }});
                     }} else {{
                         origPaginator.querySelectorAll('a').forEach(function(a) {{
-                            pages.push({{ type: 'a', href: a.href, text: a.textContent.trim() }});
+                            var newA = document.createElement('a');
+                            newA.href = a.href;
+                            newA.textContent = a.textContent.trim();
+                            pagDiv.appendChild(newA);
                         }});
                     }}
-
-                    // スマホ時は5ページ以上を省略
-                    var isMobileForPag = window.innerWidth <= 768;
-                    var currentIdx = pages.findIndex(function(p) {{ return p.type === 'current'; }});
-                    
-                    pages.forEach(function(p, i) {{
-                        // スマホで6ページ以上の場合：現在ページ±2と最初2件・最後2件を表示
-                        if (isMobileForPag && pages.length > 5) {{
-                            var isFirst2 = i <= 1;
-                            var isLast2 = i >= pages.length - 2;
-                            var isNearCurrent = Math.abs(i - currentIdx) <= 2;
-                            if (!isFirst2 && !isLast2 && !isNearCurrent) {{
-                                // 省略記号を追加（隣接する省略は1つだけ）
-                                if (pagDiv.lastChild && pagDiv.lastChild.textContent !== '…') {{
-                                    var dots = document.createElement('span');
-                                    dots.textContent = '…';
-                                    dots.style.cssText = 'color:#aaa; padding: 0 2px;';
-                                    pagDiv.appendChild(dots);
-                                }}
-                                return;
-                            }}
-                        }}
-                        if (p.type === 'a') {{
-                            var newA = document.createElement('a');
-                            // xsortパラメータを引き継ぐ
-                            var pageUrl = new URL(p.href, window.location.href);
-                            var xsortVal = new URLSearchParams(window.location.search).get('xsort');
-                            if (xsortVal) pageUrl.searchParams.set('xsort', xsortVal);
-                            newA.href = pageUrl.toString();
-                            newA.textContent = p.text;
-                            pagDiv.appendChild(newA);
-                        }} else {{
-                            var newS = document.createElement('span');
-                            newS.className = 'this-page';
-                            newS.textContent = p.text;
-                            pagDiv.appendChild(newS);
-                        }}
-                    }});
-
-                    var totalText = origPaginator.textContent.match(/[0-9]+ *商品一覧/);
+                    var totalText = origPaginator.textContent.match(/\d+\s*商品一覧/);
                     if (totalText) {{
                         var countSpan = document.createElement('span');
                         countSpan.className = 'total-count';
@@ -821,14 +563,12 @@ function closePanel(id) {{
                     topBar.appendChild(pagDiv);
                 }}
 
-                var spacer = document.createElement("div");
+                var spacer = document.createElement('div');
                 spacer.className = 'smart-top-bar-spacer';
                 topBar.appendChild(spacer);
 
-                var btnGroup = document.createElement("div");
+                var btnGroup = document.createElement('div');
                 btnGroup.className = 'smart-btn-group';
-
-
 
                 var btnSlide = document.createElement('a');
                 btnSlide.href = 'javascript:void(0)';
@@ -846,7 +586,8 @@ function closePanel(id) {{
 
                 topBar.appendChild(btnGroup);
 
-                var actionBar = document.createElement("div");
+                // 操作行
+                var actionBar = document.createElement('div');
                 actionBar.className = 'smart-action-bar';
 
                 if (origActions) {{
@@ -875,28 +616,10 @@ function closePanel(id) {{
                         actionBar.appendChild(newCounter);
                     }}
                 }}
-                var actionSpacer = document.createElement("div");
+                // 一括アップロードをactionBar右端に
+                var actionSpacer = document.createElement('div');
                 actionSpacer.style.flex = '1';
                 actionBar.appendChild(actionSpacer);
-
-                // ソートドロップダウン
-                var sortSel = document.createElement('select');
-                sortSel.style.cssText = 'background:#2a2a2a; border:1px solid #555; color:#fff; border-radius:8px; padding:5px 10px; font-size:12px; font-weight:700; cursor:pointer;';
-                var currentSort = new URLSearchParams(window.location.search).get('xsort') || '';
-                [['', '並び順'], ['asc', '⏳ 掲載短い順'], ['desc', '⌛ 掲載長い順']].forEach(function(opt) {{
-                    var o = document.createElement('option');
-                    o.value = opt[0];
-                    o.textContent = opt[1];
-                    if (opt[0] === currentSort) o.selected = true;
-                    sortSel.appendChild(o);
-                }});
-                sortSel.addEventListener('change', function() {{
-                    var p = new URLSearchParams(window.location.search);
-                    if (this.value) {{ p.set('xsort', this.value); }} else {{ p.delete('xsort'); }}
-                    p.delete('p');
-                    window.location.href = '?' + p.toString();
-                }});
-                actionBar.appendChild(sortSel);
                 if ({is_admin_flag} === true) {{
                     var btnUpload2 = document.createElement('a');
                     btnUpload2.href = 'bulk-upload/';
@@ -905,43 +628,38 @@ function closePanel(id) {{
                     actionBar.appendChild(btnUpload2);
                 }}
 
-                if (!skipTopBar) changelist.parentNode.insertBefore(actionBar, changelist);
-
+                changelist.parentNode.insertBefore(actionBar, changelist);
+                // ✨ タブとパネルをbodyに移動（fixed positionを効かせるため）
+                // ✨ ヘッダー・パンくず・サイドバーをfixedで固定
                 var header = document.querySelector("#header");
+                var breadcrumbsNav = document.querySelector(".breadcrumbs") ? document.querySelector(".breadcrumbs").parentElement : null;
                 var breadcrumbs = document.querySelector(".breadcrumbs");
                 var navSidebar = document.querySelector("#nav-sidebar");
                 var headerH = header ? header.offsetHeight : 75;
                 var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
                 var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
 
-                var isMobile = window.innerWidth <= 768;
-                if (!isMobile && !skipTopBar) {{
-                    if (header) {{
-                        header.style.cssText += "; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;";
-                    }}
-                    if (breadcrumbs) {{
-                        document.body.appendChild(breadcrumbs);
-                        breadcrumbs.style.cssText = "position: fixed !important; top: " + headerH + "px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1999 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important;";
-                    }}
-                    if (navSidebar) {{
-                        navSidebar.style.cssText += "; position: fixed !important; top: " + (headerH + breadcrumbsH) + "px !important; left: 0 !important; width: " + sidebarW + "px !important; height: calc(100vh - " + (headerH + breadcrumbsH) + "px) !important; overflow-y: auto !important; z-index: 1500 !important;";
-                        var contentWrapper = document.querySelector("#content");
-                        if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
-                    }}
-                    document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
-                }} else {{
-                    // スマホ：marginLeftをリセット
-                    var contentWrapper = document.querySelector("#content");
-                    if (contentWrapper) contentWrapper.style.marginLeft = "0";
+                if (header) {{
+                    header.style.cssText += "; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;";
                 }}
-
-                var tabWrap2 = document.querySelector(".qs-tab-wrap");
-                var charPanel2 = document.querySelector("#char-panel");
-                var workPanel2 = document.querySelector("#work-panel");
-                if (tabWrap2) document.body.appendChild(tabWrap2);
-                if (charPanel2) document.body.appendChild(charPanel2);
-                if (workPanel2) document.body.appendChild(workPanel2);
-
+                if (breadcrumbs) {{
+                    document.body.appendChild(breadcrumbs);
+                    breadcrumbs.style.cssText = "position: fixed !important; top: " + headerH + "px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1999 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important;";
+                }}
+                if (navSidebar) {{
+                    navSidebar.style.cssText += "; position: fixed !important; top: " + (headerH + breadcrumbsH) + "px !important; left: 0 !important; width: " + sidebarW + "px !important; height: calc(100vh - " + (headerH + breadcrumbsH) + "px) !important; overflow-y: auto !important; z-index: 1500 !important;";
+                    var contentWrapper = document.querySelector("#content");
+                    if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
+                }}
+                // bodyにpaddingTopを追加してコンテンツが隠れないように
+                document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
+                var tabWrap = document.querySelector(".qs-tab-wrap");
+                var charPanel = document.querySelector("#char-panel");
+                var workPanel = document.querySelector("#work-panel");
+                if (tabWrap) document.body.appendChild(tabWrap);
+                if (charPanel) document.body.appendChild(charPanel);
+                if (workPanel) document.body.appendChild(workPanel);
+                // ✨ 全選択チェックボックスをactionBarに追加
                 var selectAllWrap = document.createElement('label');
                 selectAllWrap.style.cssText = 'display:flex; align-items:center; gap:6px; cursor:pointer; color:#aaa; font-size:12px; font-weight:900;';
                 var selectAllChk = document.createElement('input');
@@ -960,248 +678,57 @@ function closePanel(id) {{
                 selectAllWrap.appendChild(selectAllLabel);
                 actionBar.insertBefore(selectAllWrap, actionBar.firstChild);
 
-                if (!skipTopBar) {{
-                    changelist.parentNode.insertBefore(actionBar, changelist);
-                    changelist.parentNode.insertBefore(topBar, actionBar);
-                }}
-
+                changelist.parentNode.insertBefore(actionBar, changelist);
+                changelist.parentNode.insertBefore(topBar, actionBar);
+                // DOMに挿入後に位置を計算
+                var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
                 var fixedTopVal = header ? header.offsetHeight : 75;
                 fixedTopVal += breadcrumbs ? breadcrumbs.offsetHeight : 37;
+                var scrollBarW = window.innerWidth - document.documentElement.clientWidth;
                 var topBarW = topBar.offsetWidth;
                 var topBarLeft = topBar.getBoundingClientRect().left;
-
-                // ✨ スマホ×非管理者：検索窓・プルダウン・Runを非表示（チェックボックスは残す）
-                if (isMobile && {is_admin_flag} === false) {{
-                    // 検索フォームのみ非表示（ページネーターは残す）
-                    var sf = topBar ? topBar.querySelector(".smart-search-form") : null;
-                    if (sf) sf.classList.add("sp-hide-mobile");
-                    // actionBar内のselect・run・counterのみ非表示
-                    if (actionBar) {{
-                        var sel = actionBar.querySelector("select");
-                        var run = actionBar.querySelector(".run-btn");
-                        var counter = actionBar.querySelector(".counter-label");
-                        var upload = actionBar.querySelector("a[href*='bulk-upload']");
-                        if (sel) sel.classList.add("sp-hide-mobile");
-                        if (run) run.classList.add("sp-hide-mobile");
-                        if (counter) counter.classList.add("sp-hide-mobile");
-                        if (upload) upload.classList.add("sp-hide-mobile");
-                    }}
-                }}
-
-                // ✨ スマホ時：カード内のtd順を 画像→名前→価格→タイマー に並び替え
-                if (isMobile) {{
-                    document.querySelectorAll("#result_list tbody tr").forEach(function(tr) {{
-                        var tdImg = null, tdName = null, tdPrice = null, tdTimer = null;
-                        tr.querySelectorAll("td:not(.action-checkbox)").forEach(function(td) {{
-                            var inner = td.querySelector(".cell-center");
-                            if (!inner) return;
-                            if (inner.querySelector("img"))                        tdImg   = td;
-                            else if (inner.querySelector(".timer-display"))        tdTimer = td;
-                            else if (inner.querySelector("[style*='00ffcc']"))     tdPrice = td;
-                            else                                                   tdName  = td;
-                        }});
-                        [tdImg, tdName, tdPrice, tdTimer].forEach(function(td) {{
-                            if (td) tr.appendChild(td);
-                        }});
-                    }});
-                }}
-
-                // ✨ カートタブ（PC・スマホ共通）
-                var spCartOpen = false;
-                var spCartTab = null;
-
-                    function setupSpCart() {{
-                        if (spCartTab) return; // 二重生成防止
-
-                        spCartTab = document.createElement("div");
-                        spCartTab.className = "sp-cart-tab";
-                        spCartTab.textContent = "カート";
-                        document.body.appendChild(spCartTab);
-
-                        spCartTab.addEventListener("click", function() {{
-                            var popup = document.getElementById("cart-popup");
-                            if (!popup) return;
-                            spCartOpen = true;
-                            if (isMobile) {{
-                                popup.style.display = "block";
-                                popup.classList.add("sp-open");
-                            }} else {{
-                                popup.style.display = "block";
-                            }}
-                            spCartTab.classList.remove("visible");
-                            spCartTab.style.setProperty("display", "none", "important");
-                        }});
-                    }}
-
-                    // トースト表示関数
-                    function showCartToast(msg) {{
-                        var existing = document.querySelector(".sp-cart-toast");
-                        if (existing) existing.remove();
-                        var toast = document.createElement("div");
-                        toast.className = "sp-cart-toast";
-                        toast.textContent = msg;
-                        document.body.appendChild(toast);
-                        requestAnimationFrame(function() {{
-                            requestAnimationFrame(function() {{
-                                toast.classList.add("show");
-                                setTimeout(function() {{
-                                    toast.classList.remove("show");
-                                    setTimeout(function() {{ toast.remove(); }}, 250);
-                                }}, 1500);
-                            }});
-                        }});
-                    }}
-
-                    // renderCart後にタブを表示・自動オープンする
-                    // pos_system.jsのrenderCartをラップ
-                    // カートを閉じるグローバル関数
-                    window.spCartCloseFunc = function() {{
-                        var popup = document.getElementById("cart-popup");
-                        if (popup) {{
-                            popup.classList.remove("sp-open");
-                            if (!isMobile) popup.style.display = "none";
-                        }}
-                        spCartOpen = false;
-                        if (spCartTab) spCartTab.classList.add("visible");
-                    }};
-
-                    function watchCart() {{
-                        var popup = document.getElementById("cart-popup");
-                        if (!popup) {{
-                            setTimeout(watchCart, 200);
-                            return;
-                        }}
-                        setupSpCart();
-
-
-
-                        // cart-popupのdisplay・中身の変化を監視
-                        var prevCartCount = 0;
-                        var styleObserver = new MutationObserver(function() {{
-                            var popup = document.getElementById("cart-popup");
-                            if (!popup) return;
-                            var hasItems = popup.style.display !== "none" && popup.innerHTML.includes("removeFromCart");
-                            if (hasItems) {{
-                                // カートが閉じている時だけタブを表示
-                                if (!spCartOpen) spCartTab.classList.add("visible");
-                                // カートの件数を数えて「増えた時だけ」トーストを表示
-                                var currentCount = (popup.innerHTML.match(/removeFromCart/g) || []).length;
-                                if (currentCount > prevCartCount) {{
-                                    showCartToast("🛒 カートに追加しました");
-                                }}
-                                prevCartCount = currentCount;
-                            }} else {{
-                                // カートが空の時だけタブを非表示（閉じた時は非表示にしない）
-                                var cartIsEmpty = !popup.innerHTML.includes("removeFromCart");
-                                if (cartIsEmpty) {{
-                                    spCartTab.classList.remove("visible");
-                                }}
-                                popup.classList.remove("sp-open");
-                                spCartOpen = false;
-                                spCartTab.style.background = "#28a745";
-                                prevCartCount = 0;
-                            }}
-                        }});
-                        styleObserver.observe(popup, {{ childList: true, subtree: false }});
-
-                        // 初期状態確認
-                        if (popup.style.display !== "none" && popup.innerHTML.includes("removeFromCart")) {{
-                            spCartTab.classList.add("visible");
-                        }}
-                    }}
-                    watchCart();
-
-                // カートタブの初期状態を設定（ページ更新後も正しく表示）
-                setTimeout(function() {{
-                    var popup = document.getElementById("cart-popup");
-                    var tab = document.querySelector(".sp-cart-tab");
-                    if (popup && tab) {{
-                        var hasItems = popup.style.display !== "none" && popup.innerHTML.includes("removeFromCart");
-                        if (hasItems) {{
-                            tab.classList.add("visible");
-                        }}
-                    }}
-                }}, 300);
-
-                // theadのtopをボタンバーの高さに合わせて設定
-                function updateTheadTop() {{
-                    var thead = document.querySelector("#result_list thead");
-                    var tb = document.querySelector(".smart-top-bar");
-                    var ab = document.querySelector(".smart-action-bar");
-                    if (thead && tb && ab) {{
-                        var topH = tb.offsetHeight + ab.offsetHeight;
-                        thead.style.top = topH + "px";
-                    }}
-                }}
-                updateTheadTop();
-                window.addEventListener("resize", updateTheadTop);
-
-                // 初期化時にスクロールイベントを発火して固定状態を設定
-                setTimeout(function() {{ window.dispatchEvent(new Event("scroll")); }}, 100);
+                // ✨ スクロールで検索窓行・操作行を固定
 
                 window.addEventListener("scroll", function() {{
                     var scrollY = window.scrollY;
-                    // 毎回DOMから直接取得
-                    var tb = document.querySelector(".smart-top-bar");
-                    var ab = document.querySelector(".smart-action-bar");
-                    var cd = document.querySelector("#content");
-                    if (!tb) return;
                     if (scrollY > 44) {{
-                        tb.style.position = "fixed";
-                        tb.style.top = fixedTopVal + "px";
-                        tb.style.left = topBarLeft + "px";
+                        topBar.style.position = "fixed";
+                        topBar.style.top = fixedTopVal + "px";
+                        topBar.style.left = topBarLeft + "px";
                         var adjustedW = document.querySelector("#result_list") ? document.querySelector("#result_list").offsetWidth : topBarW;
-                        tb.style.width = adjustedW + "px";
-                        tb.style.zIndex = "601";
-                        tb.style.setProperty("background", "#1a1a1a", "important");
-                        tb.style.borderRadius = "0";
-                        tb.style.boxShadow = "0 2px 8px rgba(0,0,0,0.9)";
-                        if (ab) {{
-                            ab.style.position = "fixed";
-                            ab.style.top = (fixedTopVal + tb.offsetHeight) + "px";
-                            ab.style.left = topBarLeft + "px";
-                            ab.style.width = adjustedW + "px";
-                            ab.style.zIndex = "600";
-                            ab.style.setProperty("background", "#1a1a1a", "important");
-                        }}
-                        if (cd) {{
-                            var pad = tb.offsetHeight + (ab ? ab.offsetHeight : 0);
-                            cd.style.marginTop = pad + "px";
-                        }}
-                        // 固定バー下の背景オーバーレイ
-                        var overlay = document.getElementById("sp-bar-overlay");
-                        if (!overlay) {{
-                            overlay = document.createElement("div");
-                            overlay.id = "sp-bar-overlay";
-                            overlay.style.cssText = "position:fixed;left:0;right:0;z-index:550;background:#121212;pointer-events:none;";
-                            document.body.appendChild(overlay);
-                        }}
-                        // ヘッダー〜ボタンバー下端まで塞ぐ
-                        overlay.style.top = "0";
-                        overlay.style.height = fixedTopVal + "px";
-                        overlay.style.display = "block";
+                        topBar.style.width = adjustedW + "px";
+                        topBar.style.zIndex = "600";
+                        topBar.style.background = "#1a1a1a";
+                        actionBar.style.position = "fixed";
+                        actionBar.style.top = (fixedTopVal + topBar.offsetHeight) + "px";
+                        actionBar.style.left = topBarLeft + "px";
+                        actionBar.style.width = adjustedW + "px";
+                        actionBar.style.zIndex = "599";
+                        actionBar.style.background = "#1a1a1a";
+
                     }} else {{
-                        tb.style.position = "";
-                        tb.style.top = "";
-                        tb.style.left = "";
-                        tb.style.width = "";
-                        tb.style.background = "";
-                        if (ab) {{
-                            ab.style.position = "";
-                            ab.style.top = "";
-                            ab.style.left = "";
-                            ab.style.width = "";
-                            ab.style.background = "";
-                        }}
-                        if (cd) cd.style.marginTop = "20px";
-                        var overlay2 = document.getElementById("sp-bar-overlay");
-                        if (overlay2) overlay2.style.display = "none";
+                        topBar.style.position = "";
+                        topBar.style.top = "";
+                        topBar.style.left = "";
+                        topBar.style.width = "";
+                        topBar.style.background = "";
+                        actionBar.style.position = "";
+                        actionBar.style.top = "";
+                        actionBar.style.left = "";
+                        actionBar.style.width = "";
+                        actionBar.style.background = "";
+
                     }}
                 }});
             }});
         </script>"""
         
-        self.message_user(request, mark_safe(COMMON_STYLE + custom_css + accordion_html + pagination_html))
+        storage = messages.get_messages(request)
+        is_already_sent = any("キャラクタークイック検索" in str(m) for m in storage)
+        storage.used = False 
+        
+        if not is_already_sent:
+            self.message_user(request, mark_safe(COMMON_STYLE + custom_css + accordion_html + pagination_html))
             
         return super().changelist_view(request, extra_context)
 
@@ -1214,40 +741,16 @@ function closePanel(id) {{
 
 @admin.register(Show_ProductList_A4)
 class A4PosterAdmin(BaseProductAdmin):
-    def get_queryset(self, request):
-        import datetime
-        from django.db.models import ExpressionWrapper, F, fields
-        qs = super().get_queryset(request).filter(category='A4', is_archived=False)
-        xsort = getattr(request, '_xsort_val', '')
-        if xsort in ['asc', 'desc']:
-            qs = qs.annotate(deadline=ExpressionWrapper(
-                F('created_at') + F('duration_days') * datetime.timedelta(days=1),
-                output_field=fields.DateTimeField()
-            ))
-            return qs.order_by('deadline' if xsort == 'asc' else '-deadline')
-        return qs
+    def get_queryset(self, request): return super().get_queryset(request).filter(category='A4', is_archived=False)
 @admin.register(Z_Archive_A4)
 class A4ArchiveAdmin(BaseProductAdmin):
     def get_queryset(self, request): return super().get_queryset(request).filter(category='A4', is_archived=True)
-    def has_view_permission(self, request, obj=None): return request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
 @admin.register(Show_ProductList_TCG)
 class TCGCardAdmin(BaseProductAdmin):
-    def get_queryset(self, request):
-        import datetime
-        from django.db.models import ExpressionWrapper, F, fields
-        qs = super().get_queryset(request).filter(category='TCG', is_archived=False)
-        xsort = getattr(request, '_xsort_val', '')
-        if xsort in ['asc', 'desc']:
-            qs = qs.annotate(deadline=ExpressionWrapper(
-                F('created_at') + F('duration_days') * datetime.timedelta(days=1),
-                output_field=fields.DateTimeField()
-            ))
-            return qs.order_by('deadline' if xsort == 'asc' else '-deadline')
-        return qs
+    def get_queryset(self, request): return super().get_queryset(request).filter(category='TCG', is_archived=False)
 @admin.register(Z_Archive_TCG)
 class TCGArchiveAdmin(BaseProductAdmin):
     def get_queryset(self, request): return super().get_queryset(request).filter(category='TCG', is_archived=True)
-    def has_view_permission(self, request, obj=None): return request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
 
 def character_pedia_view(request):
     mode = request.GET.get('mode', 'char')
@@ -1268,7 +771,7 @@ def character_pedia_view(request):
             if len(parts) > 1:
                 for part in parts[1:]:
                     if "同人" in part: break
-                    if re.match(r'^G\d+$', part, re.IGNORECASE): break
+                    if re.match(r'^G\d+$', part, re.IGNORECASE): break  # G数字除去
                     work_parts.append(part)
             key = " ".join(work_parts).strip() if work_parts else "単体作品"
         else:
@@ -1300,7 +803,7 @@ def sales_dashboard_view(request):
     sales_qs = Sale.objects.filter(sold_at__range=(s_dt, e_dt))
 
     def calc_stats(qs):
-        total_customers = qs.values('buyer_name').distinct().count()
+        total_customers = qs.values('user').distinct().count()
         total_items = qs.count()
         return {
             'total_revenue': qs.aggregate(Sum('price'))['price__sum'] or 0,
@@ -1340,10 +843,12 @@ def analysis_sheet_view(request):
         weekday_list = [{"name": n, "revenue": 0, "count": 0} for n in ["月", "火", "水", "木", "金", "土", "日"]]
         for s in sales:
             parts = re.split(r'[ _　]', s.product_name)
+            # キャラクター名：【】除去、空なら次のパーツを使う
             c = re.sub(r'【.*?】', '', parts[0] if parts else '').strip()
             if not c and len(parts) > 1:
                 c = re.sub(r'【.*?】', '', parts[1]).strip()
             c = c or "不明"
+            # 作品名：同人・G数字で終了
             work_parts = []
             if len(parts) > 1:
                 for part in parts[1:]:
@@ -1387,6 +892,13 @@ def analysis_sheet_view(request):
 
 def generate_order_number():
     """注文番号を生成する KG-YYYYMMDD-XXX"""
+    from django.utils import timezone
+    today = timezone.localtime().strftime('%Y%m%d')
+    count = Sale.objects.filter(sold_at__date=timezone.localtime().date()).count() + 1
+    return f"KG-{today}-{count:03d}"
+
+def generate_order_number():
+    """注文番号を生成する KG-YYYYMMDD-XXX"""
     from django.utils import timezone as tz
     today = tz.localtime(tz.now()).strftime('%Y%m%d')
     count = Sale.objects.filter(sold_at__date=tz.localtime(tz.now()).date()).values('order_number').distinct().count() + 1
@@ -1412,13 +924,29 @@ def order_receipt_view(request, order_number):
 def order_management_view(request):
     from django.utils import timezone as tz
     from django.db.models import Q
-    import calendar
 
     if request.method == 'POST' and request.POST.get('reset_all') == 'true':
         if request.user.is_superuser or request.user.username == 'kawaii-girlgallery':
             Sale.objects.all().delete()
             OrderManagement.objects.all().delete()
             messages.success(request, "売上・注文データをすべてリセットしました。")
+            return redirect(request.path)
+
+    # リセット処理
+    if request.method == 'POST' and request.POST.get('reset_all') == 'true':
+        if request.user.is_superuser or request.user.username == 'kawaii-girlgallery':
+            Sale.objects.all().delete()
+            OrderManagement.objects.all().delete()
+            messages.success(request, "売上・注文データをすべてリセットしました。")
+            return redirect(request.path)
+    import calendar
+
+    # リセット処理
+    if request.method == 'POST' and request.POST.get('reset_all') == 'true':
+        if request.user.is_superuser or request.user.username == 'kawaii-girlgallery':
+            Sale.objects.all().delete()
+            OrderManagement.objects.all().delete()
+            messages.success(request, "全データをリセットしました。")
             return redirect(request.path)
 
     now = tz.localtime(tz.now())
@@ -1429,14 +957,7 @@ def order_management_view(request):
     page = int(request.GET.get('page', 1))
     per_page = 20
 
-    import datetime, pytz
-    jst = pytz.timezone('Asia/Tokyo')
-    month_start = jst.localize(datetime.datetime(year, month, 1, 0, 0, 0))
-    if month == 12:
-        month_end = jst.localize(datetime.datetime(year+1, 1, 1, 0, 0, 0))
-    else:
-        month_end = jst.localize(datetime.datetime(year, month+1, 1, 0, 0, 0))
-    qs = OrderManagement.objects.filter(sold_at__gte=month_start, sold_at__lt=month_end)
+    qs = OrderManagement.objects.filter(sold_at__year=year, sold_at__month=month)
     if search:
         qs = qs.filter(buyer_name__icontains=search)
     if status == 'done':
@@ -1448,11 +969,12 @@ def order_management_view(request):
     total_pages = max(1, (total_count + per_page - 1) // per_page)
     orders = qs[(page-1)*per_page:page*per_page]
 
+    # 月リスト生成（最初の注文から現在まで）
     first = OrderManagement.objects.order_by('sold_at').first()
     month_list = []
     if first:
-        cur = tz.localtime(first.sold_at).replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-        end = now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+        cur = first.sold_at.replace(day=1)
+        end = now.replace(day=1)
         while cur <= end:
             month_list.append({'year': cur.year, 'month': cur.month, 'label': f"{cur.year}年{cur.month}月"})
             if cur.month == 12:
@@ -1485,10 +1007,14 @@ def order_management_update_view(request):
     order_number = data.get('order_number')
     try:
         order = OrderManagement.objects.get(order_number=order_number)
-        if 'yahoo_url' in data: order.yahoo_url = data['yahoo_url']
-        if 'check_listed' in data: order.check_listed = data['check_listed']
-        if 'check_sold' in data: order.check_sold = data['check_sold']
-        if 'check_shipped' in data: order.check_shipped = data['check_shipped']
+        if 'yahoo_url' in data:
+            order.yahoo_url = data['yahoo_url']
+        if 'check_listed' in data:
+            order.check_listed = data['check_listed']
+        if 'check_sold' in data:
+            order.check_sold = data['check_sold']
+        if 'check_shipped' in data:
+            order.check_shipped = data['check_shipped']
         order.save()
         return JsonResponse({'status': 'success', 'is_completed': order.is_completed})
     except OrderManagement.DoesNotExist:
@@ -1526,10 +1052,12 @@ def record_sale_view(request):
                 order_number=order_number,
                 user=request.user if request.user.is_authenticated else None
             )
+        # LINE通知
         total = sum(i['price'] for i in items)
         item_lines = '\n'.join([f"・{i['name']} ¥{i['price']}" for i in items])
         message = f"💖 お迎え完了！\n購入者：{buyer_name}\n{item_lines}\n合計: ¥{total:,}\n注文番号：{order_number}"
         send_line_notification(message)
+        # 注文管理レコード作成
         from django.utils import timezone as tz
         product_names = '\n'.join([i['name'] for i in items])
         OrderManagement.objects.create(
@@ -1541,6 +1069,7 @@ def record_sale_view(request):
         )
         return JsonResponse({'status': 'success', 'order_number': order_number, 'buyer_name': buyer_name})
     return JsonResponse({'status': 'error'}, status=405)
+
 
 def get_custom_urls(self):
     return [
@@ -1558,12 +1087,10 @@ if not hasattr(admin.AdminSite, 'get_urls_original'):
     admin.AdminSite.get_urls = get_custom_urls
 
 def get_date_range(request):
-    import pytz
-    jst = pytz.timezone('Asia/Tokyo')
-    now = timezone.now().astimezone(jst)
+    now = timezone.now()
     s_str, e_str = request.GET.get('start_date'), request.GET.get('end_date')
-    s_dt = jst.localize(datetime.strptime(s_str, '%Y-%m-%d')) if s_str else now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
-    e_dt = jst.localize(datetime.strptime(e_str, '%Y-%m-%d')).replace(hour=23, minute=59, second=59) if e_str else now.replace(hour=23, minute=59, second=59, microsecond=999999)
+    s_dt = timezone.make_aware(datetime.strptime(s_str, '%Y-%m-%d')) if s_str else now.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    e_dt = timezone.make_aware(datetime.strptime(e_str, '%Y-%m-%d')).replace(hour=23, minute=59, second=59) if e_str else now.replace(hour=23, minute=59, second=59, microsecond=999999)
     return s_dt, e_dt, f"{s_dt.year}年{s_dt.month}月" if not s_str else f"{s_str}〜{e_str}"
 
 def get_app_list(self, request, app_label=None):
