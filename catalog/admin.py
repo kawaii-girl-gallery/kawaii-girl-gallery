@@ -1042,6 +1042,7 @@ def record_sale_view(request):
         data = json.loads(request.body)
         items = data.get('items', [])
         buyer_name = data.get('buyer_name', '')
+        platform = data.get('platform', 'メルカリ')
         order_number = generate_order_number()
         for i in items:
             Sale.objects.create(
@@ -1066,6 +1067,7 @@ def record_sale_view(request):
             total_price=total,
             product_names=product_names,
             sold_at=tz.now(),
+            platform=platform,
         )
         return JsonResponse({'status': 'success', 'order_number': order_number, 'buyer_name': buyer_name})
     return JsonResponse({'status': 'error'}, status=405)
