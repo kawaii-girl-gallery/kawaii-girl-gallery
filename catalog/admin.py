@@ -181,12 +181,12 @@ class BaseProductAdmin(admin.ModelAdmin):
         if len(parts) >= 2:
             last = parts[-1]
             if re_mod.match(r'^G\d+$', last, re_mod.IGNORECASE):
-                middle = '<br>'.join(parts[1:-1]) if len(parts) > 2 else parts[1] if len(parts) > 1 else ''
+                middle = '<br>'.join(parts[1:-1]) if len(parts) > 2 else (parts[1] if len(parts) > 1 else '')
                 return format_html(
-                    '<div class="cell-center" style="font-weight: 800; text-align:center;">{}<br>{}<br><span style="color:#aaa;font-size:12px;">{}</span></div>',
+                    '<div style="font-weight:800; text-align:center; line-height:1.8;">{}<br>{}<br><span style="color:#aaa;font-size:12px;">{}</span></div>',
                     parts[0], mark_safe(middle), last
                 )
-        return format_html('<div class="cell-center" style="font-weight: 800; text-align:center;">{}</div>', obj.name)
+        return format_html('<div style="font-weight:800; text-align:center;">{}</div>', obj.name)
     display_name_jp.short_description = '商品名'
     def display_image_jp(self, obj):
         if not obj.image: return "なし"
