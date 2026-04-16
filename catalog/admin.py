@@ -91,10 +91,10 @@ class MultipleFileField(forms.ImageField):
 class BulkUploadForm(forms.Form):
     category = forms.ChoiceField(choices=[('A4', 'A4サイズポスター'), ('TCG', 'トレーディングカード')], label='種別')
     price = forms.IntegerField(label='一括設定金額', initial=500)
-    duration_days = forms.ChoiceField(
-        choices=[(str(i), f'{i}日間') for i in range(1, 15)],
-        label='掲載日数',
-        initial='6'
+    duration_days = forms.DateField(
+        label='掲載終了日',
+        widget=forms.TextInput(attrs={'id': 'id_duration_days', 'placeholder': '日付を選択...', 'readonly': 'readonly'}),
+        required=False,
     )
     add_watermark = forms.BooleanField(label='SAMPLEの透かしを追加', required=False, initial=True)
     images = MultipleFileField(label='画像ファイル選択')
@@ -146,7 +146,13 @@ class BaseProductAdmin(admin.ModelAdmin):
             cat = request.POST.get('category', 'A4')
             pr = int(request.POST.get('price', 88))
             add_watermark = request.POST.get('add_watermark', 'true') == 'true'
-            duration_days = int(request.POST.get('duration_days', 6))
+            duration_str = request.POST.get('duration_days', '')
+            if duration_str:
+                from datetime import date
+                end_date = date.fromisoformat(duration_str)
+                duration_days = max(1, (end_date - date.today()).days + 1)
+            else:
+                duration_days = 6
             f = request.FILES.get('image')
             if not f:
                 return JsonResponse({'status': 'error', 'message': 'ファイルがありません'}, status=400)
