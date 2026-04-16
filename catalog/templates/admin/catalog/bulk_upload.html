@@ -2,6 +2,10 @@
 {% load i18n admin_urls static %}
 
 {% block extrastyle %}{{ block.super }}
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr/dist/l10n/ja.js"></script>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Rounded+Mplus+1c:wght@700;900&display=swap');
     body, #header, #content, #nav-sidebar, h1, h2, h3, .module caption { font-family: 'Rounded Mplus 1c', sans-serif !important; }
@@ -67,6 +71,15 @@
             // 初期値設定
             priceInput.value = defaultPrices[categorySelect.value] || 500;
         }
+
+        // 掲載終了日カレンダー
+        flatpickr('#id_duration_days', {
+            locale: 'ja',
+            dateFormat: 'Y-m-d',
+            minDate: 'today',
+            defaultDate: new Date(Date.now() + 6 * 24 * 60 * 60 * 1000),
+            allowInput: false,
+        });
     });
 
     function getCookie(name) {
