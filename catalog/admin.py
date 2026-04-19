@@ -204,6 +204,17 @@ class BaseProductAdmin(admin.ModelAdmin):
     display_timer_jp.short_description = '掲載期限'
 
     def changelist_view(self, request, extra_context=None):
+        # 期限切れ商品を自動アーカイブ
+        from django.utils import timezone as tz
+        now = tz.localtime(tz.now())
+        expired = Product.objects.filter(is_archived=False).exclude(duration_days=0)
+        for p in expired:
+            deadline = tz.localtime(p.created_at) + __import__('datetime').timedelta(days=p.duration_days)
+            deadline = deadline.replace(hour=23, minute=59, second=59)
+            if now > deadline:
+                p.is_archived = True
+                p.save(update_fields=['is_archived'])
+
         extra_context = extra_context or {}
         is_archive = 'Archive' in self.__class__.__name__
         app_config = apps.get_app_config('catalog')
