@@ -17,4 +17,4 @@ dj-database-url==2.3.0
 cloudinary==1.42.1
 django-cloudinary-storage==0.3.0
 requests==2.32.3
-imagekitio==5.4.0
+imagekitio==3.2.0
