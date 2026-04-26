@@ -1,5 +1,7 @@
 from django.db import models
 from django.conf import settings
+from django.db.models.signals import pre_delete
+from django.dispatch import receiver
 from PIL import Image, ImageDraw, ImageFont
 import os
 import io
@@ -17,7 +19,7 @@ class Product(models.Model):
     image_url = models.URLField('画像URL', max_length=500, blank=True, default='')
     imagekit_file_id = models.CharField('ImageKit File ID', max_length=100, blank=True, default='')
     
-    # 一時的に画像を受け取るためのフィールド（DBには保存しない、アップロードフォーム用）
+    # 一時的に画像を受け取るためのフィールド（アップロードフォーム用）
     image = models.ImageField('画像', upload_to='products/', blank=True, null=True)
     
     is_archived = models.BooleanField('保管庫送り', default=False)
@@ -125,7 +127,7 @@ class Product(models.Model):
                 else:
                     print("ImageKit upload failed")
                 
-                # ImageField はもう使わないのでクリア（DBへの保存防止）
+                # ImageField はもう使わないのでクリア
                 self.image = None
                 
             except Exception as e:
@@ -134,13 +136,7 @@ class Product(models.Model):
         super().save(*args, **kwargs)
 
     def delete(self, *args, **kwargs):
-        # ImageKit から画像を削除
-        if self.imagekit_file_id:
-            try:
-                from config.storage import delete_from_imagekit
-                delete_from_imagekit(self.imagekit_file_id)
-            except Exception as e:
-                print(f"ImageKit delete error: {e}")
+        # シグナル(pre_delete)で削除されるので、ここでは super().delete() のみ
         super().delete(*args, **kwargs)
 
     @property
@@ -148,6 +144,20 @@ class Product(models.Model):
         """テンプレート用の最適化URL（f-auto, q-auto 付与）"""
         from config.storage import get_optimized_url
         return get_optimized_url(self.image_url)
+
+
+# --- ImageKit 削除のシグナル ---
+# 個別削除でも一括削除（QuerySet.delete()）でも発火するように pre_delete を使う
+@receiver(pre_delete, sender=Product)
+def delete_imagekit_image(sender, instance, **kwargs):
+    """商品削除時にImageKitからも画像を削除（個別削除・一括削除どちらでも動作）"""
+    if instance.imagekit_file_id:
+        try:
+            from config.storage import delete_from_imagekit
+            delete_from_imagekit(instance.imagekit_file_id)
+            print(f'[ImageKit] Deleted file: {instance.imagekit_file_id}')
+        except Exception as e:
+            print(f'[ImageKit] Delete signal error: {e}')
 
 
 # --- 売上記録モデル ---
