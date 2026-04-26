@@ -195,8 +195,8 @@ class BaseProductAdmin(admin.ModelAdmin):
         return format_html('<div style="font-weight:800; text-align:center;">{}</div>', obj.name)
     display_name_jp.short_description = '商品名'
     def display_image_jp(self, obj):
-        if not obj.image: return "なし"
-        return format_html('<div class="cell-center" oncontextmenu="return false;"><img src="{}" style="max-height:150px;max-width:150px;border:3px solid #444; border-radius:10px; user-select:none; -webkit-user-drag:none; pointer-events:none;" draggable="false"></div>', obj.image.url)
+        if not obj.image_url: return "なし"
+        return format_html('<div class="cell-center" oncontextmenu="return false;"><img src="{}" style="max-height:150px;max-width:150px;border:3px solid #444; border-radius:10px; user-select:none; -webkit-user-drag:none; pointer-events:none;" draggable="false"></div>', obj.optimized_image_url)
     display_image_jp.short_description = '画像'
     def display_price_jp(self, obj): return format_html('<div class="cell-center" style="font-weight: 900; color: #00ffcc;">¥{}</div>', obj.price)
     display_price_jp.short_description = '価格'
@@ -803,7 +803,7 @@ def character_pedia_view(request):
         if 'A4' in str(p.category).upper(): data[key]['A4'] += 1
         elif 'TCG' in str(p.category).upper(): data[key]['TCG'] += 1
         data[key]['total'] += 1
-        if p.image: data[key]['images'].append(p.image.url)
+        if p.image_url: data[key]['images'].append(p.optimized_image_url)
     char_list = [(k, v, random.choice(v['images']) if v['images'] else None) for k, v in data.items()]
     context['char_list'] = sorted(char_list, key=lambda x: x[1]['total'], reverse=True)
     messages.info(request, mark_safe(COMMON_STYLE))
@@ -1134,12 +1134,12 @@ def get_app_list(self, request, app_label=None):
 admin.AdminSite.get_app_list = get_app_list
 
 def index_view_custom(self, request, extra_context=None):
-    base_products = list(Product.objects.only('image').filter(is_archived=False).order_by('?')[:50])
+    base_products = list(Product.objects.only('image_url').filter(is_archived=False).order_by('?')[:50])
     full_list = base_products * 5 
     random.shuffle(full_list)
     tiles_html = '<div class="home-tile-bg">'
     for p in full_list:
-        if p.image: tiles_html += f'<img src="{p.image.url}">'
+        if p.image_url: tiles_html += f'<img src="{p.optimized_image_url}">'
     tiles_html += '</div>'
     messages.info(request, mark_safe(COMMON_STYLE + tiles_html))
     return self.index_original(request, extra_context)
