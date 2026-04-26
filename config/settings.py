@@ -1,11 +1,14 @@
 import os
 from pathlib import Path
+
 # プロジェクトのルートディレクトリ
 BASE_DIR = Path(__file__).resolve().parent.parent
+
 # ⚠️ 本番公開用設定
 SECRET_KEY = 'django-insecure-new-pos-system-key'
 DEBUG = True 
 ALLOWED_HOSTS = ['*']
+
 # --- アプリケーション定義 ---
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -18,6 +21,7 @@ INSTALLED_APPS = [
     'cloudinary',
     'catalog', 
 ]
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
@@ -28,7 +32,9 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
+
 ROOT_URLCONF = 'config.urls'
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -44,7 +50,9 @@ TEMPLATES = [
         },
     },
 ]
+
 WSGI_APPLICATION = 'config.wsgi.application'
+
 # --- データベース設定（PostgreSQL） ---
 DATABASE_URL = os.environ.get('DATABASE_URL')
 if DATABASE_URL:
@@ -62,15 +70,18 @@ else:
             'NAME': BASE_DIR / 'db.sqlite3',
         }
     }
+
 # --- 言語・時刻設定 ---
 LANGUAGE_CODE = 'ja'
 TIME_ZONE = 'Asia/Tokyo'
 USE_I18N = True
 USE_TZ = True
+
 # --- 静的ファイル設定 ---
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'static')]
+
 # --- Cloudinary設定（画像の永続化・自動最適化） ---
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.environ.get('CLOUDINARY_CLOUD_NAME'),
@@ -78,8 +89,15 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': os.environ.get('CLOUDINARY_API_SECRET'),
     'SECURE': True,
 }
+
+# --- ImageKit設定（Cloudinary代替） ---
+IMAGEKIT_PUBLIC_KEY = os.environ.get('IMAGEKIT_PUBLIC_KEY')
+IMAGEKIT_PRIVATE_KEY = os.environ.get('IMAGEKIT_PRIVATE_KEY')
+IMAGEKIT_URL_ENDPOINT = os.environ.get('IMAGEKIT_URL_ENDPOINT')
+
 MEDIA_URL = '/media/'
 DEFAULT_FILE_STORAGE = 'config.storage.OptimizedMediaCloudinaryStorage'
+
 STORAGES = {
     'default': {
         'BACKEND': 'config.storage.OptimizedMediaCloudinaryStorage',
@@ -88,10 +106,13 @@ STORAGES = {
         'BACKEND': 'whitenoise.storage.StaticFilesStorage',
     },
 }
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
 # --- 認証設定 ---
 LOGIN_URL = '/admin/login/'
 LOGIN_REDIRECT_URL = '/admin/'
+
 # --- パフォーマンス設定 ---
 DATA_UPLOAD_MAX_NUMBER_FILES = 1000 
 DATA_UPLOAD_MAX_MEMORY_SIZE = 104857600
