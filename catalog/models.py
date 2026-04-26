@@ -147,11 +147,11 @@ class Product(models.Model):
 
 
 # --- ImageKit 削除のシグナル ---
-# 個別削除でも一括削除（QuerySet.delete()）でも発火するように pre_delete を使う
-@receiver(pre_delete, sender=Product)
+# senderを指定しない汎用シグナル(プロキシモデル経由の削除でも発火する)
+@receiver(pre_delete)
 def delete_imagekit_image(sender, instance, **kwargs):
-    """商品削除時にImageKitからも画像を削除（個別削除・一括削除どちらでも動作）"""
-    if instance.imagekit_file_id:
+    """商品削除時にImageKitからも画像を削除（個別・一括・proxy model 全対応）"""
+    if hasattr(instance, 'imagekit_file_id') and instance.imagekit_file_id:
         try:
             from config.storage import delete_from_imagekit
             delete_from_imagekit(instance.imagekit_file_id)
