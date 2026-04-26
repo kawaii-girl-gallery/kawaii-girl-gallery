@@ -1,6 +1,5 @@
 from cloudinary_storage.storage import MediaCloudinaryStorage
 from imagekitio import ImageKit
-from imagekitio.models.UploadFileRequestOptions import UploadFileRequestOptions
 from django.conf import settings
 
 
@@ -31,18 +30,17 @@ def upload_to_imagekit(file, file_name, folder='products'):
     try:
         imagekit = get_imagekit_client()
         
-        options = UploadFileRequestOptions(
-            folder=f'/{folder}/',
-            use_unique_file_name=True,
-        )
-        
         if hasattr(file, 'seek'):
             file.seek(0)
         
+        # v5系のSDK: optionsは辞書または直接引数で渡す
         result = imagekit.upload_file(
             file=file,
             file_name=file_name,
-            options=options,
+            options={
+                'folder': f'/{folder}/',
+                'use_unique_file_name': True,
+            }
         )
         
         return {
