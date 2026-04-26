@@ -36,11 +36,18 @@ def upload_to_imagekit(file, file_name, folder='products'):
             use_unique_file_name=True,
         )
         
+        # ファイルポインタを先頭に戻す
         if hasattr(file, 'seek'):
             file.seek(0)
         
+        # BytesIOからbytesに変換してアップロード（v3 SDKの確実な方法）
+        if hasattr(file, 'read'):
+            file_bytes = file.read()
+        else:
+            file_bytes = file
+        
         result = imagekit.upload_file(
-            file=file,
+            file=file_bytes,
             file_name=file_name,
             options=options,
         )
