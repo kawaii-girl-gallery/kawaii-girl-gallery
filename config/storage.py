@@ -40,11 +40,14 @@ def upload_to_imagekit(file, file_name, folder='products'):
         if hasattr(file, 'seek'):
             file.seek(0)
         
-        # BytesIOからbytesに変換してアップロード（v3 SDKの確実な方法）
+        # BytesIOからbytesに変換してアップロード
         if hasattr(file, 'read'):
             file_bytes = file.read()
         else:
             file_bytes = file
+        
+        # ★デバッグログ
+        print(f'[ImageKit DEBUG] file_name={file_name}, bytes_size={len(file_bytes)}')
         
         result = imagekit.upload_file(
             file=file_bytes,
