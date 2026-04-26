@@ -24,27 +24,18 @@ def get_imagekit_client():
     )
 
 
-def upload_to_imagekit(file, file_name, folder='posters'):
+def upload_to_imagekit(file, file_name, folder='products'):
     """
     ファイルをImageKitにアップロードして、URLとfile_idを返す
-    
-    Args:
-        file: Django の UploadedFile オブジェクト or バイナリ
-        file_name: 保存時のファイル名
-        folder: ImageKit 内のフォルダ（デフォルト 'posters'）
-    
-    Returns:
-        dict: {'url': str, 'file_id': str} または None（失敗時）
     """
     try:
         imagekit = get_imagekit_client()
         
         options = UploadFileRequestOptions(
             folder=f'/{folder}/',
-            use_unique_file_name=True,  # 同名ファイルでも自動で別名にしてくれる
+            use_unique_file_name=True,
         )
         
-        # ファイルポインタを先頭に戻してから読み込む
         if hasattr(file, 'seek'):
             file.seek(0)
         
@@ -59,7 +50,6 @@ def upload_to_imagekit(file, file_name, folder='posters'):
             'file_id': result.file_id,
         }
     except Exception as e:
-        # ログに残す（本番では logger.error 推奨）
         print(f'ImageKit upload error: {e}')
         return None
 
@@ -83,7 +73,6 @@ def bulk_delete_from_imagekit(file_ids):
         return False
     try:
         imagekit = get_imagekit_client()
-        # 100件ずつチャンク分け
         for i in range(0, len(file_ids), 100):
             chunk = file_ids[i:i+100]
             imagekit.bulk_delete_files(file_ids=chunk)
@@ -94,10 +83,7 @@ def bulk_delete_from_imagekit(file_ids):
 
 
 def get_optimized_url(url, transformation='f-auto,q-auto'):
-    """
-    ImageKit URLに変換パラメータを付与して最適化URLを返す
-    例: https://ik.imagekit.io/xxx/file.jpg → https://ik.imagekit.io/xxx/file.jpg?tr=f-auto,q-auto
-    """
+    """ImageKit URLに変換パラメータを付与して最適化URLを返す"""
     if not url:
         return url
     if '?tr=' in url:
