@@ -17,9 +17,9 @@ class OptimizedMediaCloudinaryStorage(MediaCloudinaryStorage):
 def get_imagekit_client():
     """ImageKit SDKクライアントを生成して返す"""
     return ImageKit(
-        public_key=settings.IMAGEKIT_PUBLIC_KEY,
-        private_key=settings.IMAGEKIT_PRIVATE_KEY,
-        url_endpoint=settings.IMAGEKIT_URL_ENDPOINT,
+        publicKey=settings.IMAGEKIT_PUBLIC_KEY,
+        privateKey=settings.IMAGEKIT_PRIVATE_KEY,
+        urlEndpoint=settings.IMAGEKIT_URL_ENDPOINT,
     )
 
 
@@ -33,7 +33,6 @@ def upload_to_imagekit(file, file_name, folder='products'):
         if hasattr(file, 'seek'):
             file.seek(0)
         
-        # v5系のSDK: optionsは辞書または直接引数で渡す
         result = imagekit.upload_file(
             file=file,
             file_name=file_name,
