@@ -1,5 +1,6 @@
 from cloudinary_storage.storage import MediaCloudinaryStorage
 from imagekitio import ImageKit
+from imagekitio.models.UploadFileRequestOptions import UploadFileRequestOptions
 from django.conf import settings
 
 
@@ -17,9 +18,9 @@ class OptimizedMediaCloudinaryStorage(MediaCloudinaryStorage):
 def get_imagekit_client():
     """ImageKit SDKクライアントを生成して返す"""
     return ImageKit(
-        publicKey=settings.IMAGEKIT_PUBLIC_KEY,
-        privateKey=settings.IMAGEKIT_PRIVATE_KEY,
-        urlEndpoint=settings.IMAGEKIT_URL_ENDPOINT,
+        public_key=settings.IMAGEKIT_PUBLIC_KEY,
+        private_key=settings.IMAGEKIT_PRIVATE_KEY,
+        url_endpoint=settings.IMAGEKIT_URL_ENDPOINT,
     )
 
 
@@ -30,16 +31,18 @@ def upload_to_imagekit(file, file_name, folder='products'):
     try:
         imagekit = get_imagekit_client()
         
+        options = UploadFileRequestOptions(
+            folder=f'/{folder}/',
+            use_unique_file_name=True,
+        )
+        
         if hasattr(file, 'seek'):
             file.seek(0)
         
         result = imagekit.upload_file(
             file=file,
             file_name=file_name,
-            options={
-                'folder': f'/{folder}/',
-                'use_unique_file_name': True,
-            }
+            options=options,
         )
         
         return {
