@@ -29,6 +29,8 @@ def upload_to_imagekit(file, file_name, folder='products'):
     ファイルをImageKitにアップロードして、URLとfile_idを返す
     """
     try:
+        import base64
+        
         imagekit = get_imagekit_client()
         
         options = UploadFileRequestOptions(
@@ -40,7 +42,7 @@ def upload_to_imagekit(file, file_name, folder='products'):
         if hasattr(file, 'seek'):
             file.seek(0)
         
-        # BytesIOからbytesに変換してアップロード
+        # bytesに変換
         if hasattr(file, 'read'):
             file_bytes = file.read()
         else:
@@ -49,8 +51,11 @@ def upload_to_imagekit(file, file_name, folder='products'):
         # ★デバッグログ
         print(f'[ImageKit DEBUG] file_name={file_name}, bytes_size={len(file_bytes)}')
         
+        # base64エンコードして送信(v3 SDKで安定する方法)
+        file_b64 = base64.b64encode(file_bytes).decode('utf-8')
+        
         result = imagekit.upload_file(
-            file=file_bytes,
+            file=file_b64,
             file_name=file_name,
             options=options,
         )
