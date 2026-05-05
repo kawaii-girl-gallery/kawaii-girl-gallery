@@ -516,7 +516,7 @@ function closePanel(id) {{
                 #nav-sidebar {{ display: none !important; }}
                 .home-tile-bg {{ display: none !important; }}
                 
-                /* 検索バー行(JSスクロール処理で固定) */
+                /* 検索バー行(JSで固定処理) */
                 .smart-top-bar {{
                     flex-wrap: wrap !important;
                     gap: 6px !important;
@@ -821,7 +821,7 @@ function closePanel(id) {{
                     var contentWrapper = document.querySelector("#content");
                     if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
                 }}
-                // bodyにpaddingTopを追加してコンテンツが隠れないように(PC・スマホ両方)
+                // bodyにpaddingTopを追加してコンテンツが隠れないように
                 document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
                 var tabWrap = document.querySelector(".qs-tab-wrap");
                 var charPanel = document.querySelector("#char-panel");
@@ -850,6 +850,22 @@ function closePanel(id) {{
 
                 changelist.parentNode.insertBefore(actionBar, changelist);
                 changelist.parentNode.insertBefore(topBar, actionBar);
+                
+                // ✨ スマホでは最初から topBar を固定
+                if (isMobile) {{
+                    setTimeout(function() {{
+                        var topBarH = topBar.offsetHeight;
+                        topBar.style.position = "fixed";
+                        topBar.style.top = (headerH + breadcrumbsH) + "px";
+                        topBar.style.left = "0px";
+                        topBar.style.width = window.innerWidth + "px";
+                        topBar.style.zIndex = "600";
+                        topBar.style.background = "#1a1a1a";
+                        // topBarで隠れる分、bodyのpaddingを増やす
+                        document.body.style.paddingTop = (headerH + breadcrumbsH + topBarH) + "px";
+                    }}, 100);
+                }}
+                
                 // DOMに挿入後に位置を計算
                 var topBarOrigTop = topBar.getBoundingClientRect().top + window.scrollY;
                 var fixedTopVal = header ? header.offsetHeight : 75;
@@ -857,40 +873,39 @@ function closePanel(id) {{
                 var scrollBarW = window.innerWidth - document.documentElement.clientWidth;
                 var topBarW = topBar.offsetWidth;
                 var topBarLeft = topBar.getBoundingClientRect().left;
-                // ✨ スクロールで検索窓行・操作行を固定 (PC・スマホ両方対応)
+                // ✨ スクロールで検索窓行・操作行を固定 (PCのみ、スマホは既にfixed)
 
                 window.addEventListener("scroll", function() {{
                     var scrollY = window.scrollY;
                     var isMobileNow = window.innerWidth <= 768;
+                    if (isMobileNow) return;  // ✨ スマホでは既にfixed なので何もしない
                     if (scrollY > 44) {{
                         topBar.style.position = "fixed";
                         topBar.style.top = fixedTopVal + "px";
-                        topBar.style.left = isMobileNow ? "0px" : (topBarLeft + "px");
-                        var adjustedW = isMobileNow ? window.innerWidth : (document.querySelector("#result_list") ? document.querySelector("#result_list").offsetWidth : topBarW);
+                        topBar.style.left = topBarLeft + "px";
+                        var adjustedW = document.querySelector("#result_list") ? document.querySelector("#result_list").offsetWidth : topBarW;
                         topBar.style.width = adjustedW + "px";
                         topBar.style.zIndex = "600";
                         topBar.style.background = "#1a1a1a";
-                        if (!isMobileNow) {{
-                            actionBar.style.position = "fixed";
-                            actionBar.style.top = (fixedTopVal + topBar.offsetHeight) + "px";
-                            actionBar.style.left = topBarLeft + "px";
-                            actionBar.style.width = adjustedW + "px";
-                            actionBar.style.zIndex = "599";
-                            actionBar.style.background = "#1a1a1a";
-                        }}
+                        actionBar.style.position = "fixed";
+                        actionBar.style.top = (fixedTopVal + topBar.offsetHeight) + "px";
+                        actionBar.style.left = topBarLeft + "px";
+                        actionBar.style.width = adjustedW + "px";
+                        actionBar.style.zIndex = "599";
+                        actionBar.style.background = "#1a1a1a";
+
                     }} else {{
                         topBar.style.position = "";
                         topBar.style.top = "";
                         topBar.style.left = "";
                         topBar.style.width = "";
                         topBar.style.background = "";
-                        if (!isMobileNow) {{
-                            actionBar.style.position = "";
-                            actionBar.style.top = "";
-                            actionBar.style.left = "";
-                            actionBar.style.width = "";
-                            actionBar.style.background = "";
-                        }}
+                        actionBar.style.position = "";
+                        actionBar.style.top = "";
+                        actionBar.style.left = "";
+                        actionBar.style.width = "";
+                        actionBar.style.background = "";
+
                     }}
                 }});
             }});
