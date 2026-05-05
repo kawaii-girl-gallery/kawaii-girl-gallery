@@ -516,8 +516,16 @@ function closePanel(id) {{
                 #nav-sidebar {{ display: none !important; }}
                 .home-tile-bg {{ display: none !important; }}
                 
-                /* 検索バー行を再配置 */
-                .smart-top-bar {{ flex-wrap: wrap !important; gap: 6px !important; }}
+                /* 検索バー行を再配置 + 上部固定 */
+                .smart-top-bar {{
+                    flex-wrap: wrap !important;
+                    gap: 6px !important;
+                    position: sticky !important;
+                    top: 60px !important;
+                    z-index: 600 !important;
+                    background: #1a1a1a !important;
+                    margin-bottom: 8px !important;
+                }}
                 .smart-search-form {{ flex: 1 1 100% !important; gap: 6px !important; }}
                 .smart-search-form input[type=text] {{
                     flex: 1 !important; width: auto !important;
