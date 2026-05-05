@@ -521,10 +521,11 @@ function closePanel(id) {{
                     flex-wrap: wrap !important;
                     gap: 6px !important;
                     position: sticky !important;
-                    top: 60px !important;
+                    top: 0 !important;
                     z-index: 600 !important;
                     background: #1a1a1a !important;
                     margin-bottom: 8px !important;
+                    padding: 8px 10px !important;
                 }}
                 .smart-search-form {{ flex: 1 1 100% !important; gap: 6px !important; }}
                 .smart-search-form input[type=text] {{
@@ -656,6 +657,9 @@ function closePanel(id) {{
         </style>
         <script>
             document.addEventListener('DOMContentLoaded', function() {{
+                // ✨ スマホ判定(これでPC/スマホの動作を分岐)
+                var isMobile = window.innerWidth <= 768;
+                
                 // ✨ アコーディオンパネルとタブをbodyに移動（messagelistから脱出）
                 var tabWrap = document.querySelector(".qs-tab-wrap");
                 var charPanel = document.getElementById("char-panel");
@@ -797,8 +801,7 @@ function closePanel(id) {{
                 }}
 
                 changelist.parentNode.insertBefore(actionBar, changelist);
-                // ✨ タブとパネルをbodyに移動（fixed positionを効かせるため）
-                // ✨ ヘッダー・パンくず・サイドバーをfixedで固定
+                // ✨ ヘッダー・パンくず・サイドバーをfixedで固定 (PCのみ)
                 var header = document.querySelector("#header");
                 var breadcrumbsNav = document.querySelector(".breadcrumbs") ? document.querySelector(".breadcrumbs").parentElement : null;
                 var breadcrumbs = document.querySelector(".breadcrumbs");
@@ -807,20 +810,20 @@ function closePanel(id) {{
                 var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
                 var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
 
-                if (header) {{
+                if (header && !isMobile) {{
                     header.style.cssText += "; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;";
                 }}
-                if (breadcrumbs) {{
+                if (breadcrumbs && !isMobile) {{
                     document.body.appendChild(breadcrumbs);
                     breadcrumbs.style.cssText = "position: fixed !important; top: " + headerH + "px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1999 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important;";
                 }}
-                if (navSidebar) {{
+                if (navSidebar && !isMobile) {{
                     navSidebar.style.cssText += "; position: fixed !important; top: " + (headerH + breadcrumbsH) + "px !important; left: 0 !important; width: " + sidebarW + "px !important; height: calc(100vh - " + (headerH + breadcrumbsH) + "px) !important; overflow-y: auto !important; z-index: 1500 !important;";
                     var contentWrapper = document.querySelector("#content");
                     if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
                 }}
-                // bodyにpaddingTopを追加してコンテンツが隠れないように
-                document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
+                // bodyにpaddingTopを追加してコンテンツが隠れないように (PCのみ)
+                if (!isMobile) document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
                 var tabWrap = document.querySelector(".qs-tab-wrap");
                 var charPanel = document.querySelector("#char-panel");
                 var workPanel = document.querySelector("#work-panel");
@@ -855,9 +858,10 @@ function closePanel(id) {{
                 var scrollBarW = window.innerWidth - document.documentElement.clientWidth;
                 var topBarW = topBar.offsetWidth;
                 var topBarLeft = topBar.getBoundingClientRect().left;
-                // ✨ スクロールで検索窓行・操作行を固定
+                // ✨ スクロールで検索窓行・操作行を固定 (PCのみ、スマホはCSS stickyで対応)
 
                 window.addEventListener("scroll", function() {{
+                    if (window.innerWidth <= 768) return;  // スマホではJS固定を無効化
                     var scrollY = window.scrollY;
                     if (scrollY > 44) {{
                         topBar.style.position = "fixed";
