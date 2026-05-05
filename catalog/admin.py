@@ -575,8 +575,13 @@ function closePanel(id) {{
                     font-size: 12px !important;
                     border: none !important;
                 }}
-                .qs-panel {{ width: 100% !important; right: -100% !important; }}
+                .qs-panel {{
+                    width: 100% !important;
+                    right: -100% !important;
+                    height: calc(100vh - 44px) !important;
+                }}
                 .qs-panel.open {{ right: 0 !important; }}
+                .qs-panel-body {{ padding-bottom: 60px !important; }}
                 
                 /* 商品一覧をカード形式に */
                 #result_list, #result_list tbody {{ display: block !important; }}
