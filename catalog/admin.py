@@ -516,13 +516,10 @@ function closePanel(id) {{
                 #nav-sidebar {{ display: none !important; }}
                 .home-tile-bg {{ display: none !important; }}
                 
-                /* 検索バー行を再配置 + 上部固定 */
+                /* 検索バー行(JSスクロール処理で固定) */
                 .smart-top-bar {{
                     flex-wrap: wrap !important;
                     gap: 6px !important;
-                    position: sticky !important;
-                    top: 0 !important;
-                    z-index: 600 !important;
                     background: #1a1a1a !important;
                     margin-bottom: 8px !important;
                     padding: 8px 10px !important;
@@ -657,7 +654,7 @@ function closePanel(id) {{
         </style>
         <script>
             document.addEventListener('DOMContentLoaded', function() {{
-                // ✨ スマホ判定(これでPC/スマホの動作を分岐)
+                // ✨ スマホ判定
                 var isMobile = window.innerWidth <= 768;
                 
                 // ✨ アコーディオンパネルとタブをbodyに移動（messagelistから脱出）
@@ -801,7 +798,7 @@ function closePanel(id) {{
                 }}
 
                 changelist.parentNode.insertBefore(actionBar, changelist);
-                // ✨ ヘッダー・パンくず・サイドバーをfixedで固定 (PCのみ)
+                // ✨ ヘッダー・パンくず・サイドバーをfixedで固定
                 var header = document.querySelector("#header");
                 var breadcrumbsNav = document.querySelector(".breadcrumbs") ? document.querySelector(".breadcrumbs").parentElement : null;
                 var breadcrumbs = document.querySelector(".breadcrumbs");
@@ -810,20 +807,22 @@ function closePanel(id) {{
                 var breadcrumbsH = breadcrumbs ? breadcrumbs.offsetHeight : 41;
                 var sidebarW = navSidebar ? navSidebar.offsetWidth : 277;
 
-                if (header && !isMobile) {{
+                // ヘッダーとパンくずはPC・スマホ両方で固定
+                if (header) {{
                     header.style.cssText += "; position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 2000 !important;";
                 }}
-                if (breadcrumbs && !isMobile) {{
+                if (breadcrumbs) {{
                     document.body.appendChild(breadcrumbs);
                     breadcrumbs.style.cssText = "position: fixed !important; top: " + headerH + "px !important; left: 0 !important; right: 0 !important; width: 100% !important; z-index: 1999 !important; background: #1a1c23 !important; padding: 8px 20px !important; margin: 0 !important;";
                 }}
+                // サイドバーはPCのみ
                 if (navSidebar && !isMobile) {{
                     navSidebar.style.cssText += "; position: fixed !important; top: " + (headerH + breadcrumbsH) + "px !important; left: 0 !important; width: " + sidebarW + "px !important; height: calc(100vh - " + (headerH + breadcrumbsH) + "px) !important; overflow-y: auto !important; z-index: 1500 !important;";
                     var contentWrapper = document.querySelector("#content");
                     if (contentWrapper) contentWrapper.style.marginLeft = sidebarW + "px";
                 }}
-                // bodyにpaddingTopを追加してコンテンツが隠れないように (PCのみ)
-                if (!isMobile) document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
+                // bodyにpaddingTopを追加してコンテンツが隠れないように(PC・スマホ両方)
+                document.body.style.paddingTop = (headerH + breadcrumbsH) + "px";
                 var tabWrap = document.querySelector(".qs-tab-wrap");
                 var charPanel = document.querySelector("#char-panel");
                 var workPanel = document.querySelector("#work-panel");
@@ -858,38 +857,40 @@ function closePanel(id) {{
                 var scrollBarW = window.innerWidth - document.documentElement.clientWidth;
                 var topBarW = topBar.offsetWidth;
                 var topBarLeft = topBar.getBoundingClientRect().left;
-                // ✨ スクロールで検索窓行・操作行を固定 (PCのみ、スマホはCSS stickyで対応)
+                // ✨ スクロールで検索窓行・操作行を固定 (PC・スマホ両方対応)
 
                 window.addEventListener("scroll", function() {{
-                    if (window.innerWidth <= 768) return;  // スマホではJS固定を無効化
                     var scrollY = window.scrollY;
+                    var isMobileNow = window.innerWidth <= 768;
                     if (scrollY > 44) {{
                         topBar.style.position = "fixed";
                         topBar.style.top = fixedTopVal + "px";
-                        topBar.style.left = topBarLeft + "px";
-                        var adjustedW = document.querySelector("#result_list") ? document.querySelector("#result_list").offsetWidth : topBarW;
+                        topBar.style.left = isMobileNow ? "0px" : (topBarLeft + "px");
+                        var adjustedW = isMobileNow ? window.innerWidth : (document.querySelector("#result_list") ? document.querySelector("#result_list").offsetWidth : topBarW);
                         topBar.style.width = adjustedW + "px";
                         topBar.style.zIndex = "600";
                         topBar.style.background = "#1a1a1a";
-                        actionBar.style.position = "fixed";
-                        actionBar.style.top = (fixedTopVal + topBar.offsetHeight) + "px";
-                        actionBar.style.left = topBarLeft + "px";
-                        actionBar.style.width = adjustedW + "px";
-                        actionBar.style.zIndex = "599";
-                        actionBar.style.background = "#1a1a1a";
-
+                        if (!isMobileNow) {{
+                            actionBar.style.position = "fixed";
+                            actionBar.style.top = (fixedTopVal + topBar.offsetHeight) + "px";
+                            actionBar.style.left = topBarLeft + "px";
+                            actionBar.style.width = adjustedW + "px";
+                            actionBar.style.zIndex = "599";
+                            actionBar.style.background = "#1a1a1a";
+                        }}
                     }} else {{
                         topBar.style.position = "";
                         topBar.style.top = "";
                         topBar.style.left = "";
                         topBar.style.width = "";
                         topBar.style.background = "";
-                        actionBar.style.position = "";
-                        actionBar.style.top = "";
-                        actionBar.style.left = "";
-                        actionBar.style.width = "";
-                        actionBar.style.background = "";
-
+                        if (!isMobileNow) {{
+                            actionBar.style.position = "";
+                            actionBar.style.top = "";
+                            actionBar.style.left = "";
+                            actionBar.style.width = "";
+                            actionBar.style.background = "";
+                        }}
                     }}
                 }});
             }});
