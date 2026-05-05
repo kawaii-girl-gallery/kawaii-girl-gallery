@@ -754,7 +754,9 @@ function closePanel(id) {{
     @admin.action(description="✅ 選択した商品を保管庫へ移動")
     def move_to_archive(self, request, queryset): queryset.update(is_archived=True)
     @admin.action(description="⏪ 選択した商品を商品一覧に戻す")
-    def restore_from_archive(self, request, queryset): queryset.update(is_archived=False)
+    def restore_from_archive(self, request, queryset):
+        from django.utils import timezone as tz
+        queryset.update(is_archived=False, created_at=tz.now())
 
 @admin.register(Show_ProductList_A4)
 class A4PosterAdmin(BaseProductAdmin):
