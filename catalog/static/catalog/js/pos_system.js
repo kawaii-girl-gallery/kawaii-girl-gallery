@@ -142,18 +142,80 @@ function bulkAddToCart() {
 }
 
 let cart = JSON.parse(localStorage.getItem('pos_cart_data')) || [];
+let cartOpen = false; // ✨ スマホでのカート展開状態
+
+function toggleCart() {
+    cartOpen = !cartOpen;
+    renderCart();
+}
+
 function renderCart() {
     let cartPopup = document.getElementById('cart-popup');
     if (!cartPopup) {
         cartPopup = document.createElement('div');
         cartPopup.id = 'cart-popup';
-        cartPopup.style = "position:fixed; bottom:20px; right:20px; width:280px; background:#111; color:white; padding:15px; border-radius:10px; z-index:9999; border:1px solid #444; box-shadow:0 10px 30px rgba(0,0,0,0.5);";
         document.body.appendChild(cartPopup);
     }
+
+    if (cart.length === 0) {
+        cartPopup.style.display = 'none';
+        return;
+    }
+
+    const isMobile = window.innerWidth <= 768;
     const total = cart.reduce((sum, item) => sum + item.price, 0);
-    cartPopup.innerHTML = `<h3>🛒 カート合計</h3><ul id="cart-list" style="margin:0; padding:0; list-style:none; max-height:220px; overflow-y:auto;">${cart.map((item, index) => `<li style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:12px; border-bottom:1px solid #222; padding-bottom:5px;"><div style="display:flex; align-items:center; gap:8px; flex:1; overflow:hidden;"><img src="${item.url}" style="width:35px; height:35px; object-fit:cover; border-radius:3px;" oncontextmenu="return false;" draggable="false"><div style="display:flex; flex-direction:column; overflow:hidden;"><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:bold;">${item.name}</span><span style="color:#ffcc00;">¥${item.price.toLocaleString()}</span>${item.category ? `<span style="color:#aaa; font-size:10px;">${item.category}</span>` : ''}</div></div><button onclick="removeFromCart(${index})" style="background:transparent; color:#ff4444; border:none; cursor:pointer; font-size:16px; padding:0 5px; font-weight:bold;">×</button></li>`).join('')}</ul><div style="margin-top:10px; border-top:1px solid #333; padding-top:8px; display:flex; justify-content:space-between; font-weight:bold;"><span>合計:</span><span>¥${total.toLocaleString()}</span></div><button onclick="checkout()" style="width:100%; margin-top:10px; background:#28a745; color:white; border:none; padding:12px; cursor:pointer; border-radius:4px; font-weight:bold; font-size:16px;">✨ 会計確定</button><button onclick="clearCart()" style="width:100%; margin-top:10px; background:#333; color:white; border:none; padding:8px; cursor:pointer; border-radius:4px; font-size:12px;">リセット</button>`;
-    cartPopup.style.display = cart.length > 0 ? 'block' : 'none';
+
+    // ✨ スマホ + 閉じてる → アイコンのみ表示
+    if (isMobile && !cartOpen) {
+        cartPopup.style.cssText = "position:fixed; bottom:60px; right:15px; z-index:9999; padding:0; background:transparent; border:none; box-shadow:none;";
+        cartPopup.innerHTML = `
+            <button onclick="toggleCart()" style="
+                width:60px; height:60px; border-radius:50%;
+                background:#28a745; color:white; border:3px solid #fff;
+                font-size:26px; cursor:pointer;
+                box-shadow:0 4px 15px rgba(0,0,0,0.6);
+                position:relative; padding:0;
+                font-weight:900;
+                display:flex; align-items:center; justify-content:center;
+            ">
+                🛒
+                <span style="
+                    position:absolute; top:-6px; right:-6px;
+                    background:#ff4444; color:white;
+                    min-width:26px; height:26px; padding:0 6px;
+                    border-radius:13px;
+                    font-size:13px;
+                    display:flex; align-items:center; justify-content:center;
+                    font-weight:900; border:2px solid #fff;
+                    box-sizing:border-box;
+                ">${cart.length}</span>
+            </button>
+        `;
+        cartPopup.style.display = 'block';
+        return;
+    }
+
+    // ✨ スマホ + 開いてる、または PC → カート内容を表示
+    if (isMobile) {
+        // スマホ展開時:画面下、横幅いっぱい、bottomタブ(44px)の上に配置
+        cartPopup.style.cssText = "position:fixed; bottom:50px; left:10px; right:10px; max-height:70vh; background:#1a1a1a; color:#eee; padding:15px; border-radius:15px; z-index:9999; border:2px solid #28a745; box-shadow:0 10px 40px rgba(0,0,0,0.8); overflow-y:auto;";
+    } else {
+        // PCはこれまで通り
+        cartPopup.style.cssText = "position:fixed; bottom:30px; right:30px; width:320px; background:#1a1a1a; color:#eee; padding:20px; border-radius:15px; z-index:10000; border:2px solid #28a745; box-shadow:0 10px 40px rgba(0,0,0,0.8);";
+    }
+
+    // 閉じるボタン(スマホ展開時のみ)
+    const closeBtn = isMobile ? `<button onclick="toggleCart()" style="position:absolute; top:8px; right:10px; background:transparent; border:none; color:#aaa; font-size:28px; cursor:pointer; width:36px; height:36px; padding:0; line-height:1;">×</button>` : '';
+
+    cartPopup.innerHTML = closeBtn + `<h3 style="margin:0 0 10px 0;">🛒 カート合計</h3><ul id="cart-list" style="margin:0; padding:0; list-style:none; max-height:220px; overflow-y:auto;">${cart.map((item, index) => `<li style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; font-size:12px; border-bottom:1px solid #222; padding-bottom:5px;"><div style="display:flex; align-items:center; gap:8px; flex:1; overflow:hidden;"><img src="${item.url}" style="width:35px; height:35px; object-fit:cover; border-radius:3px;" oncontextmenu="return false;" draggable="false"><div style="display:flex; flex-direction:column; overflow:hidden;"><span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-weight:bold;">${item.name}</span><span style="color:#ffcc00;">¥${item.price.toLocaleString()}</span>${item.category ? `<span style="color:#aaa; font-size:10px;">${item.category}</span>` : ''}</div></div><button onclick="removeFromCart(${index})" style="background:transparent; color:#ff4444; border:none; cursor:pointer; font-size:16px; padding:0 5px; font-weight:bold;">×</button></li>`).join('')}</ul><div style="margin-top:10px; border-top:1px solid #333; padding-top:8px; display:flex; justify-content:space-between; font-weight:bold;"><span>合計:</span><span>¥${total.toLocaleString()}</span></div><button onclick="checkout()" style="width:100%; margin-top:10px; background:#28a745; color:white; border:none; padding:12px; cursor:pointer; border-radius:4px; font-weight:bold; font-size:16px;">✨ 会計確定</button><button onclick="clearCart()" style="width:100%; margin-top:10px; background:#333; color:white; border:none; padding:8px; cursor:pointer; border-radius:4px; font-size:12px;">リセット</button>`;
+    cartPopup.style.display = 'block';
 }
+
+// ✨ 画面リサイズで再レンダリング
+window.addEventListener('resize', function() {
+    renderCart();
+});
+
 async function checkout() {
     if (cart.length === 0) return;
 
@@ -163,7 +225,7 @@ async function checkout() {
         dialog.id = 'checkout-dialog';
         dialog.style = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:99999; display:flex; align-items:center; justify-content:center;';
         dialog.innerHTML = `
-            <div style="background:#1a1a1a; border:2px solid #ff4d94; border-radius:15px; padding:30px; width:320px; text-align:center;">
+            <div style="background:#1a1a1a; border:2px solid #ff4d94; border-radius:15px; padding:30px; width:320px; max-width:90vw; text-align:center;">
                 <h3 style="color:#ff4d94; margin:0 0 10px 0;">💖 お名前を入力してください</h3>
                 <p style="color:#aaa; font-size:12px; margin:0 0 15px 0;">※ヤフオクと同じ名前でお願いします。</p>
                 <input id="buyer-name-input" type="text" placeholder="お名前" style="width:100%; padding:10px; background:#333; color:#fff; border:1px solid #555; border-radius:8px; font-size:16px; box-sizing:border-box; margin-bottom:15px;">
@@ -225,6 +287,7 @@ async function confirmCheckout() {
         if (response.ok) {
             const data = await response.json();
             cart = [];
+            cartOpen = false;
             localStorage.removeItem('pos_cart_data');
             renderCart();
             window.open('/admin/order-receipt/' + data.order_number + '/', '_blank');
@@ -232,6 +295,6 @@ async function confirmCheckout() {
     } catch (error) { alert("通信エラー: " + error); }
 }
 function removeFromCart(index) { cart.splice(index, 1); localStorage.setItem('pos_cart_data', JSON.stringify(cart)); renderCart(); }
-function clearCart() { if(confirm("カートをリセットしますか？")) { cart = []; localStorage.removeItem('pos_cart_data'); renderCart(); } }
+function clearCart() { if(confirm("カートをリセットしますか？")) { cart = []; cartOpen = false; localStorage.removeItem('pos_cart_data'); renderCart(); } }
 function getCookie(name) { let v = null; if (document.cookie && document.cookie !== '') { const cookies = document.cookie.split(';'); for (let i = 0; i < cookies.length; i++) { const c = cookies[i].trim(); if (c.substring(0, name.length + 1) === (name + '=')) { v = decodeURIComponent(c.substring(name.length + 1)); break; } } } return v; }
 document.addEventListener('DOMContentLoaded', () => renderCart());
