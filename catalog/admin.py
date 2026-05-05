@@ -502,6 +502,149 @@ function closePanel(id) {{
             .modal-content {{ max-height: 70vh !important; max-width: 80vw !important; border: 3px solid #fff !important; border-radius: 0 !important; display: block !important; }}
             #modal-add-btn {{ position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; height: 40px !important; background: rgba(40, 167, 69, 0.9) !important; color: white !important; font-size: 15px !important; font-weight: 900 !important; border: none !important; border-bottom: 2px solid #fff !important; z-index: 21000 !important; display: flex !important; align-items: center !important; justify-content: center !important; cursor: pointer !important; }}
             .close-btn {{ position: fixed !important; top: 50px !important; right: 30px !important; color: #fff !important; font-size: 50px !important; z-index: 21100 !important; cursor: pointer; }}
+
+            /* ✨ スマホ用レイアウト (768px以下) */
+            @media (max-width: 768px) {{
+                /* 横スクロール禁止 */
+                html, body {{ overflow-x: hidden !important; }}
+                
+                /* ヘッダーをコンパクトに */
+                #header {{ padding: 8px 12px !important; }}
+                #branding h1 {{ font-size: 18px !important; gap: 6px !important; }}
+                .breadcrumbs {{ font-size: 11px !important; padding: 6px 12px !important; }}
+                #content {{ margin: 8px !important; margin-left: 8px !important; }}
+                #nav-sidebar {{ display: none !important; }}
+                .home-tile-bg {{ display: none !important; }}
+                
+                /* 検索バー行を再配置 */
+                .smart-top-bar {{ flex-wrap: wrap !important; gap: 6px !important; }}
+                .smart-search-form {{ flex: 1 1 100% !important; gap: 6px !important; }}
+                .smart-search-form input[type=text] {{
+                    flex: 1 !important; width: auto !important;
+                    font-size: 14px !important; padding: 8px 10px !important;
+                }}
+                .smart-search-form input[type=submit] {{
+                    font-size: 14px !important; padding: 8px 16px !important;
+                }}
+                .smart-paginator {{ flex: 1 1 100% !important; justify-content: center !important; }}
+                .smart-paginator a, .smart-paginator span.this-page {{
+                    min-width: 28px !important; height: 28px !important; font-size: 13px !important;
+                }}
+                .smart-top-bar-spacer {{ display: none !important; }}
+                
+                /* スライド・カートボタンを下の行に1行で */
+                .smart-btn-group {{
+                    flex: 1 1 100% !important;
+                    justify-content: center !important;
+                    gap: 6px !important;
+                }}
+                .smart-btn-group a {{
+                    flex: 1 !important;
+                    text-align: center !important;
+                    white-space: nowrap !important;
+                    font-size: 12px !important;
+                    padding: 6px 8px !important;
+                }}
+                
+                /* 管理者専用UI(全選択・プルダウン・Run・一括アップロード)を非表示 */
+                .smart-action-bar {{ display: none !important; }}
+                
+                /* 右側固定タブを画面下に配置 */
+                .qs-tab-wrap {{
+                    right: auto !important;
+                    bottom: 0 !important;
+                    left: 0 !important;
+                    top: auto !important;
+                    transform: none !important;
+                    flex-direction: row !important;
+                    width: 100% !important;
+                    gap: 0 !important;
+                }}
+                .qs-tab {{
+                    writing-mode: horizontal-tb !important;
+                    flex: 1 !important;
+                    text-align: center !important;
+                    padding: 10px 8px !important;
+                    border-radius: 0 !important;
+                    font-size: 12px !important;
+                    border: none !important;
+                }}
+                .qs-panel {{ width: 100% !important; right: -100% !important; }}
+                .qs-panel.open {{ right: 0 !important; }}
+                
+                /* 商品一覧をカード形式に */
+                #result_list, #result_list tbody {{ display: block !important; }}
+                #result_list thead {{ display: none !important; }}
+                
+                #result_list tr {{
+                    display: grid !important;
+                    grid-template-columns: auto 90px 1fr !important;
+                    gap: 6px 12px !important;
+                    align-items: center !important;
+                    padding: 12px !important;
+                    background: #1f1f1f !important;
+                    border-radius: 12px !important;
+                    margin: 0 8px 12px !important;
+                    border: 1px solid #444 !important;
+                }}
+                #result_list td {{
+                    padding: 0 !important;
+                    border: none !important;
+                    height: auto !important;
+                    text-align: left !important;
+                }}
+                
+                /* チェックボックス */
+                #result_list td.action-checkbox {{
+                    grid-column: 1; grid-row: 1 / span 3;
+                }}
+                .action-checkbox input {{
+                    width: 20px !important; height: 20px !important;
+                    accent-color: #00ffcc !important;
+                }}
+                
+                /* 画像 */
+                #result_list td.field-display_image_jp {{
+                    grid-column: 2; grid-row: 1 / span 3;
+                }}
+                .field-display_image_jp .cell-center {{
+                    height: auto !important; width: 90px !important;
+                }}
+                .field-display_image_jp img {{
+                    max-width: 90px !important; max-height: 120px !important;
+                }}
+                
+                /* 商品名 */
+                #result_list td.field-display_name_jp {{
+                    grid-column: 3; grid-row: 1;
+                }}
+                .field-display_name_jp > div {{
+                    height: auto !important;
+                    font-size: 13px !important;
+                    line-height: 1.3 !important;
+                    text-align: left !important;
+                }}
+                
+                /* 価格 */
+                #result_list td.field-display_price_jp {{
+                    grid-column: 3; grid-row: 2;
+                }}
+                .field-display_price_jp .cell-center {{
+                    height: auto !important;
+                    font-size: 16px !important;
+                    justify-content: flex-start !important;
+                }}
+                
+                /* タイマー */
+                #result_list td.field-display_timer_jp {{
+                    grid-column: 3; grid-row: 3;
+                }}
+                .field-display_timer_jp .cell-center {{
+                    height: auto !important;
+                    font-size: 11px !important;
+                    justify-content: flex-start !important;
+                }}
+            }}
         </style>
         <script>
             document.addEventListener('DOMContentLoaded', function() {{
@@ -1075,7 +1218,7 @@ def record_sale_view(request):
         # LINE通知
         total = sum(i['price'] for i in items)
         item_lines = '\n'.join([f"・{i['name']} ¥{i['price']}" for i in items])
-        message = f"💖 お迎え完了！\n購入者：{buyer_name}\n{item_lines}\n合計: ¥{total:,}\n注文番号：{order_number}"
+        message = f"💖 お迎え完了!\n購入者:{buyer_name}\n{item_lines}\n合計: ¥{total:,}\n注文番号:{order_number}"
         send_line_notification(message)
         # 注文管理レコード作成
         from django.utils import timezone as tz
