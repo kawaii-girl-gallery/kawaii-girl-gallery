@@ -143,6 +143,7 @@ class BaseProductAdmin(admin.ModelAdmin):
             return JsonResponse({'status': 'error'}, status=405)
         try:
             import re as re_mod
+            from django.utils import timezone as tz
             cat = request.POST.get('category', 'A4')
             pr = int(request.POST.get('price', 88))
             add_watermark = request.POST.get('add_watermark', 'true') == 'true'
@@ -150,7 +151,8 @@ class BaseProductAdmin(admin.ModelAdmin):
             if duration_str:
                 from datetime import date
                 end_date = date.fromisoformat(duration_str)
-                duration_days = max(1, (end_date - date.today()).days + 1)
+                # JSの計算 (created_at + duration_days日 の23:59:59) と整合させる
+                duration_days = max(1, (end_date - tz.localdate()).days)
             else:
                 duration_days = 6
             f = request.FILES.get('image')
