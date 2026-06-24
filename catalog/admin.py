@@ -99,6 +99,23 @@ class BulkUploadForm(forms.Form):
     add_watermark = forms.BooleanField(label='SAMPLEの透かしを追加', required=False, initial=True)
     images = MultipleFileField(label='画像ファイル選択')
 
+
+# --- 購入者のカテゴリ振り分け判定 ---
+# グループ 'A4購入者' / 'TCG購入者' を目印として使う。
+# 管理者(superuser または kawaii-girlgallery)は常に両方。
+# どちらのグループにも入っていない購入者は従来通り両方見せる（後方互換）。
+def get_allowed_categories(user):
+    if user.is_superuser or user.username == 'kawaii-girlgallery':
+        return {'A4', 'TCG'}
+    groups = set(user.groups.values_list('name', flat=True))
+    allowed = set()
+    if 'A4購入者' in groups:
+        allowed.add('A4')
+    if 'TCG購入者' in groups:
+        allowed.add('TCG')
+    return allowed or {'A4', 'TCG'}
+
+
 class BaseProductAdmin(admin.ModelAdmin):
     list_display = ('display_name_jp', 'display_image_jp', 'display_price_jp', 'display_timer_jp')
     list_display_links = None 
@@ -106,7 +123,7 @@ class BaseProductAdmin(admin.ModelAdmin):
     actions = ['move_to_archive', 'restore_from_archive']
 
     def has_change_permission(self, request, obj=None):
-        return request.user.is_staff
+        return request.user.is_staff and getattr(self, 'cat', None) in get_allowed_categories(request.user)
 
     def has_add_permission(self, request):
         return request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
@@ -115,7 +132,7 @@ class BaseProductAdmin(admin.ModelAdmin):
         return request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
 
     def has_view_permission(self, request, obj=None):
-        return request.user.is_staff
+        return request.user.is_staff and getattr(self, 'cat', None) in get_allowed_categories(request.user)
 
     def get_actions(self, request):
         actions = super().get_actions(request)
@@ -938,15 +955,19 @@ function closePanel(id) {{
 
 @admin.register(Show_ProductList_A4)
 class A4PosterAdmin(BaseProductAdmin):
+    cat = 'A4'
     def get_queryset(self, request): return super().get_queryset(request).filter(category='A4', is_archived=False)
 @admin.register(Z_Archive_A4)
 class A4ArchiveAdmin(BaseProductAdmin):
+    cat = 'A4'
     def get_queryset(self, request): return super().get_queryset(request).filter(category='A4', is_archived=True)
 @admin.register(Show_ProductList_TCG)
 class TCGCardAdmin(BaseProductAdmin):
+    cat = 'TCG'
     def get_queryset(self, request): return super().get_queryset(request).filter(category='TCG', is_archived=False)
 @admin.register(Z_Archive_TCG)
 class TCGArchiveAdmin(BaseProductAdmin):
+    cat = 'TCG'
     def get_queryset(self, request): return super().get_queryset(request).filter(category='TCG', is_archived=True)
 
 def character_pedia_view(request):
@@ -1304,7 +1325,12 @@ def get_app_list(self, request, app_label=None):
     if is_admin: a4_models.append(get_m('Z_Archive_A4'))
     tcg_models = [get_m('Show_ProductList_TCG')]
     if is_admin: tcg_models.append(get_m('Z_Archive_TCG'))
-    final_list = [{'name': '一覧表', 'app_label': 'catalog_pedia', 'models': pedia_models, 'has_module_permission': True}, {'name': 'A4サイズポスター', 'app_label': 'catalog_a4', 'models': a4_models, 'has_module_permission': True}, {'name': 'トレーディングカード', 'app_label': 'catalog_tcg', 'models': tcg_models, 'has_module_permission': True}]
+    allowed = get_allowed_categories(request.user)
+    final_list = [{'name': '一覧表', 'app_label': 'catalog_pedia', 'models': pedia_models, 'has_module_permission': True}]
+    if 'A4' in allowed:
+        final_list.append({'name': 'A4サイズポスター', 'app_label': 'catalog_a4', 'models': a4_models, 'has_module_permission': True})
+    if 'TCG' in allowed:
+        final_list.append({'name': 'トレーディングカード', 'app_label': 'catalog_tcg', 'models': tcg_models, 'has_module_permission': True})
     if is_admin:
         lib_models = [{'name': 'ユーザー認証', 'admin_url': '/admin/auth/user/'}, {'name': '売上ダッシュボード', 'admin_url': '/admin/sales-dashboard/'}, {'name': 'インサイト分析', 'admin_url': '/admin/analysis-sheet/'}, {'name': '注文管理', 'admin_url': '/admin/order-management/'}]
         if get_m('Sale'): lib_models.append(get_m('Sale'))
