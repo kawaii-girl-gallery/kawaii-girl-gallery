@@ -63,8 +63,9 @@
     .btn { text-decoration: none; padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 900; color: #fff; background: #333; border: 1px solid #444; transition: 0.2s; }
     .btn:hover { background: #444; border-color: #007bff; }
 
-    /* A4 / TCG どちらか片方だけ表示する購入者向け：1列にして間延びを防ぐ */
-    .stat-row.single, .link-row.single { grid-template-columns: 1fr; }
+    /* 単体カテゴリ購入者向け：カード全体をリンク化 */
+    a.char-card-link { display: block; text-decoration: none; color: inherit; cursor: pointer; }
+    a.char-card-link .info-box { padding-bottom: 18px; }
 </style>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -99,6 +100,8 @@
 <div id="content-main" class="{{ cl_class }}">
     <div class="pedia-container">
         {% for name, stats, thumb in char_list %}
+        {% if show_a4 and show_tcg %}
+        {# 管理者：A4・TCG両方の数字とボタン #}
         <div class="char-card">
             <div class="img-box">
                 {% if thumb %}<img src="{{ thumb }}" alt="">{% endif %}
@@ -106,16 +109,28 @@
             </div>
             <div class="info-box">
                 <h2>{{ name }}</h2>
-                <div class="stat-row{% if not show_a4 or not show_tcg %} single{% endif %}">
-                    {% if show_a4 %}<div class="stat-item"><span class="stat-label">A4サイズ</span><span class="stat-val">{{ stats.A4 }}</span></div>{% endif %}
-                    {% if show_tcg %}<div class="stat-item"><span class="stat-label">TCGカード</span><span class="stat-val">{{ stats.TCG }}</span></div>{% endif %}
+                <div class="stat-row">
+                    <div class="stat-item"><span class="stat-label">A4サイズ</span><span class="stat-val">{{ stats.A4 }}</span></div>
+                    <div class="stat-item"><span class="stat-label">TCGカード</span><span class="stat-val">{{ stats.TCG }}</span></div>
                 </div>
-                <div class="link-row{% if not show_a4 or not show_tcg %} single{% endif %}">
-                    {% if show_a4 %}<a href="{{ stats.a4_url }}" class="btn">A4一覧</a>{% endif %}
-                    {% if show_tcg %}<a href="{{ stats.tcg_url }}" class="btn">TCG一覧</a>{% endif %}
+                <div class="link-row">
+                    <a href="{{ stats.a4_url }}" class="btn">A4一覧</a>
+                    <a href="{{ stats.tcg_url }}" class="btn">TCG一覧</a>
                 </div>
             </div>
         </div>
+        {% else %}
+        {# 単体カテゴリ購入者：カード全体がその一覧へのリンク #}
+        <a class="char-card char-card-link" href="{% if show_a4 %}{{ stats.a4_url }}{% else %}{{ stats.tcg_url }}{% endif %}">
+            <div class="img-box">
+                {% if thumb %}<img src="{{ thumb }}" alt="">{% endif %}
+                <div class="total-badge">{% if show_a4 %}{{ stats.A4 }}{% else %}{{ stats.TCG }}{% endif %}枚</div>
+            </div>
+            <div class="info-box">
+                <h2>{{ name }}</h2>
+            </div>
+        </a>
+        {% endif %}
         {% endfor %}
     </div>
 </div>
