@@ -227,7 +227,7 @@ async function checkout() {
         dialog.innerHTML = `
             <div style="background:#1a1a1a; border:2px solid #ff4d94; border-radius:15px; padding:30px; width:320px; max-width:90vw; text-align:center;">
                 <h3 style="color:#ff4d94; margin:0 0 10px 0;">💖 お名前を入力してください</h3>
-                <p style="color:#aaa; font-size:12px; margin:0 0 15px 0;">※ヤフオクと同じ名前でお願いします。</p>
+                <p style="color:#aaa; font-size:12px; margin:0 0 15px 0;">※ご利用のフリマアプリと同じお名前でお願いします。</p>
                 <input id="buyer-name-input" type="text" placeholder="お名前" style="width:100%; padding:10px; background:#333; color:#fff; border:1px solid #555; border-radius:8px; font-size:16px; box-sizing:border-box; margin-bottom:15px;">
                 <div style="display:flex; justify-content:center; gap:20px; margin-bottom:20px;">
                     <label style="display:flex; align-items:center; gap:6px; color:#eee; font-size:15px; cursor:pointer;">
