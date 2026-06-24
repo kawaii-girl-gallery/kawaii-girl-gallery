@@ -975,10 +975,13 @@ def character_pedia_view(request):
     page_title = "原作作品一覧" if mode == 'work' else "キャラクター一覧"
     app_config = apps.get_app_config('catalog')
     app_config.verbose_name = "一覧表"
+    allowed = get_allowed_categories(request.user)
     context = {
         **admin.site.each_context(request),
         'title': page_title,
         'cl_class': 'pedia-mode', 
+        'show_a4': 'A4' in allowed,
+        'show_tcg': 'TCG' in allowed,
     }
     qs = Product.objects.filter(is_archived=False)
     data = {}
