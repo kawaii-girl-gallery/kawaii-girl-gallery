@@ -1008,7 +1008,14 @@ def character_pedia_view(request):
         elif 'TCG' in str(p.category).upper(): data[key]['TCG'] += 1
         data[key]['total'] += 1
         if p.image_url: data[key]['images'].append(p.optimized_image_url)
-    char_list = [(k, v, random.choice(v['images']) if v['images'] else None) for k, v in data.items()]
+    char_list = []
+    for k, v in data.items():
+        # 単体カテゴリ購入者は、そのカテゴリの在庫が0のものを除外
+        if 'A4' not in allowed and v['TCG'] == 0:
+            continue
+        if 'TCG' not in allowed and v['A4'] == 0:
+            continue
+        char_list.append((k, v, random.choice(v['images']) if v['images'] else None))
     context['char_list'] = sorted(char_list, key=lambda x: x[1]['total'], reverse=True)
     messages.info(request, mark_safe(COMMON_STYLE))
     return render(request, 'admin/catalog/character_pedia.html', context)
