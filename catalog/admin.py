@@ -1003,11 +1003,12 @@ def character_pedia_view(request):
             key = char_name if char_name else "不明"
             
         if key not in data: 
-            data[key] = {'A4': 0, 'TCG': 0, 'total': 0, 'images': [], 'a4_url': f"/admin/catalog/show_productlist_a4/?q={key}", 'tcg_url': f"/admin/catalog/show_productlist_tcg/?q={key}"}
-        if 'A4' in str(p.category).upper(): data[key]['A4'] += 1
-        elif 'TCG' in str(p.category).upper(): data[key]['TCG'] += 1
+            data[key] = {'A4': 0, 'TCG': 0, 'total': 0, 'images_A4': [], 'images_TCG': [], 'a4_url': f"/admin/catalog/show_productlist_a4/?q={key}", 'tcg_url': f"/admin/catalog/show_productlist_tcg/?q={key}"}
+        p_cat = 'A4' if 'A4' in str(p.category).upper() else ('TCG' if 'TCG' in str(p.category).upper() else None)
+        if p_cat == 'A4': data[key]['A4'] += 1
+        elif p_cat == 'TCG': data[key]['TCG'] += 1
         data[key]['total'] += 1
-        if p.image_url: data[key]['images'].append(p.optimized_image_url)
+        if p.image_url and p_cat: data[key]['images_' + p_cat].append(p.optimized_image_url)
     char_list = []
     for k, v in data.items():
         # 単体カテゴリ購入者は、そのカテゴリの在庫が0のものを除外
@@ -1015,7 +1016,14 @@ def character_pedia_view(request):
             continue
         if 'TCG' not in allowed and v['A4'] == 0:
             continue
-        char_list.append((k, v, random.choice(v['images']) if v['images'] else None))
+        # サムネはログイン者のカテゴリの画像から選ぶ（管理者は両方混在）
+        if 'A4' in allowed and 'TCG' in allowed:
+            pool = v['images_A4'] + v['images_TCG']
+        elif 'A4' in allowed:
+            pool = v['images_A4']
+        else:
+            pool = v['images_TCG']
+        char_list.append((k, v, random.choice(pool) if pool else None))
     context['char_list'] = sorted(char_list, key=lambda x: x[1]['total'], reverse=True)
     messages.info(request, mark_safe(COMMON_STYLE))
     return render(request, 'admin/catalog/character_pedia.html', context)
