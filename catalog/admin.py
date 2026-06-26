@@ -1024,7 +1024,15 @@ def character_pedia_view(request):
         else:
             pool = v['images_TCG']
         char_list.append((k, v, random.choice(pool) if pool else None))
-    context['char_list'] = sorted(char_list, key=lambda x: x[1]['total'], reverse=True)
+    def sort_key(x):
+        v = x[1]
+        if 'A4' in allowed and 'TCG' in allowed:
+            return v['total']   # 管理者は合算順
+        elif 'A4' in allowed:
+            return v['A4']      # A4購入者はA4枚数順
+        else:
+            return v['TCG']     # トレカ購入者はトレカ枚数順
+    context['char_list'] = sorted(char_list, key=sort_key, reverse=True)
     messages.info(request, mark_safe(COMMON_STYLE))
     return render(request, 'admin/catalog/character_pedia.html', context)
 
