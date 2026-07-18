@@ -99,23 +99,6 @@ class BulkUploadForm(forms.Form):
     add_watermark = forms.BooleanField(label='SAMPLEの透かしを追加', required=False, initial=True)
     images = MultipleFileField(label='画像ファイル選択')
 
-
-# --- 購入者のカテゴリ振り分け判定 ---
-# グループ 'A4購入者' / 'TCG購入者' を目印として使う。
-# 管理者(superuser または kawaii-girlgallery)は常に両方。
-# どちらのグループにも入っていない購入者は従来通り両方見せる（後方互換）。
-def get_allowed_categories(user):
-    if user.is_superuser or user.username == 'kawaii-girlgallery':
-        return {'A4', 'TCG'}
-    groups = set(user.groups.values_list('name', flat=True))
-    allowed = set()
-    if 'A4購入者' in groups:
-        allowed.add('A4')
-    if 'TCG購入者' in groups:
-        allowed.add('TCG')
-    return allowed or {'A4', 'TCG'}
-
-
 class BaseProductAdmin(admin.ModelAdmin):
     list_display = ('display_name_jp', 'display_image_jp', 'display_price_jp', 'display_timer_jp')
     list_display_links = None 
@@ -123,7 +106,7 @@ class BaseProductAdmin(admin.ModelAdmin):
     actions = ['move_to_archive', 'restore_from_archive']
 
     def has_change_permission(self, request, obj=None):
-        return request.user.is_staff and getattr(self, 'cat', None) in get_allowed_categories(request.user)
+        return request.user.is_staff
 
     def has_add_permission(self, request):
         return request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
@@ -132,7 +115,7 @@ class BaseProductAdmin(admin.ModelAdmin):
         return request.user.is_superuser or request.user.username == 'kawaii-girlgallery'
 
     def has_view_permission(self, request, obj=None):
-        return request.user.is_staff and getattr(self, 'cat', None) in get_allowed_categories(request.user)
+        return request.user.is_staff
 
     def get_actions(self, request):
         actions = super().get_actions(request)
@@ -955,19 +938,15 @@ function closePanel(id) {{
 
 @admin.register(Show_ProductList_A4)
 class A4PosterAdmin(BaseProductAdmin):
-    cat = 'A4'
     def get_queryset(self, request): return super().get_queryset(request).filter(category='A4', is_archived=False)
 @admin.register(Z_Archive_A4)
 class A4ArchiveAdmin(BaseProductAdmin):
-    cat = 'A4'
     def get_queryset(self, request): return super().get_queryset(request).filter(category='A4', is_archived=True)
 @admin.register(Show_ProductList_TCG)
 class TCGCardAdmin(BaseProductAdmin):
-    cat = 'TCG'
     def get_queryset(self, request): return super().get_queryset(request).filter(category='TCG', is_archived=False)
 @admin.register(Z_Archive_TCG)
 class TCGArchiveAdmin(BaseProductAdmin):
-    cat = 'TCG'
     def get_queryset(self, request): return super().get_queryset(request).filter(category='TCG', is_archived=True)
 
 def character_pedia_view(request):
@@ -975,13 +954,10 @@ def character_pedia_view(request):
     page_title = "原作作品一覧" if mode == 'work' else "キャラクター一覧"
     app_config = apps.get_app_config('catalog')
     app_config.verbose_name = "一覧表"
-    allowed = get_allowed_categories(request.user)
     context = {
         **admin.site.each_context(request),
         'title': page_title,
         'cl_class': 'pedia-mode', 
-        'show_a4': 'A4' in allowed,
-        'show_tcg': 'TCG' in allowed,
     }
     qs = Product.objects.filter(is_archived=False)
     data = {}
@@ -1003,36 +979,13 @@ def character_pedia_view(request):
             key = char_name if char_name else "不明"
             
         if key not in data: 
-            data[key] = {'A4': 0, 'TCG': 0, 'total': 0, 'images_A4': [], 'images_TCG': [], 'a4_url': f"/admin/catalog/show_productlist_a4/?q={key}", 'tcg_url': f"/admin/catalog/show_productlist_tcg/?q={key}"}
-        p_cat = 'A4' if 'A4' in str(p.category).upper() else ('TCG' if 'TCG' in str(p.category).upper() else None)
-        if p_cat == 'A4': data[key]['A4'] += 1
-        elif p_cat == 'TCG': data[key]['TCG'] += 1
+            data[key] = {'A4': 0, 'TCG': 0, 'total': 0, 'images': [], 'a4_url': f"/admin/catalog/show_productlist_a4/?q={key}", 'tcg_url': f"/admin/catalog/show_productlist_tcg/?q={key}"}
+        if 'A4' in str(p.category).upper(): data[key]['A4'] += 1
+        elif 'TCG' in str(p.category).upper(): data[key]['TCG'] += 1
         data[key]['total'] += 1
-        if p.image_url and p_cat: data[key]['images_' + p_cat].append(p.optimized_image_url)
-    char_list = []
-    for k, v in data.items():
-        # 単体カテゴリ購入者は、そのカテゴリの在庫が0のものを除外
-        if 'A4' not in allowed and v['TCG'] == 0:
-            continue
-        if 'TCG' not in allowed and v['A4'] == 0:
-            continue
-        # サムネはログイン者のカテゴリの画像から選ぶ（管理者は両方混在）
-        if 'A4' in allowed and 'TCG' in allowed:
-            pool = v['images_A4'] + v['images_TCG']
-        elif 'A4' in allowed:
-            pool = v['images_A4']
-        else:
-            pool = v['images_TCG']
-        char_list.append((k, v, random.choice(pool) if pool else None))
-    def sort_key(x):
-        v = x[1]
-        if 'A4' in allowed and 'TCG' in allowed:
-            return v['total']   # 管理者は合算順
-        elif 'A4' in allowed:
-            return v['A4']      # A4購入者はA4枚数順
-        else:
-            return v['TCG']     # トレカ購入者はトレカ枚数順
-    context['char_list'] = sorted(char_list, key=sort_key, reverse=True)
+        if p.image_url: data[key]['images'].append(p.optimized_image_url)
+    char_list = [(k, v, random.choice(v['images']) if v['images'] else None) for k, v in data.items()]
+    context['char_list'] = sorted(char_list, key=lambda x: x[1]['total'], reverse=True)
     messages.info(request, mark_safe(COMMON_STYLE))
     return render(request, 'admin/catalog/character_pedia.html', context)
 
@@ -1291,6 +1244,7 @@ def record_sale_view(request):
         for i in items:
             Sale.objects.create(
                 product_name=i['name'],
+                product_id=i.get('product_id') or None,
                 price=i['price'],
                 category=i.get('category', ''),
                 buyer_name=buyer_name,
@@ -1305,11 +1259,13 @@ def record_sale_view(request):
         # 注文管理レコード作成
         from django.utils import timezone as tz
         product_names = '\n'.join([i['name'] for i in items])
+        product_ids = ','.join([str(i.get('product_id') or '') for i in items])
         OrderManagement.objects.create(
             order_number=order_number,
             buyer_name=buyer_name,
             total_price=total,
             product_names=product_names,
+            product_ids=product_ids,
             sold_at=tz.now(),
             platform=platform,
         )
@@ -1351,12 +1307,7 @@ def get_app_list(self, request, app_label=None):
     if is_admin: a4_models.append(get_m('Z_Archive_A4'))
     tcg_models = [get_m('Show_ProductList_TCG')]
     if is_admin: tcg_models.append(get_m('Z_Archive_TCG'))
-    allowed = get_allowed_categories(request.user)
-    final_list = [{'name': '一覧表', 'app_label': 'catalog_pedia', 'models': pedia_models, 'has_module_permission': True}]
-    if 'A4' in allowed:
-        final_list.append({'name': 'A4サイズポスター', 'app_label': 'catalog_a4', 'models': a4_models, 'has_module_permission': True})
-    if 'TCG' in allowed:
-        final_list.append({'name': 'トレーディングカード', 'app_label': 'catalog_tcg', 'models': tcg_models, 'has_module_permission': True})
+    final_list = [{'name': '一覧表', 'app_label': 'catalog_pedia', 'models': pedia_models, 'has_module_permission': True}, {'name': 'A4サイズポスター', 'app_label': 'catalog_a4', 'models': a4_models, 'has_module_permission': True}, {'name': 'トレーディングカード', 'app_label': 'catalog_tcg', 'models': tcg_models, 'has_module_permission': True}]
     if is_admin:
         lib_models = [{'name': 'ユーザー認証', 'admin_url': '/admin/auth/user/'}, {'name': '売上ダッシュボード', 'admin_url': '/admin/sales-dashboard/'}, {'name': 'インサイト分析', 'admin_url': '/admin/analysis-sheet/'}, {'name': '注文管理', 'admin_url': '/admin/order-management/'}]
         if get_m('Sale'): lib_models.append(get_m('Sale'))
