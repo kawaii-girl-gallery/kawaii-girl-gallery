@@ -163,6 +163,7 @@ def delete_imagekit_image(sender, instance, **kwargs):
 # --- 売上記録モデル ---
 class Sale(models.Model):
     product_name = models.CharField('商品名', max_length=255)
+    product_id = models.IntegerField('商品ID', null=True, blank=True)
     price = models.IntegerField('売上金額')
     category = models.CharField('種別', max_length=50, blank=True)
     buyer_name = models.CharField('購入者名', max_length=100, blank=True, default='')
@@ -191,6 +192,7 @@ class OrderManagement(models.Model):
     buyer_name = models.CharField('購入者名', max_length=100, blank=True, default='')
     total_price = models.IntegerField('合計金額', default=0)
     product_names = models.TextField('商品名リスト', blank=True, default='')
+    product_ids = models.TextField('商品IDリスト', blank=True, default='')
     sold_at = models.DateTimeField('注文日時')
     yahoo_url = models.URLField('ヤフオクURL', blank=True, default='')
     platform = models.CharField('プラットフォーム', max_length=20, blank=True, default='メルカリ')
