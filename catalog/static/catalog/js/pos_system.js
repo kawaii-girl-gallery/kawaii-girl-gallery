@@ -32,7 +32,7 @@ function getCurrentCategory() {
 let currentImages = []; 
 let currentIndex = 0;
 
-function openCarousel(imgUrl, name, price) {
+function openCarousel(imgUrl, name, price, productId) {
     let modal = document.getElementById('pos-modal');
     if (!modal) {
         modal = document.createElement('div');
@@ -70,6 +70,7 @@ function openCarousel(imgUrl, name, price) {
     modal.setAttribute('data-current-name', name);
     modal.setAttribute('data-current-price', price);
     modal.setAttribute('data-current-url', imgUrl);
+    modal.setAttribute('data-current-id', productId || '');
     modal.onclick = function(e) { if(e.target.id === 'pos-modal' || e.target.className === 'modal-center-container') closeModal(); };
 }
 
@@ -79,9 +80,10 @@ function addCurrentToCart(e) {
     const name = modal.getAttribute('data-current-name');
     const priceText = modal.getAttribute('data-current-price');
     const url = modal.getAttribute('data-current-url');
+    const productId = modal.getAttribute('data-current-id');
     const price = parseInt(priceText.replace(/[^0-9]/g, '')) || 0;
     const category = getCurrentCategory();
-    cart.push({name: name, price: price, url: url, category: category});
+    cart.push({name: name, price: price, url: url, category: category, product_id: productId});
     localStorage.setItem('pos_cart_data', JSON.stringify(cart));
     renderCart();
     const btn = document.getElementById('modal-add-btn');
@@ -100,24 +102,25 @@ function nextImg(e) {
     if (e) e.stopPropagation();
     if (currentImages.length === 0) return;
     currentIndex = (currentIndex + 1) % currentImages.length;
-    openCarousel(currentImages[currentIndex].url, currentImages[currentIndex].name, currentImages[currentIndex].price);
+    openCarousel(currentImages[currentIndex].url, currentImages[currentIndex].name, currentImages[currentIndex].price, currentImages[currentIndex].id);
 }
 
 function prevImg(e) {
     if (e) e.stopPropagation();
     if (currentImages.length === 0) return;
     currentIndex = (currentIndex - 1 + currentImages.length) % currentImages.length;
-    openCarousel(currentImages[currentIndex].url, currentImages[currentIndex].name, currentImages[currentIndex].price);
+    openCarousel(currentImages[currentIndex].url, currentImages[currentIndex].name, currentImages[currentIndex].price, currentImages[currentIndex].id);
 }
 
 function getRowData(row) {
     const nameCell = row.querySelector('.column-display_name_jp div') || row.querySelector('.column-display_name div') || row.cells[1];
     const imgCell = row.querySelector('.column-display_image_jp img') || row.querySelector('.column-display_image img') || row.cells[2].querySelector('img');
     const priceCell = row.querySelector('.column-display_price_jp div') || row.querySelector('.column-display_price div') || row.cells[3];
+    const idCell = row.querySelector('input.action-select');
     // 改行をスペースに変換して1行にする
     const rawName = nameCell ? nameCell.innerText.trim() : '不明';
     const name = rawName.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim();
-    return { url: imgCell ? imgCell.src : '', name: name, price: priceCell ? priceCell.innerText.trim() : '0' };
+    return { url: imgCell ? imgCell.src : '', name: name, price: priceCell ? priceCell.innerText.trim() : '0', id: idCell ? idCell.value : '' };
 }
 
 function bulkCarousel() {
@@ -125,7 +128,7 @@ function bulkCarousel() {
     if (selected.length === 0) return;
     currentImages = Array.from(selected).map(cb => getRowData(cb.closest('tr')));
     currentIndex = 0;
-    openCarousel(currentImages[0].url, currentImages[0].name, currentImages[0].price);
+    openCarousel(currentImages[0].url, currentImages[0].name, currentImages[0].price, currentImages[0].id);
 }
 
 function bulkAddToCart() {
@@ -134,7 +137,7 @@ function bulkAddToCart() {
     const category = getCurrentCategory();
     selected.forEach(cb => {
         const data = getRowData(cb.closest('tr'));
-        cart.push({name: data.name, price: parseInt(data.price.replace(/[^0-9]/g, '')) || 0, url: data.url, category: category});
+        cart.push({name: data.name, price: parseInt(data.price.replace(/[^0-9]/g, '')) || 0, url: data.url, category: category, product_id: data.id});
         cb.checked = false;
     });
     localStorage.setItem('pos_cart_data', JSON.stringify(cart));
@@ -227,7 +230,7 @@ async function checkout() {
         dialog.innerHTML = `
             <div style="background:#1a1a1a; border:2px solid #ff4d94; border-radius:15px; padding:30px; width:320px; max-width:90vw; text-align:center;">
                 <h3 style="color:#ff4d94; margin:0 0 10px 0;">💖 お名前を入力してください</h3>
-                <p style="color:#aaa; font-size:12px; margin:0 0 15px 0;">※ご利用のフリマアプリと同じお名前でお願いします。</p>
+                <p style="color:#aaa; font-size:12px; margin:0 0 15px 0;">※ヤフオクと同じ名前でお願いします。</p>
                 <input id="buyer-name-input" type="text" placeholder="お名前" style="width:100%; padding:10px; background:#333; color:#fff; border:1px solid #555; border-radius:8px; font-size:16px; box-sizing:border-box; margin-bottom:15px;">
                 <div style="display:flex; justify-content:center; gap:20px; margin-bottom:20px;">
                     <label style="display:flex; align-items:center; gap:6px; color:#eee; font-size:15px; cursor:pointer;">
